@@ -13,7 +13,7 @@ import java.awt.*;
 
 public class DefaultBackgroundPreview implements ITooltipPreviewBackground {
 
-    private static final ResourceLocation PREVIEW = new ResourceLocation(TooltipOverhaul.MOD_ID, "textures/gui/star.png");
+    private static final ResourceLocation PREVIEW = ResourceLocation.fromNamespaceAndPath(TooltipOverhaul.MOD_ID, "textures/gui/star.png");
 
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {

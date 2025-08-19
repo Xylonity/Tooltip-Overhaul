@@ -4,7 +4,8 @@
       "texture": "tooltipoverhaul:textures/overlay/amethyst_frame.png",
       "items": [
         "minecraft:dragon_egg",
-        "minecraft:enchanted_golden_apple"
+        "minecraft:enchanted_golden_apple",
+        "minecraft:mace"
       ],
       "gradientType": "custom",
       "borderType": "auto_static",

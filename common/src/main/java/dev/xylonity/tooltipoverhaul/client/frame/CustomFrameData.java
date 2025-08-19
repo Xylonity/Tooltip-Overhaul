@@ -9,7 +9,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -64,15 +64,15 @@ public record CustomFrameData(List<String> items, List<String> tags, Optional<St
     }
 
     public List<ResourceLocation> getItemLocations() {
-        return items.stream().map(ResourceLocation::new).collect(Collectors.toList());
+        return items.stream().map(ResourceLocation::parse).collect(Collectors.toList());
     }
 
     public List<TagKey<Item>> getTagKeys() {
-        return tags.stream().map(name -> TagKey.create(Registries.ITEM, new ResourceLocation(name))).collect(Collectors.toList());
+        return tags.stream().map(name -> TagKey.create(Registries.ITEM, ResourceLocation.parse(name))).collect(Collectors.toList());
     }
 
     public ResourceLocation getTextureLocation() {
-        return new ResourceLocation(getTexture());
+        return ResourceLocation.parse(getTexture());
     }
 
     public List<Color> getGradientColorValues() {

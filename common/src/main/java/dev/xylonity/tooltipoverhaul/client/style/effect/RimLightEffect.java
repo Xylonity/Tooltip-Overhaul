@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
-import java.awt.Point;
+import java.awt.*;
 
 public class RimLightEffect implements ITooltipEffect {
 
@@ -50,52 +50,52 @@ public class RimLightEffect implements ITooltipEffect {
 
     private static void draw(Matrix4f m, VertexConsumer buf, Vec2 start, Point size, float w, int color1, int color2) {
         // left
-        buf.vertex(m, start.x, start.y, 0.0F).color(color1).endVertex();
-        buf.vertex(m, start.x, start.y + size.y, 0.0F).color(color1).endVertex();
-        buf.vertex(m, start.x + w, start.y + size.y - w, 0.0F).color(color2).endVertex();
-        buf.vertex(m, start.x + w, start.y + w, 0.0F).color(color2).endVertex();
+        buf.addVertex(m, start.x, start.y, 0.0F).setColor(color1);
+        buf.addVertex(m, start.x, start.y + size.y, 0.0F).setColor(color1);
+        buf.addVertex(m, start.x + w, start.y + size.y - w, 0.0F).setColor(color2);
+        buf.addVertex(m, start.x + w, start.y + w, 0.0F).setColor(color2);
         // Top
-        buf.vertex(m, start.x, start.y, 0.0F).color(color1).endVertex();
-        buf.vertex(m, start.x + w, start.y + w, 0.0F).color(color2).endVertex();
-        buf.vertex(m, start.x + size.x - w, start.y + w, 0.0F).color(color2).endVertex();
-        buf.vertex(m, start.x + size.x, start.y, 0.0F).color(color1).endVertex();
+        buf.addVertex(m, start.x, start.y, 0.0F).setColor(color1);
+        buf.addVertex(m, start.x + w, start.y + w, 0.0F).setColor(color2);
+        buf.addVertex(m, start.x + size.x - w, start.y + w, 0.0F).setColor(color2);
+        buf.addVertex(m, start.x + size.x, start.y, 0.0F).setColor(color1);
         // Right
-        buf.vertex(m, start.x + size.x - w, start.y + w, 0.0F).color(color2).endVertex();
-        buf.vertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).color(color2).endVertex();
-        buf.vertex(m, start.x + size.x, start.y + size.y, 0.0F).color(color1).endVertex();
-        buf.vertex(m, start.x + size.x, start.y, 0.0F).color(color1).endVertex();
+        buf.addVertex(m, start.x + size.x - w, start.y + w, 0.0F).setColor(color2);
+        buf.addVertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).setColor(color2);
+        buf.addVertex(m, start.x + size.x, start.y + size.y, 0.0F).setColor(color1);
+        buf.addVertex(m, start.x + size.x, start.y, 0.0F).setColor(color1);
         // Bottom
-        buf.vertex(m, start.x + w, start.y + size.y - w, 0.0F).color(color2).endVertex();
-        buf.vertex(m, start.x, start.y + size.y, 0.0F).color(color1).endVertex();
-        buf.vertex(m, start.x + size.x, start.y + size.y, 0.0F).color(color1).endVertex();
-        buf.vertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).color(color2).endVertex();
+        buf.addVertex(m, start.x + w, start.y + size.y - w, 0.0F).setColor(color2);
+        buf.addVertex(m, start.x, start.y + size.y, 0.0F).setColor(color1);
+        buf.addVertex(m, start.x + size.x, start.y + size.y, 0.0F).setColor(color1);
+        buf.addVertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).setColor(color2);
     }
 
     private static void drawEdge(Matrix4f m, VertexConsumer buf, Vec2 start, Point size, float w, int color1, int color2, int edge) {
         switch (edge) {
             case 0 -> { // Left
-                buf.vertex(m, start.x, start.y, 0.0F).color(color1).endVertex();
-                buf.vertex(m, start.x, start.y + size.y, 0.0F).color(color1).endVertex();
-                buf.vertex(m, start.x + w, start.y + size.y - w, 0.0F).color(color2).endVertex();
-                buf.vertex(m, start.x + w, start.y + w, 0.0F).color(color2).endVertex();
+                buf.addVertex(m, start.x, start.y, 0.0F).setColor(color1);
+                buf.addVertex(m, start.x, start.y + size.y, 0.0F).setColor(color1);
+                buf.addVertex(m, start.x + w, start.y + size.y - w, 0.0F).setColor(color2);
+                buf.addVertex(m, start.x + w, start.y + w, 0.0F).setColor(color2);
             }
             case 1 -> { // Top
-                buf.vertex(m, start.x, start.y, 0.0F).color(color1).endVertex();
-                buf.vertex(m, start.x + w, start.y + w, 0.0F).color(color2).endVertex();
-                buf.vertex(m, start.x + size.x - w, start.y + w, 0.0F).color(color2).endVertex();
-                buf.vertex(m, start.x + size.x, start.y, 0.0F).color(color1).endVertex();
+                buf.addVertex(m, start.x, start.y, 0.0F).setColor(color1);
+                buf.addVertex(m, start.x + w, start.y + w, 0.0F).setColor(color2);
+                buf.addVertex(m, start.x + size.x - w, start.y + w, 0.0F).setColor(color2);
+                buf.addVertex(m, start.x + size.x, start.y, 0.0F).setColor(color1);
             }
             case 2 -> { // Right
-                buf.vertex(m, start.x + size.x - w, start.y + w, 0.0F).color(color2).endVertex();
-                buf.vertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).color(color2).endVertex();
-                buf.vertex(m, start.x + size.x, start.y + size.y, 0.0F).color(color1).endVertex();
-                buf.vertex(m, start.x + size.x, start.y, 0.0F).color(color1).endVertex();
+                buf.addVertex(m, start.x + size.x - w, start.y + w, 0.0F).setColor(color2);
+                buf.addVertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).setColor(color2);
+                buf.addVertex(m, start.x + size.x, start.y + size.y, 0.0F).setColor(color1);
+                buf.addVertex(m, start.x + size.x, start.y, 0.0F).setColor(color1);
             }
             case 3 -> { // Bottom
-                buf.vertex(m, start.x + w, start.y + size.y - w, 0.0F).color(color2).endVertex();
-                buf.vertex(m, start.x, start.y + size.y, 0.0F).color(color1).endVertex();
-                buf.vertex(m, start.x + size.x, start.y + size.y, 0.0F).color(color1).endVertex();
-                buf.vertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).color(color2).endVertex();
+                buf.addVertex(m, start.x + w, start.y + size.y - w, 0.0F).setColor(color2);
+                buf.addVertex(m, start.x, start.y + size.y, 0.0F).setColor(color1);
+                buf.addVertex(m, start.x + size.x, start.y + size.y, 0.0F).setColor(color1);
+                buf.addVertex(m, start.x + size.x - w, start.y + size.y - w, 0.0F).setColor(color2);
             }
         }
 

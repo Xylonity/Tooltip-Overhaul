@@ -1,8 +1,8 @@
 package dev.xylonity.tooltipoverhaul.client.style.inner;
 
+import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipFrame;
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.phys.Vec2;
 

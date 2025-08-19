@@ -1,12 +1,14 @@
 plugins {
     id 'multiloader-common'
-    id 'net.neoforged.moddev.legacyforge'
+    id 'net.neoforged.moddev'
 }
 
-legacyForge {
-    mcpVersion = minecraft_version
-    if (file("src/main/resources/META-INF/accesstransformer.cfg").exists()) {
-        accessTransformers = ["src/main/resources/META-INF/accesstransformer.cfg"]
+neoForge {
+    neoFormVersion = neo_form_version
+    // Automatically enable AccessTransformers if the file exists
+    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
+    if (at.exists()) {
+        accessTransformers.from(at.absolutePath)
     }
     parchment {
         minecraftVersion = parchment_minecraft
@@ -16,13 +18,15 @@ legacyForge {
 
 dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
-    compileOnlyApi "mezz.jei:jei-${minecraft_version}-common-api:15.20.0.106"
-    implementation "mezz.jei:jei-${minecraft_version}-common:15.20.0.106"
+    compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
 
-    compileOnlyApi "dev.emi:emi-xplat-mojmap:1.1.22+1.20.1:api"
-    implementation "dev.emi:emi-xplat-mojmap:1.1.22+1.20.1"
+    compileOnlyApi "mezz.jei:jei-${minecraft_version}-common-api:19.21.2.313"
+    implementation "mezz.jei:jei-${minecraft_version}-common:19.21.2.313"
 
-    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+    compileOnlyApi "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1:api"
+    implementation "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1"
+
+    annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
 }
 
 configurations {
@@ -40,3 +44,4 @@ artifacts {
     commonJava sourceSets.main.java.sourceDirectories.singleFile
     commonResources sourceSets.main.resources.sourceDirectories.singleFile
 }
+

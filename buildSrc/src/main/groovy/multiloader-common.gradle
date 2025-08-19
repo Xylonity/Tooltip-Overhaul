@@ -14,19 +14,6 @@ java {
 }
 
 repositories {
-    maven { url = uri("https://maven.minecraftforge.net") }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = "Fabric Maven"
-                url  = uri("https://maven.fabricmc.net/")
-            }
-        }
-        filter {
-            includeGroup("net.fabricmc.fabric-api")
-            includeModule("net.fabricmc.fabric-api", "fabric-api") // si usas el artefacto agregado
-        }
-    }
     mavenCentral()
     // https://docs.gradle.org/current/userguide/declaring_repositories.html#declaring_content_exclusively_found_in_one_repository
     exclusiveContent {
@@ -52,35 +39,8 @@ repositories {
         filter { includeGroup('org.parchmentmc.data') }
     }
     maven {
-        name = 'GeckoLib'
-        url 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroupByRegex("software\\.bernie.*")
-            includeGroup("com.eliotlash.mclib")
-        }
-    }
-    maven {
-        name = "AzureDoom Mods"
-        url = "https://maven.azuredoom.com/mods"
-    }
-    maven {
-        name = "Fuzs Mod Resources"
-        url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven/"
-    }
-    maven {
-        name = "Xylonity's maven"
-        url = "https://raw.githubusercontent.com/Xylonity/maven-centralish/main/maven/"
-    }
-    maven {
-        url "https://cursemaven.com"
-    }
-    maven {
-        name = "Progwml6's maven"
-        url = "https://dvs1.progwml6.com/files/maven/"
-    }
-    maven {
-        name = "Jared's maven"
-        url = "https://maven.blamejared.com/"
+        name = 'BlameJared'
+        url = 'https://maven.blamejared.com'
     }
     maven {
         name = "ModMaven"
@@ -96,7 +56,6 @@ repositories {
 // Read more about capabilities here: https://docs.gradle.org/current/userguide/component_capabilities.html#sec:declaring-additional-capabilities-for-a-local-component
 ['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
     configurations."$variant".outgoing {
-        capability("$group:${project.name}:$version")
         capability("$group:${base.archivesName.get()}:$version")
         capability("$group:$mod_id-${project.name}-${minecraft_version}:$version")
         capability("$group:$mod_id:$version")
@@ -143,24 +102,17 @@ processResources {
             'mod_id'                       : mod_id,
             'license'                      : license,
             'description'                  : project.description,
-            "forge_version"                : forge_version,
-            "forge_loader_version_range"   : forge_loader_version_range,
+            'neoforge_version'             : neoforge_version,
+            'neoforge_loader_version_range': neoforge_loader_version_range,
+            "forge_version": forge_version,
+            "forge_loader_version_range": forge_loader_version_range,
             'credits'                      : credits,
             'java_version'                 : java_version
     ]
 
-    var jsonExpandProps = expandProps.collectEntries {
-        key, value -> [(key): value instanceof String ? value.replace("\n", "\\\\n") : value]
-    }
-
-    filesMatching(['META-INF/mods.toml']) {
+    filesMatching(['pack.mcmeta', 'fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml', '*.mixins.json']) {
         expand expandProps
     }
-
-    filesMatching(['pack.mcmeta', 'fabric.mod.json', '*.mixins.json']) {
-        expand jsonExpandProps
-    }
-
     inputs.properties(expandProps)
 }
 
@@ -173,7 +125,7 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("file:///C:/maven")
+            url System.getenv('local_maven_url')
         }
     }
 }

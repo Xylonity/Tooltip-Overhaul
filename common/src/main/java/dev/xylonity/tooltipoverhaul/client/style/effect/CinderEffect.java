@@ -166,17 +166,17 @@ public class CinderEffect implements ITooltipEffect {
         float hex = nx * tEnd * 0.5f;
         float hey = ny * tEnd * 0.5f;
 
-        BufferBuilder buf = Tesselator.getInstance().getBuilder();
-
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-        buf.vertex(pose, x1 - hsx, y1 - hsy, 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x1 + hsx, y1 + hsy, 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x2 - hex, y2 - hey, 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x2 + hex, y2 + hey, 0).color(r, g, b, a).endVertex();
+        BufferBuilder buf = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        buf.addVertex(pose, x1 - hsx, y1 - hsy, 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x1 + hsx, y1 + hsy, 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x2 - hex, y2 - hey, 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x2 + hex, y2 + hey, 0).setColor(r, g, b, a);
 
-        BufferUploader.drawWithShader(buf.end());
+        try (MeshData data = buf.buildOrThrow()) {
+            BufferUploader.drawWithShader(data);
+        }
     }
 
 }

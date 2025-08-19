@@ -77,32 +77,36 @@ public class SonarEffect implements ITooltipEffect {
         int segments = Math.max(16, (int) (outerR * 0.8f));
         float midR = innerR + (outerR - innerR) * 0.5f;
 
-        BufferBuilder buf = Tesselator.getInstance().getBuilder();
+        Tesselator tesselator = Tesselator.getInstance();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         // inner
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         for (int i = 0; i <= segments; i++) {
             double rot = i * (Math.PI * 2.0 / segments);
             float func = (float) Math.cos(rot), sin = (float) Math.sin(rot);
 
-            buf.vertex(pose, cx + func * midR, cy + sin * midR, 0).color(r, g, b, alphaPeak).endVertex();
-            buf.vertex(pose, cx + func * innerR, cy + sin * innerR, 0).color(r, g, b, 0).endVertex();
+            buf.addVertex(pose, cx + func * midR, cy + sin * midR, 0).setColor(r, g, b, alphaPeak);
+            buf.addVertex(pose, cx + func * innerR, cy + sin * innerR, 0).setColor(r, g, b, 0);
         }
 
-        BufferUploader.drawWithShader(buf.end());
+        try (MeshData data = buf.buildOrThrow()) {
+            BufferUploader.drawWithShader(data);
+        }
 
         // outer
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         for (int i = 0; i <= segments; i++) {
             double rot = i * (Math.PI * 2.0 / segments);
             float func = (float) Math.cos(rot), sin = (float) Math.sin(rot);
 
-            buf.vertex(pose, cx + func * outerR, cy + sin * outerR, 0).color(r, g, b, 0).endVertex();
-            buf.vertex(pose, cx + func * midR, cy + sin * midR, 0).color(r, g, b, alphaPeak).endVertex();
+            buf.addVertex(pose, cx + func * outerR, cy + sin * outerR, 0).setColor(r, g, b, 0);
+            buf.addVertex(pose, cx + func * midR, cy + sin * midR, 0).setColor(r, g, b, alphaPeak);
         }
 
-        BufferUploader.drawWithShader(buf.end());
+        try (MeshData data = buf.buildOrThrow()) {
+            BufferUploader.drawWithShader(data);
+        }
     }
 
     private record Pulse(long start, int lifetime, float radiusS, float radiusE, int color) {

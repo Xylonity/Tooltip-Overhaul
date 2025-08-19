@@ -1,12 +1,12 @@
 package dev.xylonity.tooltipoverhaul.client;
 
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.*;
 import dev.xylonity.tooltipoverhaul.client.style.Styles;
 import dev.xylonity.tooltipoverhaul.client.style.TooltipStyle;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -254,7 +254,7 @@ public final class TooltipRenderer {
     }
 
     private static void updateStyle(ItemStack stack, @Nullable CustomFrameData data) {
-        if (!((stack.isEmpty() && lastStack.isEmpty()) || (!stack.isEmpty() && !lastStack.isEmpty() && ItemStack.isSameItemSameTags(stack, lastStack)))) {
+        if (!((stack.isEmpty() && lastStack.isEmpty()) || (!stack.isEmpty() && !lastStack.isEmpty() && ItemStack.isSameItemSameComponents(stack, lastStack)))) {
             style = Styles.of(stack, data).orElse(null);
             // Overrides the previous stack if the user starts hovering over another item
             lastStack = stack.copy();

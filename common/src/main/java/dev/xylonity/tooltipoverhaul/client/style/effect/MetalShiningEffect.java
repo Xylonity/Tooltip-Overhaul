@@ -1,9 +1,9 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
 import com.mojang.math.Axis;
+import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;

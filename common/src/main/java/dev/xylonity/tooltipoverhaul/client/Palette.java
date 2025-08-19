@@ -1,7 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client;
 
-import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 
 /**
  * Main color palette for generic color definitions

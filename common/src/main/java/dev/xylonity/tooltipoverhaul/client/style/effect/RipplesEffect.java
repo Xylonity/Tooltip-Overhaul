@@ -169,7 +169,7 @@ public class RipplesEffect implements ITooltipEffect {
             float time = now / 1000f;
             float tweaking = (float) Math.toRadians(TWEAKING_MULTIPLIER) * (float) Math.sin(2 * Math.PI * TWEAKING * time + wobblePhase);
 
-            BufferBuilder buf = Tesselator.getInstance().getBuilder();
+            Tesselator tesselator = Tesselator.getInstance();
 
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
@@ -177,31 +177,36 @@ public class RipplesEffect implements ITooltipEffect {
             float midR = innerR + (outerR - innerR) * 0.5f;
 
             // inner -> mid
-            buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            BufferBuilder buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             for (int i = 0; i <= segments; i++) {
                 float theta = (float) (2 * Math.PI * (i / (float) segments));
                 float w = theta + tweaking * (float) Math.sin(theta * 3.0f);
                 float func1 = (float) Math.sin(w);
                 float func2 = (float) Math.cos(w);
 
-                buf.vertex(ctx.pose().last().pose(), cx + func2 * midR, cy + func1 * midR, 0).color(r, g, b, (int) (alphaNorm * 255f)).endVertex();
-                buf.vertex(ctx.pose().last().pose(), cx + func2 * innerR, cy + func1 * innerR, 0).color(r, g, b, 0).endVertex();
+                buf.addVertex(ctx.pose().last().pose(), cx + func2 * midR, cy + func1 * midR, 0).setColor(r, g, b, (int) (alphaNorm * 255f));
+                buf.addVertex(ctx.pose().last().pose(), cx + func2 * innerR, cy + func1 * innerR, 0).setColor(r, g, b, 0);
             }
-            BufferUploader.drawWithShader(buf.end());
+
+            try (MeshData data = buf.buildOrThrow()) {
+                BufferUploader.drawWithShader(data);
+            }
 
             // mid -> out
-            buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             for (int i = 0; i <= segments; i++) {
                 float theta = (float) (2 * Math.PI * (i / (float) segments));
                 float w = theta + tweaking * (float) Math.sin(theta * 3.0f);
                 float func1 = (float) Math.sin(w);
                 float func2 = (float) Math.cos(w);
 
-                buf.vertex(ctx.pose().last().pose(), cx + func2 * outerR, cy + func1 * outerR, 0).color(r, g, b, 0).endVertex();
-                buf.vertex(ctx.pose().last().pose(), cx + func2 * midR, cy + func1 * midR, 0).color(r, g, b, (int) (alphaNorm * 255f)).endVertex();
+                buf.addVertex(ctx.pose().last().pose(), cx + func2 * outerR, cy + func1 * outerR, 0).setColor(r, g, b, 0);
+                buf.addVertex(ctx.pose().last().pose(), cx + func2 * midR, cy + func1 * midR, 0).setColor(r, g, b, (int) (alphaNorm * 255f));
             }
 
-            BufferUploader.drawWithShader(buf.end());
+            try (MeshData data = buf.buildOrThrow()) {
+                BufferUploader.drawWithShader(data);
+            }
         }
 
         private static float clamp01(float v) {

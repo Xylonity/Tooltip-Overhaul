@@ -1,10 +1,10 @@
 package dev.xylonity.tooltipoverhaul.client.layer.bridge;
 
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
-import java.awt.Point;
-
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import net.minecraft.world.phys.Vec2;
+
+import java.awt.*;
 
 @FunctionalInterface
 public interface ITooltipFrame {

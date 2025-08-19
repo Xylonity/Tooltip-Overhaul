@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.style;
 
+import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.*;
 import dev.xylonity.tooltipoverhaul.client.style.background.preview.DefaultBackgroundPreview;
@@ -10,11 +11,9 @@ import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultRotatingItem;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
-
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import net.minecraft.world.phys.Vec2;
 
-import java.awt.Point;
+import java.awt.*;
 
 /**
  * Main renderer bridge that handles abstraction calls from most of the layers to their respective renderers

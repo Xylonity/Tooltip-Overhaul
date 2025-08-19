@@ -2,8 +2,8 @@ package dev.xylonity.tooltipoverhaul.client.frame;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
-import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -97,7 +97,11 @@ public class CustomFrameManager {
     public static void renderCustomFrame(TooltipContext ctx, CustomFrameData frameData, Vec2 pos, Point size) {
         if (frameData.getTexture() == null) return;
 
-        ResourceLocation texture = new ResourceLocation(frameData.getTexture());
+        ResourceLocation texture = ResourceLocation.tryParse(frameData.getTexture());
+        if (texture == null) {
+            TooltipOverhaul.LOGGER.warn("Invalid texture: {}", frameData.getTexture());
+            return;
+        }
 
         // Computes the exact texture dimensions, thus automatically handling animated frames. The textures have a fixed
         // dimension of 132x132n, as n being the number of frames. Albeit this doesn't require much computation, meta info
@@ -294,12 +298,17 @@ public class CustomFrameManager {
      * Returns the palette schema from the selected data if there is a frame texture present
      */
     public static int[] getPalette(CustomFrameData frameData) {
-        if (frameData == null || frameData.getTexture() == null) return new int[]{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+        int[] defaultColors = new int[]{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+        if (frameData == null) return defaultColors;
 
-        ResourceLocation texture = new ResourceLocation(frameData.getTexture());
+        String texStr = frameData.getTexture();
+        if (texStr == null || texStr.isBlank()) return defaultColors;
+
+        ResourceLocation texture = ResourceLocation.tryParse(texStr);
+        if (texture == null) return defaultColors;
+
         TextureInfo meta = getTexMeta(texture);
-        int idx = meta.frames > 1 ? (int)((System.currentTimeMillis() / FRAME_TIME) % meta.frames) : 0;
-
+        int idx = meta.frames > 1 ? (int) ((System.currentTimeMillis() / FRAME_TIME) % meta.frames) : 0;
         return getPalette(texture, idx);
     }
 

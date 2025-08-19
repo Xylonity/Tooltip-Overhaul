@@ -1,18 +1,18 @@
 package dev.xylonity.tooltipoverhaul.client.style;
 
+import dev.xylonity.tooltipoverhaul.client.Palette;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.style.effect.*;
+import dev.xylonity.tooltipoverhaul.client.style.inner.GlintInnerOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import net.minecraft.world.item.ItemStack;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import dev.xylonity.tooltipoverhaul.client.Palette;
-import dev.xylonity.tooltipoverhaul.client.style.effect.*;
-import dev.xylonity.tooltipoverhaul.client.style.inner.GlintInnerOverlay;
-import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
-import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
-import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
-import net.minecraft.world.item.ItemStack;
 
 public class Styles {
 

@@ -2,7 +2,6 @@
   "required": true,
   "minVersion": "0.8",
   "package": "dev.xylonity.tooltipoverhaul.mixin",
-  "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
   "client": [
@@ -12,4 +11,3 @@
     "defaultRequire": 1
   }
 }
-  

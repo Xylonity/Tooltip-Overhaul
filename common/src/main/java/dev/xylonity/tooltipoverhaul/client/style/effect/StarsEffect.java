@@ -113,16 +113,16 @@ public class StarsEffect implements ITooltipEffect {
         float x = -dy / len;
         float y = dx / len;
 
-        BufferBuilder buf = Tesselator.getInstance().getBuilder();
-
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-        buf.vertex(pose, x1 - (x * tStart * 0.5f), y1 - (y * tStart * 0.5f), 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x1 + (x * tStart * 0.5f), y1 + (y * tStart * 0.5f), 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x2 - (x * tEnd * 0.5f), y2 - (y * tEnd * 0.5f), 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x2 + (x * tEnd * 0.5f), y2 + (y * tEnd * 0.5f), 0).color(r, g, b, a).endVertex();
+        BufferBuilder buf = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        buf.addVertex(pose, x1 - (x * tStart * 0.5f), y1 - (y * tStart * 0.5f), 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x1 + (x * tStart * 0.5f), y1 + (y * tStart * 0.5f), 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x2 - (x * tEnd * 0.5f), y2 - (y * tEnd * 0.5f), 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x2 + (x * tEnd * 0.5f), y2 + (y * tEnd * 0.5f), 0).setColor(r, g, b, a);
 
-        BufferUploader.drawWithShader(buf.end());
+        try (MeshData data = buf.buildOrThrow()) {
+            BufferUploader.drawWithShader(data);
+        }
     }
 
     private static int randomBetween() {
