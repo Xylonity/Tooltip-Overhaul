@@ -10,7 +10,7 @@ import net.minecraft.resources.ResourceLocation;
 @JeiPlugin
 public final class TooltipOverhaulJeiPlugin implements IModPlugin {
 
-    private static final ResourceLocation UID = new ResourceLocation(TooltipOverhaul.MOD_ID, "jei_plugin");
+    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(TooltipOverhaul.MOD_ID, "jei_plugin");
 
     @Override
     public ResourceLocation getPluginUid() {

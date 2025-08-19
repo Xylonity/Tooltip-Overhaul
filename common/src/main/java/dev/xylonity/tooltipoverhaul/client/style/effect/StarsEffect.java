@@ -7,6 +7,7 @@ import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
@@ -74,7 +75,8 @@ public class StarsEffect implements ITooltipEffect {
             );
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            stars.removeIf(s -> !s.updateAndRender(ctx.pose().last().pose(), now));
+            Matrix4f pose = ctx.pose().last().pose();
+            stars.removeIf(s -> !s.updateAndRender(pose, now));
 
             // reset
             RenderSystem.blendFunc(
@@ -114,7 +116,9 @@ public class StarsEffect implements ITooltipEffect {
         float y = dx / len;
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        BufferBuilder buf = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+
+        Tesselator tess = Tesselator.getInstance();
+        BufferBuilder buf = tess.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         buf.addVertex(pose, x1 - (x * tStart * 0.5f), y1 - (y * tStart * 0.5f), 0).setColor(r, g, b, a);
         buf.addVertex(pose, x1 + (x * tStart * 0.5f), y1 + (y * tStart * 0.5f), 0).setColor(r, g, b, a);
         buf.addVertex(pose, x2 - (x * tEnd * 0.5f), y2 - (y * tEnd * 0.5f), 0).setColor(r, g, b, a);

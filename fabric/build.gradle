@@ -16,6 +16,11 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 }
 
+configurations {
+    shadow
+    implementation.extendsFrom shadow
+}
+
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import net.fabricmc.loom.task.RemapJarTask
 

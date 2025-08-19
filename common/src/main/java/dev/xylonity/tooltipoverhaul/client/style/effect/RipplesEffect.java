@@ -193,7 +193,7 @@ public class RipplesEffect implements ITooltipEffect {
             }
 
             // mid -> out
-            tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
             for (int i = 0; i <= segments; i++) {
                 float theta = (float) (2 * Math.PI * (i / (float) segments));
                 float w = theta + tweaking * (float) Math.sin(theta * 3.0f);

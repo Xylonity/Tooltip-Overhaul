@@ -95,7 +95,7 @@ public class SonarEffect implements ITooltipEffect {
         }
 
         // outer
-        tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         for (int i = 0; i <= segments; i++) {
             double rot = i * (Math.PI * 2.0 / segments);
             float func = (float) Math.cos(rot), sin = (float) Math.sin(rot);
