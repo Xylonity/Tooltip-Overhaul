@@ -1,0 +1,38 @@
+{
+    "schemaVersion": 1,
+    "id": "tooltipoverhaul",
+    "version": "${version}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "authors": [
+        "${mod_author}"
+    ],
+    "contact": {
+        "homepage": "https://fabricmc.net/",
+        "sources": "https://github.com/FabricMC/fabric-example-mod"
+    },
+    "license": "${license}",
+    "icon": "",
+    "environment": "*",
+    "entrypoints": {
+        "client": [
+            "dev.xylonity.tooltipoverhaul.TooltipOverhaulFabric"
+        ],
+        "jei_mod_plugin": [
+            "dev.xylonity.tooltipoverhaul.compat.TooltipOverhaulJeiPlugin"
+        ]
+    },
+    "mixins": [
+      "tooltipoverhaul.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=0.14",
+        "fabric": "*",
+        "minecraft": "${minecraft_version}",
+        "java": ">=17"
+    },
+    "suggests": {
+        "another-mod": "*"
+    }
+}
+  

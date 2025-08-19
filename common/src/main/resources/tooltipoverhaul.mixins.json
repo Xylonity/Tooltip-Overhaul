@@ -1,0 +1,22 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.xylonity.tooltipoverhaul.mixin",
+  "refmap": "${mod_id}.refmap.json",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+  ],
+  "client": [
+    "AbstractContainerScreenMixin",
+    "ClientTextTooltipAccessor",
+    "GuiGraphicsItemMixin",
+    "GuiGraphicsMixin",
+    "MouseHandlerMixin"
+  ],
+  "server": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
+

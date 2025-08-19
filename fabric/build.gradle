@@ -1,0 +1,74 @@
+plugins {
+    id 'multiloader-loader'
+    id 'fabric-loom'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${parchment_minecraft}:${parchment_version}@zip")
+    }
+
+    shadow("com.electronwill.night-config:toml:3.6.6")
+    modCompileOnlyApi "mezz.jei:jei-${minecraft_version}-fabric-api:15.20.0.106"
+    modRuntimeOnly "mezz.jei:jei-${minecraft_version}-fabric:15.20.0.106"
+
+    modCompileOnly "dev.emi:emi-fabric:1.1.22+1.20.1:api"
+    modLocalRuntime "dev.emi:emi-fabric:1.1.22+1.20.1"
+
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    implementation group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.1'
+    implementation project(":common")
+}
+
+configurations {
+    shadow
+    implementation.extendsFrom shadow
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import net.fabricmc.loom.task.RemapJarTask
+
+def shadowJarTask = tasks.named('shadowJar', ShadowJar)
+
+shadowJarTask.configure {
+    archiveClassifier.set('dev-shadow')
+    configurations = [project.configurations.shadow]
+
+    relocate 'com.electronwill.nightconfig', "dev.xylonity.tooltips.nightconfig"
+
+    exclude 'META-INF/LICENSE*', 'META-INF/NOTICE*'
+}
+
+tasks.named('remapJar', RemapJarTask).configure { remap ->
+    dependsOn shadowJarTask
+
+    inputFile.set(shadowJarTask.flatMap { it.archiveFile })
+
+    archiveClassifier.set('')
+}
+
+loom {
+    if (project(":common").file("src/main/resources/${mod_id}.accesswidener").exists()) {
+        accessWidenerPath.set(project(":common").file("src/main/resources/${mod_id}.accesswidener"))
+    }
+    mixin {
+        defaultRefmapName.set("${mod_id}.refmap.json")
+    }
+    runs {
+        client {
+            client()
+            setConfigName("Fabric Client")
+            ideConfigGenerated(true)
+            runDir("run")
+        }
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("run")
+        }
+    }
+}
