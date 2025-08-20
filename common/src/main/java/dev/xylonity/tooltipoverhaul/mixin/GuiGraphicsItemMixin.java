@@ -45,7 +45,7 @@ public class GuiGraphicsItemMixin implements ITooltipOverhaulItemAware {
         }
 
         // Emi compat
-        ItemStack emiStack = EmiProxy.getItemStack();
+        ItemStack emiStack = EmiProxy.getItemStack(mouseX, mouseY);
         if (!emiStack.isEmpty()) {
             tooltipsOverhaul$currentItemStack = emiStack;
             return;

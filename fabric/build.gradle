@@ -37,7 +37,7 @@ shadowJarTask.configure {
     archiveClassifier.set('dev-shadow')
     configurations = [project.configurations.shadow]
 
-    relocate 'com.electronwill.nightconfig', "dev.xylonity.tooltipsoverhaul.nightconfig"
+    relocate 'com.electronwill.nightconfig', "dev.xylonity.tooltipoverhaul.nightconfig"
 
     exclude 'META-INF/LICENSE*', 'META-INF/NOTICE*'
 }
