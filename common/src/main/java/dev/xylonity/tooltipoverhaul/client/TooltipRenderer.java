@@ -4,6 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.*;
 import dev.xylonity.tooltipoverhaul.client.style.Styles;
 import dev.xylonity.tooltipoverhaul.client.style.TooltipStyle;
+import dev.xylonity.tooltipoverhaul.compat.apotheosis.ApotheosisHook;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
@@ -83,6 +84,8 @@ public final class TooltipRenderer {
      * @return true if the custom tooltip should be shown, false if not
      */
     public static boolean render(TooltipContext ctx) {
+        if (ApotheosisHook.isActive()) return false;
+
         // Passes if there is no text present
         List<?> raw = ctx.getComponents();
         if (raw.isEmpty()) return false;

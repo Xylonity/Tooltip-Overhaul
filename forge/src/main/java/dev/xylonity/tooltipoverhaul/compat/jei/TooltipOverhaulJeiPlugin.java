@@ -1,7 +1,6 @@
-package dev.xylonity.tooltipoverhaul.compat;
+package dev.xylonity.tooltipoverhaul.compat.jei;
 
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
-import dev.xylonity.tooltipoverhaul.compat.jei.JeiHoverHolder;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.runtime.IJeiRuntime;

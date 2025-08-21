@@ -49,11 +49,28 @@ dependencies {
     compileOnly project(":common")
     //compileOnlyApi "mezz.jei:jei-${minecraft_version}-forge-api:15.20.0.106"
     //runtimeOnly "mezz.jei:jei-${minecraft_version}-forge:15.20.0.106"
+
+    // draconic evolution
     modImplementation ("curse.maven:draconic-evolution-223565:6793843")
     modImplementation ("curse.maven:brandons-core-231382:5422013")
     modImplementation ("curse.maven:codechicken-lib-1-8-242818:5753868")
+
+    // waystones
     modImplementation ("curse.maven:waystones-245755:6856603")
     modImplementation ("curse.maven:balm-531761:6841886")
+
+    // apotheosis
+    modImplementation ("curse.maven:patchouli-306770:6164575")
+    modImplementation ("curse.maven:placebo-283644:6274231")
+    modImplementation ("curse.maven:apothic-attributes-898963:5634071")
+    modImplementation ("curse.maven:apotheosis-313970:6461960")
+
+    // ftb quests
+    modImplementation ("curse.maven:ftb-quests-forge-289412:6829212")
+    modImplementation ("curse.maven:ftb-teams-forge-404468:6130786")
+    modImplementation ("curse.maven:ftb-library-forge-404465:6807424")
+    modImplementation ("curse.maven:architectury-api-419699:5137938")
+
     //compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
     //runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
