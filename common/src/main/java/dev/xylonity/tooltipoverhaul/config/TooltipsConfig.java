@@ -56,12 +56,12 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Main panel padding X coordinate"
     )
-    public static int MAIN_PANEL_PADDING_X = 0;
+    public static int MAIN_PANEL_PADDING_X = 4;
 
     @ConfigEntry(
             comment = "Main panel padding Y coordinate"
     )
-    public static int MAIN_PANEL_PADDING_Y = 0;
+    public static int MAIN_PANEL_PADDING_Y = 2;
 
     @ConfigEntry(
             comment = "Should show the rating qualifier? This is overrided if the itemstack has a custom rating"

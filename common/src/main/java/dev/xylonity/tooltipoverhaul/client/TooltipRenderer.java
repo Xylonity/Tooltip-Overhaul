@@ -33,8 +33,8 @@ import java.util.Optional;
 public final class TooltipRenderer {
 
     // Default extra padding for the main tooltip (components aren't aligned automatically)
-    public static final int PADDING_X = 6;
-    public static final int PADDING_Y = 4;
+    public static final int PADDING_X = TooltipsConfig.MAIN_PANEL_PADDING_X;
+    public static final int PADDING_Y = TooltipsConfig.MAIN_PANEL_PADDING_Y;
 
     // Main chrono for animations and such
     public static float ELAPSED;
