@@ -53,4 +53,29 @@ public final class TooltipsConfig {
     )
     public static boolean SHOW_TOOLTIP_WITHOUT_STACK = true;
 
+    @ConfigEntry(
+            comment = "Main panel padding X coordinate"
+    )
+    public static int MAIN_PANEL_PADDING_X = 0;
+
+    @ConfigEntry(
+            comment = "Main panel padding Y coordinate"
+    )
+    public static int MAIN_PANEL_PADDING_Y = 0;
+
+    @ConfigEntry(
+            comment = "Should show the rating qualifier? This is overrided if the itemstack has a custom rating"
+    )
+    public static boolean SHOULD_SHOW_TEXT_RATING = true;
+
+    @ConfigEntry(
+            comment = "Title alignment. left, middle or right"
+    )
+    public static String TITLE_X_ALIGNMENT = "left";
+
+    @ConfigEntry(
+            comment = "Rating alignment. left, middle or right"
+    )
+    public static String RATING_X_ALIGNMENT = "left";
+
 }

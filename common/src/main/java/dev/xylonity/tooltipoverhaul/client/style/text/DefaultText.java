@@ -5,6 +5,7 @@ import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipText;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
@@ -26,10 +27,10 @@ public class DefaultText implements ITooltipText {
             int firstLineOffset = hasIcon ? 26 + TooltipRenderer.PADDING_X : TooltipRenderer.PADDING_X;
 
             // If there is a stack present adds padding to the left
-            if (hasIcon && rarity != null && !rarity.getString().isEmpty()) {
-                int px = Math.min(ctx.mouseX() + 12, ctx.width() - size.x - 4);
+            if (hasIcon && rarity != null && !rarity.getString().isEmpty() && Util.hasRating(ctx.stack())) {
                 int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4);
-                ctx.graphics().drawString(font, rarity, px + 26 + TooltipRenderer.PADDING_X, py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
+                // Rating text
+                ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x, firstLineOffset, size, rarity, font), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
             }
 
             if (!TooltipScrollState.isIsActive()) {
@@ -45,7 +46,14 @@ public class DefaultText implements ITooltipText {
                         y += 12;
                     }
 
-                    int x = (int) pos.x + (i == 0 ? firstLineOffset : TooltipRenderer.PADDING_X);
+                    int x = (int) pos.x;
+
+                    if (i == 0) {
+                        x = Util.getTitleAlignmentX(x, firstLineOffset, size, component, font);
+                    } else {
+                        x += TooltipRenderer.PADDING_X;
+                    }
+
                     component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
 
                     y += component.getHeight();

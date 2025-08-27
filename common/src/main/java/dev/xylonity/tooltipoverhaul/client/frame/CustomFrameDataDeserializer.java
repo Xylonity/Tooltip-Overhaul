@@ -26,12 +26,27 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<CustomFrameData.GradientType> gradientType = parseEnum(content, "gradientType", CustomFrameData.GradientType.class);
         Optional<List<String>> gradientColors = parseOptionalStringList(content);
         Optional<String> itemRating = parseString(content, "itemRating");
-        Optional<Integer> colorItemRating = parseInt(content);
+        Optional<Integer> colorItemRating = parseInt(content, "colorItemRating");
         Optional<String> particles = parseString(content, "particles");
         Optional<String> specialEffect = parseString(content, "specialEffect");
-        Optional<Boolean> disableTooltip = parseBool(content);
+        Optional<Boolean> disableTooltip = parseBool(content, "disableTooltip");
 
-        return new CustomFrameData(items, tags, texture, borderType, gradientType, gradientColors, itemRating, colorItemRating, particles, specialEffect, disableTooltip);
+        Optional<Integer> paddingX = parseInt(content, "paddingX");
+        Optional<Integer> paddingY = parseInt(content, "paddingY");
+
+        return new CustomFrameData(
+                items,
+                tags,
+                texture,
+                borderType,
+                gradientType,
+                gradientColors,
+                itemRating,
+                colorItemRating,
+                particles,
+                specialEffect,
+                disableTooltip
+        );
     }
 
     private List<String> parseStringList(JsonObject content, String field) {
@@ -45,10 +60,10 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         return List.of();
     }
 
-    private Optional<Boolean> parseBool(JsonObject content) {
-        if (!content.has("disableTooltip") || content.get("disableTooltip").isJsonNull()) return Optional.empty();
+    private Optional<Boolean> parseBool(JsonObject content, String field) {
+        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
 
-        JsonElement elem = content.get("disableTooltip");
+        JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive()) {
             if (elem.getAsJsonPrimitive().isBoolean()) return Optional.of(elem.getAsBoolean());
 
@@ -84,10 +99,10 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         return Optional.empty();
     }
 
-    private Optional<Integer> parseInt(JsonObject content) {
-        if (!content.has("colorItemRating") || content.get("colorItemRating").isJsonNull()) return Optional.empty();
+    private Optional<Integer> parseInt(JsonObject content, String field) {
+        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
 
-        JsonElement elem = content.get("colorItemRating");
+        JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isNumber()) {
             return Optional.of(elem.getAsInt());
         }

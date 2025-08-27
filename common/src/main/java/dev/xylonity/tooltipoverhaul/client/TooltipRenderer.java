@@ -45,9 +45,11 @@ public final class TooltipRenderer {
     private static long startMs;
 
     // Main tooltip (and second panel) layers
-    private static final List<ITooltipLayer> LAYERS = new ArrayList<>();
+    private static final List<ITooltipLayer> LAYERS_MAIN = new ArrayList<>();
     // Empty stack tooltip layers
     private static final List<ITooltipLayer> LAYERS_EMPTY = new ArrayList<>();
+    // Second panel layers
+    private static final List<ITooltipLayer> LAYERS_SECOND = new ArrayList<>();
 
     // Scrolling predicates
     public static int LAST_HEADER_ABS;
@@ -55,20 +57,22 @@ public final class TooltipRenderer {
 
     static {
         // Main panel
-        LAYERS.add(new BackgroundLayer());
-        LAYERS.add(new PreviewBackgroundLayer());
-        LAYERS.add(new IconLayer());
-        LAYERS.add(new TextLayer());
-        LAYERS.add(new DividerLineLayer());
-        LAYERS.add(new InnerFrameLayer());
-        LAYERS.add(new EffectLayer());
-        LAYERS.add(new OverlayLayer());
+        LAYERS_MAIN.add(new BackgroundLayer());
+        LAYERS_MAIN.add(new PreviewBackgroundLayer());
+        LAYERS_MAIN.add(new IconLayer());
+        LAYERS_MAIN.add(new TextLayer());
+        LAYERS_MAIN.add(new DividerLineLayer());
+        LAYERS_MAIN.add(new InnerFrameLayer());
+        LAYERS_MAIN.add(new EffectLayer());
+        LAYERS_MAIN.add(new OverlayLayer());
+    }
 
+    static {
         // Second panel
-        LAYERS.add(new SecondBackgroundLayer());
-        LAYERS.add(new SecondInnerFrameLayer());
-        LAYERS.add(new ArmorStandLayer());
-        LAYERS.add(new RotatingItemLayer());
+        LAYERS_SECOND.add(new SecondBackgroundLayer());
+        LAYERS_SECOND.add(new SecondInnerFrameLayer());
+        LAYERS_SECOND.add(new ArmorStandLayer());
+        LAYERS_SECOND.add(new RotatingItemLayer());
     }
 
     static {
@@ -150,7 +154,12 @@ public final class TooltipRenderer {
         }
 
         // Renders the main tooltip (and the second panel if specified inside the render layers)
-        for (ITooltipLayer layer : LAYERS) {
+        for (ITooltipLayer layer : LAYERS_MAIN) {
+            layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
+        }
+
+        // Renders the second panel
+        for (ITooltipLayer layer : LAYERS_SECOND) {
             layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
         }
 
