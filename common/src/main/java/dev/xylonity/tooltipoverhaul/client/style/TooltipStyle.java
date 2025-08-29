@@ -31,14 +31,14 @@ public class TooltipStyle {
     private final ITooltipArmorStand armorStand;
     private final ITooltipRotatingItem rotatingItem;
 
-    public TooltipStyle(ITooltipPanel panel, ITooltipFrame innerFrame, ITooltipEffect effect) {
+    public TooltipStyle(ITooltipPanel panel, ITooltipFrame innerFrame, ITooltipEffect effect, ITooltipDividerLine dividerLine) {
         this.effect = effect;
         this.panel = panel;
         this.frame = innerFrame;
         this.previewBackground = new DefaultBackgroundPreview();
         this.icon = new DefaultIcon();
         this.text = new DefaultText();
-        this.dividerLine = new DefaultDividerLine();
+        this.dividerLine = dividerLine;
         this.armorStand = new DefaultArmorStand();
         this.rotatingItem = new DefaultRotatingItem();
     }
