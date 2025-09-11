@@ -7,7 +7,6 @@ import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
@@ -81,6 +80,10 @@ public class Util {
         if (available <= 0) return startX;
 
         return Math.max(startX, Math.min(result, rightX - compWidth));
+    }
+
+    public static String getDefaultRarity(ItemStack stack) {
+        return Component.translatable("tooltipoverhaul." + stack.getRarity().toString().toLowerCase() + "_rarity").getString();
     }
 
 }

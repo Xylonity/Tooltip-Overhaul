@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.frame;
 
 import dev.xylonity.tooltipoverhaul.client.Palette;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -14,7 +15,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public record CustomFrameData(List<String> items, List<String> tags, Optional<String> texture, Optional<InnerBorderType> borderType, Optional<GradientType> gradientType, Optional<List<String>> gradientColors, Optional<String> itemRating, Optional<Integer> colorItemRating, Optional<String> particles, Optional<String> specialEffect, Optional<Boolean> disableTooltip) {
+public record CustomFrameData(
+        List<String> items,
+        List<String> tags,
+        Optional<String> texture,
+        Optional<InnerBorderType> borderType,
+        Optional<GradientType> gradientType,
+        Optional<List<String>> gradientColors,
+        Optional<String> itemRating,
+        Optional<Integer> colorItemRating,
+        Optional<String> particles,
+        Optional<String> specialEffect,
+        Optional<Boolean> disableTooltip
+) {
 
     public String getTexture() {
         return texture.filter(t -> !t.trim().isEmpty()).orElse(Defaults.TEXTURE);
@@ -33,7 +46,7 @@ public record CustomFrameData(List<String> items, List<String> tags, Optional<St
     }
 
     public String getItemRating(ItemStack stack) {
-        return itemRating.filter(rating -> !rating.trim().isEmpty()).orElseGet(() -> formatRarity(stack.getRarity()));
+        return itemRating.filter(rating -> !rating.trim().isEmpty()).orElseGet(() -> Util.getDefaultRarity(stack));
     }
 
     public int getItemRatingColor(ItemStack stack) {

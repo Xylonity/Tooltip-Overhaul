@@ -8,6 +8,7 @@ import dev.xylonity.tooltipoverhaul.compat.apotheosis.ApotheosisHook;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -174,30 +175,8 @@ public final class TooltipRenderer {
      * stack's rarity
      */
     private static Component computeRating(Optional<CustomFrameData> customFrame, TooltipContext ctx) {
-        if (customFrame.isPresent()) {
-            CustomFrameData data = customFrame.get();
 
-            String raw = String.valueOf(data.getItemRating(ctx.stack()));
-            MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
-
-            // If the frame doesn't provide a color, uses rarity color by default
-            if (data.hasCustomColorItemRating()) {
-                return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(ctx.stack())));
-            } else {
-                ChatFormatting color = switch (ctx.stack().getRarity()) {
-                    case COMMON -> ChatFormatting.GRAY;
-                    case UNCOMMON -> ChatFormatting.YELLOW;
-                    case RARE -> ChatFormatting.BLUE;
-                    case EPIC -> ChatFormatting.DARK_PURPLE;
-                    // Defaults to a simulated legendary rarity
-                    default -> ChatFormatting.GOLD;
-                };
-                return base.withStyle(color);
-            }
-
-        }
-
-        // If there is no custom frame present, defaults to the rarity
+        // Computes the default color per rarity
         ChatFormatting color = switch (ctx.stack().getRarity()) {
             case COMMON -> ChatFormatting.GRAY;
             case UNCOMMON -> ChatFormatting.YELLOW;
@@ -207,7 +186,30 @@ public final class TooltipRenderer {
             default -> ChatFormatting.GOLD;
         };
 
-        String s = ctx.stack().getRarity().name();
+        // If the curent stack is declared in a custom frame format
+        if (customFrame.isPresent()) {
+            CustomFrameData data = customFrame.get();
+
+            // If the stack has a custom rating
+            if (data.hasCustomItemRating()) {
+
+                // Computes the rating, either as a translatable key or a literal component
+                String raw = String.valueOf(data.getItemRating(ctx.stack()));
+                MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
+
+                if (data.hasCustomColorItemRating()) {
+                    return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(ctx.stack())));
+                }
+                // If the frame doesn't provide a color, uses rarity color by default
+                else {
+                    return base.withStyle(color);
+                }
+
+            }
+
+        }
+
+        String s = Util.getDefaultRarity(ctx.stack());
         return Component.literal(s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase()).withStyle(color);
     }
 
