@@ -16,23 +16,40 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
             throw new JsonParseException("Failed loading custom_frames JSON, invalid object for CustomFrameData");
         }
 
-        JsonObject content = json.getAsJsonObject();
+        JsonObject entry = json.getAsJsonObject();
 
-        List<String> items = parseStringList(content, "items");
-        List<String> tags = parseStringList(content, "tags");
+        List<String> items = parseStringList(entry, "items");
+        List<String> tags = parseStringList(entry, "tags");
 
-        Optional<String> texture = parseString(content, "texture");
-        Optional<CustomFrameData.InnerBorderType> borderType = parseEnum(content, "borderType", CustomFrameData.InnerBorderType.class);
-        Optional<CustomFrameData.GradientType> gradientType = parseEnum(content, "gradientType", CustomFrameData.GradientType.class);
-        Optional<List<String>> gradientColors = parseOptionalStringList(content);
-        Optional<String> itemRating = parseString(content, "itemRating");
-        Optional<Integer> colorItemRating = parseInt(content, "colorItemRating");
-        Optional<String> particles = parseString(content, "particles");
-        Optional<String> specialEffect = parseString(content, "specialEffect");
-        Optional<Boolean> disableTooltip = parseBool(content, "disableTooltip");
+        Optional<String> texture = parseString(entry, "texture");
+        Optional<CustomFrameData.InnerBorderType> borderType = parseEnum(entry, "borderType", CustomFrameData.InnerBorderType.class);
+        Optional<CustomFrameData.GradientType> gradientType = parseEnum(entry, "gradientType", CustomFrameData.GradientType.class);
+        Optional<List<String>> gradientColors = parseOptionalStringList(entry);
+        Optional<String> itemRating = parseString(entry, "itemRating");
+        Optional<Integer> colorItemRating = parseInt(entry, "colorItemRating");
 
-        Optional<Integer> paddingX = parseInt(content, "paddingX");
-        Optional<Integer> paddingY = parseInt(content, "paddingY");
+        Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
+        Optional<String> titleAlignment = parseString(entry, "titleAlignment");
+        Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
+        Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
+        Optional<Float> iconSize = parseFloat(entry, "iconSize");
+        Optional<Float> iconRotatingSpeed = parseFloat(entry, "iconRotatingSpeed");
+        Optional<CustomFrameData.IconAppearAnimation> iconAppearAnimation = parseEnum(entry, "iconAppearAnimation", CustomFrameData.IconAppearAnimation.class);
+        Optional<Boolean> showSecondPanel = parseBool(entry, "showSecondPanel");
+        Optional<Integer> secondPanelX = parseInt(entry, "secondPanelX");
+        Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
+        Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");
+        Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
+        Optional<CustomFrameData.DividerLineType> dividerLineType = parseEnum(entry, "dividerLineType", CustomFrameData.DividerLineType.class);
+        Optional<CustomFrameData.DividerLineColor> dividerLineColor = parseEnum(entry, "dividerLineColor", CustomFrameData.DividerLineColor.class);
+
+        Optional<String> particles = parseString(entry, "particles");
+        Optional<String> specialEffect = parseString(entry, "specialEffect");
+
+        Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
+        Optional<Boolean> disableRating = parseBool(entry, "disableRating");
+        Optional<Boolean> disableIcon = parseBool(entry, "disableIcon");
+        Optional<Boolean> disableScrolling = parseBool(entry, "disableScrolling");
 
         return new CustomFrameData(
                 items,
@@ -43,9 +60,26 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 gradientColors,
                 itemRating,
                 colorItemRating,
+                ratingAlignment,
+                titleAlignment,
+                mainPanelPaddingX,
+                mainPanelPaddingY,
+                iconSize,
+                iconRotatingSpeed,
+                iconAppearAnimation,
+                showSecondPanel,
+                secondPanelX,
+                secondPanelY,
+                secondPanelRendererSize,
+                secondPanelRendererSpeed,
+                dividerLineType,
+                dividerLineColor,
                 particles,
                 specialEffect,
-                disableTooltip
+                disableTooltip,
+                disableRating,
+                disableIcon,
+                disableScrolling
         );
     }
 
@@ -105,6 +139,17 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isNumber()) {
             return Optional.of(elem.getAsInt());
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<Float> parseFloat(JsonObject content, String field) {
+        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+
+        JsonElement elem = content.get(field);
+        if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isNumber()) {
+            return Optional.of(elem.getAsFloat());
         }
 
         return Optional.empty();

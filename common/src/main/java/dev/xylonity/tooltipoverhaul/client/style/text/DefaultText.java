@@ -24,26 +24,29 @@ public class DefaultText implements ITooltipText {
             ctx.translate(0, 0, depth.getZ());
 
             boolean hasIcon = !ctx.stack().isEmpty();
-            int firstLineOffset = hasIcon ? 26 + TooltipRenderer.PADDING_X : TooltipRenderer.PADDING_X;
+            boolean shouldDisableRating = Util.shouldDisableRating(ctx.stack());
+            int firstLineOffset = TooltipRenderer.PADDING_X + (hasIcon ? 26 : 0 ) - (Util.shouldDisableIcon(ctx.stack()) ? 26 : 0);
 
             // If there is a stack present adds padding to the left
-            if (hasIcon && rarity != null && !rarity.getString().isEmpty() && Util.hasRating(ctx.stack())) {
+            if (hasIcon && rarity != null && !rarity.getString().isEmpty() && !shouldDisableRating) {
                 int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4);
                 // Rating text
                 ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x, firstLineOffset, size, rarity, font), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
             }
 
             if (!TooltipScrollState.isIsActive()) {
-                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3;
+                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldDisableRating ? 6 : 0);
                 for (int i = 0; i < ctx.getComponents().size(); i++) {
                     ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
 
                     if (i == 1) {
-                        y += 3;
+                        y += 3 - (shouldDisableRating ? 6 : 0);
                     }
 
-                    if (hasIcon && i == 1) {
-                        y += 12;
+                    if (i == 1) {
+                        if (hasIcon || Util.shouldDisableIcon(ctx.stack())) {
+                            y += 12;
+                        }
                     }
 
                     int x = (int) pos.x;

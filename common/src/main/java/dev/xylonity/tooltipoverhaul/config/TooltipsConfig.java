@@ -64,11 +64,6 @@ public final class TooltipsConfig {
     public static int MAIN_PANEL_PADDING_Y = 2;
 
     @ConfigEntry(
-            comment = "Should show the rating qualifier? This is overrided if the itemstack has a custom rating"
-    )
-    public static boolean SHOULD_SHOW_TEXT_RATING = true;
-
-    @ConfigEntry(
             comment = "Title alignment. left, middle or right"
     )
     public static String TITLE_X_ALIGNMENT = "left";
@@ -77,5 +72,15 @@ public final class TooltipsConfig {
             comment = "Rating alignment. left, middle or right"
     )
     public static String RATING_X_ALIGNMENT = "left";
+
+    @ConfigEntry(
+            comment = "Disable item rating text"
+    )
+    public static boolean DISABLE_RATING = false;
+
+    @ConfigEntry(
+            comment = "Disable icon"
+    )
+    public static boolean DISABLE_ICON = false;
 
 }

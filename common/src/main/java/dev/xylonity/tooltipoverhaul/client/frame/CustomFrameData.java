@@ -24,9 +24,26 @@ public record CustomFrameData(
         Optional<List<String>> gradientColors,
         Optional<String> itemRating,
         Optional<Integer> colorItemRating,
+        Optional<String> ratingAlignment,
+        Optional<String> titleAlignment,
+        Optional<Integer> mainPanelPaddingX,
+        Optional<Integer> mainPanelPaddingY,
+        Optional<Float> iconSize,
+        Optional<Float> iconRotatingSpeed,
+        Optional<IconAppearAnimation> iconAppearAnimation,
+        Optional<Boolean> showSecondPanel,
+        Optional<Integer> secondPanelX,
+        Optional<Integer> secondPanelY,
+        Optional<Float> secondPanelRendererSize,
+        Optional<Float> secondPanelRendererSpeed,
+        Optional<DividerLineType> dividerLineType,
+        Optional<DividerLineColor> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
-        Optional<Boolean> disableTooltip
+        Optional<Boolean> disableTooltip,
+        Optional<Boolean> disableRating,
+        Optional<Boolean> disableIcon,
+        Optional<Boolean> disableScrolling
 ) {
 
     public String getTexture() {
@@ -126,6 +143,14 @@ public record CustomFrameData(
         return itemRating.isPresent() && !itemRating.get().trim().isEmpty();
     }
 
+    public boolean shouldDisableRating() {
+        return disableRating.isPresent() && disableRating.get();
+    }
+
+    public boolean shouldDisableIcon() {
+        return disableIcon.isPresent() && disableIcon.get();
+    }
+
     public boolean hasCustomColorItemRating() {
         return colorItemRating.isPresent();
     }
@@ -158,6 +183,7 @@ public record CustomFrameData(
     }
 
     public enum InnerBorderType {
+        NONE,
         STATIC,
         GLINT,
         GRADIENT,
@@ -176,78 +202,22 @@ public record CustomFrameData(
         CUSTOM
     }
 
-    public static class Builder {
-        private List<String> items = List.of();
-        private List<String> tags = List.of();
-        private Optional<String> texture = Optional.empty();
-        private Optional<InnerBorderType> borderType = Optional.empty();
-        private Optional<GradientType> gradientType = Optional.empty();
-        private Optional<List<String>> gradientColors = Optional.empty();
-        private Optional<String> itemRating = Optional.empty();
-        private Optional<Integer> colorItemRating = Optional.empty();
-        private Optional<String> particles = Optional.empty();
-        private Optional<String> specialEffect = Optional.empty();
-        private Optional<Boolean> disableTooltip = Optional.empty();
+    public enum DividerLineType {
+        NONE,
+        NORMAL
+    }
 
-        public Builder items(List<String> items) {
-            this.items = items != null ? items : List.of();
-            return this;
-        }
+    public enum DividerLineColor {
+        MATCH_INNER_FRAME,
+        MATCH_TITLE_COLOR,
+        WHITE
+    }
 
-        public Builder tags(List<String> tags) {
-            this.tags = tags != null ? tags : List.of();
-            return this;
-        }
-
-        public Builder texture(String texture) {
-            this.texture = Optional.ofNullable(texture);
-            return this;
-        }
-
-        public Builder borderType(InnerBorderType borderType) {
-            this.borderType = Optional.ofNullable(borderType);
-            return this;
-        }
-
-        public Builder gradientType(GradientType gradientType) {
-            this.gradientType = Optional.ofNullable(gradientType);
-            return this;
-        }
-
-        public Builder gradientColors(List<String> gradientColors) {
-            this.gradientColors = Optional.ofNullable(gradientColors);
-            return this;
-        }
-
-        public Builder itemRating(String itemRating) {
-            this.itemRating = Optional.ofNullable(itemRating);
-            return this;
-        }
-
-        public Builder colorItemRating(Integer colorItemRating) {
-            this.colorItemRating = Optional.ofNullable(colorItemRating);
-            return this;
-        }
-
-        public Builder particles(String particles) {
-            this.particles = Optional.ofNullable(particles);
-            return this;
-        }
-
-        public Builder specialEffect(String specialEffect) {
-            this.specialEffect = Optional.ofNullable(specialEffect);
-            return this;
-        }
-
-        public Builder disableTooltip(Boolean disableTooltip) {
-            this.disableTooltip = Optional.ofNullable(disableTooltip);
-            return this;
-        }
-
-        public CustomFrameData build() {
-            return new CustomFrameData(items, tags, texture, borderType, gradientType, gradientColors, itemRating, colorItemRating, particles, specialEffect, disableTooltip);
-        }
-
+    public enum IconAppearAnimation {
+        NONE,
+        FADE_IN,
+        ROTATE,
+        ZOOM
     }
 
 }

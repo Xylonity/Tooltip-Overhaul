@@ -11,7 +11,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
-import java.util.List;
 import java.util.Optional;
 
 public class Util {
@@ -20,13 +19,12 @@ public class Util {
         return (float) ((System.currentTimeMillis() / time) * 360 % 360);
     }
 
-    public static boolean hasRating(ItemStack stack) {
-        Optional<CustomFrameData> data = CustomFrameManager.of(stack);
-        if (data.isPresent()) {
-            if (data.get().hasCustomItemRating()) return true;
-        }
+    public static boolean shouldDisableIcon(ItemStack stack) {
+        return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldDisableIcon).orElse(TooltipsConfig.DISABLE_ICON);
+    }
 
-        return TooltipsConfig.SHOULD_SHOW_TEXT_RATING;
+    public static boolean shouldDisableRating(ItemStack stack) {
+        return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldDisableRating).orElse(TooltipsConfig.DISABLE_RATING);
     }
 
     public static int getTitleAlignmentX(int posx, int offset, Point size, ClientTooltipComponent component, Font font) {
@@ -61,11 +59,11 @@ public class Util {
         int compWidth = font.width(rarity);
 
         if (available > 0 && compWidth > available) {
-            List<FormattedCharSequence> lines = font.split(rarity, available);
             int maxLine = 0;
-            for (FormattedCharSequence line : lines) {
+            for (FormattedCharSequence line : font.split(rarity, available)) {
                 maxLine = Math.max(maxLine, font.width(line));
             }
+
             compWidth = Math.min(maxLine, available);
         }
 

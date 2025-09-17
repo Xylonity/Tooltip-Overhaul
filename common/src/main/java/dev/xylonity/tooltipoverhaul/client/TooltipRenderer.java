@@ -28,7 +28,7 @@ import java.util.Optional;
 /**
  * Core renderer bridge. To clarify, the tooltips are built using different layers which serve as an abstraction call to the
  * actual rendering methods, which actually render the content. These layers do computee the general settings of where
- * the rendering should be casted on, while the renderers should just care about rendering the component
+ * the rendering should be cast on, while the renderers should just care about rendering the component
  */
 @SuppressWarnings("unchecked")
 public final class TooltipRenderer {
@@ -59,7 +59,7 @@ public final class TooltipRenderer {
     static {
         // Main panel
         LAYERS_MAIN.add(new BackgroundLayer());
-        LAYERS_MAIN.add(new PreviewBackgroundLayer());
+        LAYERS_MAIN.add(new IconBackgroundLayer());
         LAYERS_MAIN.add(new IconLayer());
         LAYERS_MAIN.add(new TextLayer());
         LAYERS_MAIN.add(new DividerLineLayer());
