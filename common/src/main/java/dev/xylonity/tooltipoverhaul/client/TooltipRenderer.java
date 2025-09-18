@@ -16,7 +16,9 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
@@ -160,8 +162,15 @@ public final class TooltipRenderer {
         }
 
         // Renders the second panel
-        for (ITooltipLayer layer : LAYERS_SECOND) {
-            layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
+        if (
+            (ctx.data().isPresent() && ctx.data().get().shouldShowSecondPanel()) ||
+            (ctx.stack().getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER) ||
+            (ctx.stack().getItem() instanceof ArmorItem && TooltipsConfig.ARMOR_ITEMS_RENDERER)
+        ) {
+            for (ITooltipLayer layer : LAYERS_SECOND) {
+                layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
+            }
+
         }
 
         ctx.flush();

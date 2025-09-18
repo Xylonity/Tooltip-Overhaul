@@ -151,6 +151,10 @@ public record CustomFrameData(
         return disableIcon.isPresent() && disableIcon.get();
     }
 
+    public boolean shouldShowSecondPanel() {
+        return showSecondPanel.isPresent() && showSecondPanel.get();
+    }
+
     public boolean hasCustomColorItemRating() {
         return colorItemRating.isPresent();
     }

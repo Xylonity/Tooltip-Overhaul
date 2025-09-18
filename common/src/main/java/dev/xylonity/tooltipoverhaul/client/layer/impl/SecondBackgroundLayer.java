@@ -18,10 +18,6 @@ public class SecondBackgroundLayer implements ITooltipLayer {
 
     @Override
     public void render(TooltipContext ctx, Vec2 pos, Point size, TooltipStyle style, Component rarity, Font font, CustomFrameData customFrame) {
-
-        if (!TooltipsConfig.ARMOR_ITEMS_RENDERER && !TooltipsConfig.TIERED_ITEMS_RENDERER) return;
-        if (!(ctx.stack().getItem() instanceof ArmorItem) && !(ctx.stack().getItem() instanceof TieredItem)) return;
-
         Point sec = new Point(30, 60);
         Vec2 p = pos.add(new Vec2(-45 + TooltipsConfig.SECOND_PANEL_X, TooltipsConfig.SECOND_PANEL_Y));
         ctx.push(() -> {
