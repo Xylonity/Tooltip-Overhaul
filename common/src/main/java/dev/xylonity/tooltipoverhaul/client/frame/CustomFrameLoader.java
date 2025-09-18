@@ -74,8 +74,9 @@ public class CustomFrameLoader {
 
             // Memoizing the data read
             for (CustomFrameData frameData : customFrames) {
+                List<ResourceLocation> itemLocations = frameData.getItemLocations();
                 // Debug logs for verbose people :imp:
-                for (ResourceLocation item : frameData.getItemLocations()) {
+                for (ResourceLocation item : itemLocations) {
                     if (frames.containsKey(item)) {
                         TooltipOverhaul.LOGGER.debug("Duplicate frame for item {} in {}, overwriting previous", item, configLocation);
                     }
@@ -83,8 +84,18 @@ public class CustomFrameLoader {
                     frames.put(item, frameData);
                 }
 
-                if (!frameData.tags().isEmpty()) {
-                    TooltipOverhaul.LOGGER.debug("Frame will also match tags: {}", frameData.tags());
+                // If there is no items but there are tags, still registers the entry using a synthetic key so that it
+                // exists in the values channel. This (should) ensure tag-only entries to participate in the iteration of the main
+                // map that caches all entries
+                if (itemLocations.isEmpty() && !frameData.tags().isEmpty()) {
+                    ResourceLocation key = new ResourceLocation(namespace, "tag_only/" + Integer.toUnsignedString(System.identityHashCode(frameData), 36));
+
+                    frames.put(key, frameData);
+
+                    TooltipOverhaul.LOGGER.debug("Registered tag-only entry {} with tags {}", key, frameData.tags());
+                }
+                else if (!frameData.tags().isEmpty()) {
+                    TooltipOverhaul.LOGGER.debug("Entry will also match tags (mixed): {}", frameData.tags());
                 }
             }
 

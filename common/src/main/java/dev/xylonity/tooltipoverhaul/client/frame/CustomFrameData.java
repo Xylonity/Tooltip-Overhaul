@@ -212,8 +212,8 @@ public record CustomFrameData(
     }
 
     public enum DividerLineColor {
-        MATCH_INNER_FRAME,
-        MATCH_TITLE_COLOR,
+        MATCH_RARITY,
+        MATCH_ITEM_NAME,
         WHITE
     }
 
