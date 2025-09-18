@@ -1,4 +1,4 @@
-package dev.xylonity.tooltipoverhaul.client.style.background.preview;
+package dev.xylonity.tooltipoverhaul.client.style.background.icon;
 
 import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
 
-public class DefaultBackgroundPreview implements ITooltipPreviewBackground {
+public class VoidBackgroundPreview implements ITooltipPreviewBackground {
 
     private static final ResourceLocation PREVIEW = new ResourceLocation(TooltipOverhaul.MOD_ID, "textures/gui/star.png");
 

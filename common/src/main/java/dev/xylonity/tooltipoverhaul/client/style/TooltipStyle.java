@@ -2,8 +2,8 @@ package dev.xylonity.tooltipoverhaul.client.style;
 
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.*;
-import dev.xylonity.tooltipoverhaul.client.style.background.preview.DefaultBackgroundPreview;
-import dev.xylonity.tooltipoverhaul.client.style.divider.DefaultDividerLine;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.DefaultBackgroundPreview;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.VoidBackgroundPreview;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultArmorStand;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultRotatingItem;

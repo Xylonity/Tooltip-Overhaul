@@ -11,6 +11,7 @@
     "ClientTextTooltipAccessor",
     "GuiGraphicsItemMixin",
     "GuiGraphicsMixin",
+    "BypassHoverGuiCullingMixin",
     "MouseHandlerMixin",
     "ScreenRecorderMixin"
   ],
