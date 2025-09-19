@@ -44,7 +44,7 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Default tooltip background color in ARGB (0xAARRGGBB). For instance: 0xF0010110."
     )
-    public static int DEFAULT_BACKGROUND_COLOR = 0xF0010110;
+    public static int DEFAULT_BACKGROUND_COLOR = 0xF0000000;
 
     @ConfigEntry(
             comment = "Override vanilla tooltips even when no ItemStack is present (e.g., JEI category buttons or unsupported stacks). "
@@ -82,5 +82,16 @@ public final class TooltipsConfig {
             comment = "Disable icon"
     )
     public static boolean DISABLE_ICON = false;
+
+    @ConfigEntry(
+            comment = "Icon appear animation"
+    )
+    public static String ICON_APPEAR_ANIMATION = "skew";
+
+    @ConfigEntry(
+            comment = "Icon rotating speed"
+    )
+    public static float ICON_ROTATING_SPEED = 1.0f;
+
 
 }
