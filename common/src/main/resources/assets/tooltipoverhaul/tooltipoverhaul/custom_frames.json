@@ -7,7 +7,7 @@
         "minecraft:enchanted_golden_apple"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static",
+      "borderType": "auto_gradient",
       "specialEffect": "metal_shining"
     },
     {
@@ -35,7 +35,7 @@
         "minecraft:music_disc_pigstep"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static"
+      "borderType": "auto_gradient"
     },
     {
       "texture": "tooltipoverhaul:textures/overlay/amber_frame.png",
@@ -58,7 +58,7 @@
         "minecraft:skull_banner_pattern"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static"
+      "borderType": "auto_gradient"
     },
     {
       "texture": "tooltipoverhaul:textures/overlay/silver_frame.png",
@@ -103,7 +103,7 @@
         "minecraft:netherite_scrap"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static"
+      "borderType": "auto_gradient"
     }
   ]
 }
