@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.util;
 
+import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
@@ -11,7 +12,6 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
 import java.awt.*;
-import java.util.Optional;
 
 public class Util {
 
@@ -25,6 +25,14 @@ public class Util {
 
     public static boolean shouldDisableRating(ItemStack stack) {
         return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldDisableRating).orElse(TooltipsConfig.DISABLE_RATING);
+    }
+
+    public static String getIconAppearAnimation(TooltipContext context) {
+        return context.data().isPresent() ? context.data().get().getIconAppearAnimation() : TooltipsConfig.ICON_APPEAR_ANIMATION;
+    }
+
+    public static float getIconRotatingSpeed(TooltipContext context) {
+        return context.data().isPresent() ? context.data().get().getIconRotatingSpeed() : TooltipsConfig.ICON_ROTATING_SPEED;
     }
 
     public static int getTitleAlignmentX(int posx, int offset, Point size, ClientTooltipComponent component, Font font) {

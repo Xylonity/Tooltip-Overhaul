@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.frame;
 
 import dev.xylonity.tooltipoverhaul.client.Palette;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -83,6 +84,14 @@ public record CustomFrameData(
             // Simulated legendary rarity
             default -> Palette.LEGENDARY[0];
         };
+    }
+
+    public String getIconAppearAnimation() {
+        return iconAppearAnimation.map(a -> a.toString().trim()).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION.trim());
+    }
+
+    public float getIconRotatingSpeed() {
+        return iconRotatingSpeed.orElse(TooltipsConfig.ICON_ROTATING_SPEED);
     }
 
     //public String getParticles() {
@@ -218,10 +227,22 @@ public record CustomFrameData(
     }
 
     public enum IconAppearAnimation {
-        NONE,
-        FADE_IN,
+        ZOOM,
         ROTATE,
-        ZOOM
+        ROTATE_FAST,
+        ROTATE_ZOOM,
+        ZOOM_SNAP,
+        SKEW,
+        VIBRATION,
+        TILT_WAVE,
+        FLIP,
+        PENDULUM,
+        BOUNCE,
+        GO_DOWN,
+        PULSE,
+        FIN_IN,
+        HOVER_POP,
+        BARREL_ROLL
     }
 
 }
