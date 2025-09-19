@@ -5,6 +5,8 @@ import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipText;
+import dev.xylonity.tooltipoverhaul.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.util.TextType;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -23,28 +25,28 @@ public class DefaultText implements ITooltipText {
         ctx.push(() -> {
             ctx.translate(0, 0, depth.getZ());
 
-            boolean hasIcon = !ctx.stack().isEmpty();
+            boolean hasStack = !ctx.stack().isEmpty();
             boolean shouldDisableRating = Util.shouldDisableRating(ctx.stack());
-            int firstLineOffset = TooltipRenderer.PADDING_X + (hasIcon ? 26 : 0 ) - (Util.shouldDisableIcon(ctx.stack()) ? 26 : 0);
+            int firstLineOffset = TooltipRenderer.PADDING_X + (hasStack ? 26 : 0 ) - (Util.shouldDisableIcon(ctx.stack()) ? 26 : 0);
 
             // If there is a stack present adds padding to the left
-            if (hasIcon && rarity != null && !rarity.getString().isEmpty() && !shouldDisableRating) {
-                int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4);
+            if (hasStack && rarity != null && !rarity.getString().isEmpty() && !shouldDisableRating) {
+                int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4) + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.Y);
                 // Rating text
-                ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x, firstLineOffset, size, rarity, font), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
+                ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
             }
 
             if (!TooltipScrollState.isIsActive()) {
-                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldDisableRating ? 6 : 0);
+                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldDisableRating ? 6 : 0) + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y);
                 for (int i = 0; i < ctx.getComponents().size(); i++) {
                     ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
 
                     if (i == 1) {
-                        y += 3 - (shouldDisableRating ? 6 : 0);
+                        y += 3 - (shouldDisableRating ? 6 : 0) - Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y) + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.Y);
                     }
 
                     if (i == 1) {
-                        if (hasIcon || Util.shouldDisableIcon(ctx.stack())) {
+                        if (hasStack || Util.shouldDisableIcon(ctx.stack())) {
                             y += 12;
                         }
                     }
@@ -52,16 +54,16 @@ public class DefaultText implements ITooltipText {
                     int x = (int) pos.x;
 
                     if (i == 0) {
-                        x = Util.getTitleAlignmentX(x, firstLineOffset, size, component, font);
+                        x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X), firstLineOffset, size, component, font);
                     } else {
-                        x += TooltipRenderer.PADDING_X;
+                        x += TooltipRenderer.PADDING_X + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.X);
                     }
 
                     component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
 
                     y += component.getHeight();
 
-                    if (hasIcon && i == 0 && ctx.getComponents().size() > 1) {
+                    if (hasStack && i == 0 && ctx.getComponents().size() > 1) {
                         y += 6;
                     }
                 }
@@ -70,7 +72,7 @@ public class DefaultText implements ITooltipText {
                 for (int i = 0; i < ctx.getComponents().size(); i++) {
                     ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
 
-                    if (hasIcon && i == 1) {
+                    if (hasStack && i == 1) {
                         y += 12;
                     }
 
@@ -79,7 +81,7 @@ public class DefaultText implements ITooltipText {
 
                     y += component.getHeight();
 
-                    if (hasIcon && i == 0 && ctx.getComponents().size() > 1) {
+                    if (hasStack && i == 0 && ctx.getComponents().size() > 1) {
                         y += 6;
                     }
                 }

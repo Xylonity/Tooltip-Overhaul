@@ -7,11 +7,9 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
@@ -77,6 +75,22 @@ public class Util {
         }
 
         return 0xFFFFFFFF;
+    }
+
+    public static int getExtraTextPosition(TooltipContext ctx, TextType type, TextAxis axis) {
+        return switch (axis) {
+            case X -> switch (type) {
+                case TITLE -> ctx.data().map(CustomFrameData::getTitlePositionX).orElse(TooltipsConfig.TITLE_POSITION_X);
+                case RATING -> ctx.data().map(CustomFrameData::getRatingPositionX).orElse(TooltipsConfig.RATING_POSITION_X);
+                case DESCRIPTION -> ctx.data().map(CustomFrameData::getTooltipDescriptionPositionX).orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_X);
+            };
+            case Y -> switch (type) {
+                case TITLE -> ctx.data().map(CustomFrameData::getTitlePositionY).orElse(TooltipsConfig.TITLE_POSITION_Y);
+                case RATING -> ctx.data().map(CustomFrameData::getRatingPositionY).orElse(TooltipsConfig.RATING_POSITION_Y);
+                case DESCRIPTION -> ctx.data().map(CustomFrameData::getTooltipDescriptionPositionY).orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
+            };
+        };
+
     }
 
     public static int getTitleAlignmentX(int posx, int offset, Point size, ClientTooltipComponent component, Font font) {

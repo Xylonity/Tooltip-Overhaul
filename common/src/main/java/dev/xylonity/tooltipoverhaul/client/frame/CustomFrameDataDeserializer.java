@@ -30,6 +30,12 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
 
         Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
         Optional<String> titleAlignment = parseString(entry, "titleAlignment");
+        Optional<Integer> titlePositionX = parseInt(entry, "titlePositionX");
+        Optional<Integer> titlePositionY = parseInt(entry, "titlePositionY");
+        Optional<Integer> ratingPositionX = parseInt(entry, "ratingPositionX");
+        Optional<Integer> ratingPositionY = parseInt(entry, "ratingPositionY");
+        Optional<Integer> tooltipDescriptionPositionX = parseInt(entry, "tooltipDescriptionPositionX");
+        Optional<Integer> tooltipDescriptionPositionY = parseInt(entry, "tooltipDescriptionPositionY");
         Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
         Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
         Optional<Float> iconSize = parseFloat(entry, "iconSize");
@@ -62,6 +68,12 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 colorItemRating,
                 ratingAlignment,
                 titleAlignment,
+                titlePositionX,
+                titlePositionY,
+                ratingPositionX,
+                ratingPositionY,
+                tooltipDescriptionPositionX,
+                tooltipDescriptionPositionY,
                 mainPanelPaddingX,
                 mainPanelPaddingY,
                 iconSize,

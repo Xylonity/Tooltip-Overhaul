@@ -27,6 +27,12 @@ public record CustomFrameData(
         Optional<Integer> colorItemRating,
         Optional<String> ratingAlignment,
         Optional<String> titleAlignment,
+        Optional<Integer> titlePositionX,
+        Optional<Integer> titlePositionY,
+        Optional<Integer> ratingPositionX,
+        Optional<Integer> ratingPositionY,
+        Optional<Integer> tooltipDescriptionPositionX,
+        Optional<Integer> tooltipDescriptionPositionY,
         Optional<Integer> mainPanelPaddingX,
         Optional<Integer> mainPanelPaddingY,
         Optional<Float> iconSize,
@@ -92,6 +98,30 @@ public record CustomFrameData(
 
     public float getIconRotatingSpeed() {
         return iconRotatingSpeed.orElse(TooltipsConfig.ICON_ROTATING_SPEED);
+    }
+
+    public int getTitlePositionX() {
+        return titlePositionX.orElse(TooltipsConfig.TITLE_POSITION_X);
+    }
+
+    public int getTitlePositionY() {
+        return titlePositionY.orElse(TooltipsConfig.TITLE_POSITION_Y);
+    }
+
+    public int getRatingPositionX() {
+        return ratingPositionX.orElse(TooltipsConfig.RATING_POSITION_X);
+    }
+
+    public int getRatingPositionY() {
+        return ratingPositionY.orElse(TooltipsConfig.RATING_POSITION_Y);
+    }
+
+    public int getTooltipDescriptionPositionX() {
+        return tooltipDescriptionPositionX.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_X);
+    }
+
+    public int getTooltipDescriptionPositionY() {
+        return tooltipDescriptionPositionY.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
     }
 
     //public String getParticles() {

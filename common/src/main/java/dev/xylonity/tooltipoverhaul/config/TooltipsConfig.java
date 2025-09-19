@@ -74,6 +74,36 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
+            comment = "Title position X"
+    )
+    public static int TITLE_POSITION_X = 1;
+
+    @ConfigEntry(
+            comment = "Title position Y"
+    )
+    public static int TITLE_POSITION_Y = 0;
+
+    @ConfigEntry(
+            comment = "Rating position X"
+    )
+    public static int RATING_POSITION_X = 1;
+
+    @ConfigEntry(
+            comment = "Rating position Y"
+    )
+    public static int RATING_POSITION_Y = 0;
+
+    @ConfigEntry(
+            comment = "Tooltip description (the content of the tooltip, apart from the rating text and the name of the item) position X"
+    )
+    public static int TOOLTIP_DESCRIPTION_POSITION_X = 0;
+
+    @ConfigEntry(
+            comment = "Tooltip description (the content of the tooltip, apart from the rating text and the name of the item) position Y"
+    )
+    public static int TOOLTIP_DESCRIPTION_POSITION_Y = 0;
+
+    @ConfigEntry(
             comment = "Disable item rating text"
     )
     public static boolean DISABLE_RATING = false;
