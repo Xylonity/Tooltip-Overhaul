@@ -123,10 +123,29 @@ public final class TooltipRenderer {
         // Approximation of the tooltip size (knowing there could be or not an icon)
         Point size = calculateSize(font, components, rating, hasIcon);
 
-        int height = Math.min(size.y, ctx.height() - 8);
+        int margin = 4;
+
+        // margin right
+        int xRight = ctx.mouseX() + 12;
+        // margin left
+        int xLeft  = ctx.mouseX() - 16 - size.x;
 
         // Start position of the tooltip
-        Vec2 pos = new Vec2(Math.min(ctx.mouseX() + 12, ctx.width() - size.x - 4), Math.max(4, Math.min(ctx.mouseY() - 12, ctx.height() - height - 4)));
+        int x;
+        if (xRight + size.x <= ctx.width() - margin) {
+            // Fits on the right
+            x = xRight;
+        } else if (xLeft >= margin) {
+            // Flips to the left
+            x = xLeft;
+        } else {
+            // Clamps to screen (if it doesn't fit on either side)
+            x = Math.max(margin, ctx.width() - size.x - margin);
+        }
+
+        int height = Math.min(size.y, ctx.height() - 8);
+
+        Vec2 pos = new Vec2(x, Math.max(margin, Math.min(ctx.mouseY() - 12, ctx.height() - height - margin)));
 
         LAST_POS_YI = Math.round(pos.y);
 
