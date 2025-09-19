@@ -93,5 +93,34 @@ public final class TooltipsConfig {
     )
     public static float ICON_ROTATING_SPEED = 1.0f;
 
+    @ConfigEntry(
+            comment = "Common palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
+    )
+    public static String COMMON_PALETTE_COLORS = "0xA0EFEFEF, 0xA08A8A8A, 0xA0606060";
+
+    @ConfigEntry(
+            comment = "Uncommon palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
+    )
+    public static String UNCOMMON_PALETTE_COLORS = "0xA0F9FF40, 0xA0A9AD26, 0xA0787B16";
+
+    @ConfigEntry(
+            comment = "Rare palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
+    )
+    public static String RARE_PALETTE_COLORS = "0xA05297FF, 0xA0285DAD, 0xA0102E5A";
+
+    @ConfigEntry(
+            comment = "Epic palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
+    )
+    public static String EPIC_PALETTE_COLORS = "0xA0FF36D0, 0xA0A81E89, 0xA0600B4D";
+
+    @ConfigEntry(
+            comment = "Legendary palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
+    )
+    public static String LEGENDARY_PALETTE_COLORS = "0xA0FFCC60, 0xA0CE9828, 0xA058400D";
+
+    @ConfigEntry(
+            comment = "Chaos palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
+    )
+    public static String CHAOS_PALETTE_COLORS = "0xA0FD575C, 0xA0CE282B, 0xA0580D0E";
 
 }

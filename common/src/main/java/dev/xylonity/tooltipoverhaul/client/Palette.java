@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client;
 
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 
 /**
  * Main color palette for generic color definitions
@@ -10,29 +11,17 @@ public final class Palette {
 
     public static final int PANEL_BG = TooltipsConfig.DEFAULT_BACKGROUND_COLOR;
 
-    public static final int[] COMMON = {
-            0xFFEFEFEF, 0xFF8A8A8A, 0xFF606060
-    };
+    public static final int[] COMMON = ConfigColorParser.parsePalette(TooltipsConfig.COMMON_PALETTE_COLORS);
 
-    public static final int[] UNCOMMON = {
-            0xFFF9FF40, 0xFFA9AD26, 0xFF787B16
-    };
+    public static final int[] UNCOMMON = ConfigColorParser.parsePalette(TooltipsConfig.UNCOMMON_PALETTE_COLORS);
 
-    public static final int[] RARE = {
-            0xFF5297FF, 0xFF285DAD, 0xFF102E5A
-    };
+    public static final int[] RARE = ConfigColorParser.parsePalette(TooltipsConfig.RARE_PALETTE_COLORS);
 
-    public static final int[] EPIC = {
-            0xFFFF36D0, 0xFFA81E89, 0xFF600B4D
-    };
+    public static final int[] EPIC = ConfigColorParser.parsePalette(TooltipsConfig.EPIC_PALETTE_COLORS);
 
-    public static final int[] LEGENDARY = {
-            0xFFFFCC60, 0xFFCE9828, 0xFF58400D
-    };
+    public static final int[] LEGENDARY = ConfigColorParser.parsePalette(TooltipsConfig.LEGENDARY_PALETTE_COLORS);
 
-    public static final int[] CHAOS = {
-            0xFFFD575C, 0xFFCE282B, 0xFF580D0E
-    };
+    public static final int[] CHAOS = ConfigColorParser.parsePalette(TooltipsConfig.CHAOS_PALETTE_COLORS);
 
     public static int[] of(CustomFrameData.GradientType t) {
         return switch (t) {
