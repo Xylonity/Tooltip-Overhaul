@@ -38,7 +38,7 @@ public record CustomFrameData(
         Optional<Float> secondPanelRendererSize,
         Optional<Float> secondPanelRendererSpeed,
         Optional<DividerLineType> dividerLineType,
-        Optional<DividerLineColor> dividerLineColor,
+        Optional<String> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
         Optional<Boolean> disableTooltip,
@@ -130,6 +130,10 @@ public record CustomFrameData(
         }
 
         return false;
+    }
+
+    public String getDividerLineColor() {
+        return dividerLineColor.orElse(TooltipsConfig.DIVIDER_LINE_COLOR);
     }
 
     public boolean hasCustomTexture() {

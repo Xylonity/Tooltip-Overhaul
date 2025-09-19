@@ -41,7 +41,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");
         Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
         Optional<CustomFrameData.DividerLineType> dividerLineType = parseEnum(entry, "dividerLineType", CustomFrameData.DividerLineType.class);
-        Optional<CustomFrameData.DividerLineColor> dividerLineColor = parseEnum(entry, "dividerLineColor", CustomFrameData.DividerLineColor.class);
+        Optional<String> dividerLineColor = parseString(entry, "dividerLineColor");
 
         Optional<String> particles = parseString(entry, "particles");
         Optional<String> specialEffect = parseString(entry, "specialEffect");

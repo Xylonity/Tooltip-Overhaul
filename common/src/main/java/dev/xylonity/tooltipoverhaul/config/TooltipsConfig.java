@@ -94,6 +94,11 @@ public final class TooltipsConfig {
     public static float ICON_ROTATING_SPEED = 1.0f;
 
     @ConfigEntry(
+            comment = "Divider line color. You can either specify 'match_inner_frame_color', 'match_item_name_color' or a color, such as '0xA0EFEFEF'"
+    )
+    public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
+
+    @ConfigEntry(
             comment = "Common palette colors (from brigth to dark). You can only specify 3 exact colors. Remember this is a "
     )
     public static String COMMON_PALETTE_COLORS = "0xA0EFEFEF, 0xA08A8A8A, 0xA0606060";
