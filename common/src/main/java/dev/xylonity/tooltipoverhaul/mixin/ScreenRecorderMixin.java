@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.lang.reflect.Method;
 import java.util.List;
 
-@Mixin(value = Screen.class, remap = false)
+@Mixin(value = Screen.class)
 abstract class ScreenRecorderMixin {
 
     @Inject(method = "render", at = @At("TAIL"))
