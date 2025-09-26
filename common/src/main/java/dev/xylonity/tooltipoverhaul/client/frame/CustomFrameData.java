@@ -132,6 +132,14 @@ public record CustomFrameData(
         return iconSize.orElse(TooltipsConfig.ICON_SIZE);
     }
 
+    public float getSecondPanelRendererSize() {
+        return secondPanelRendererSize.orElse(TooltipsConfig.SECOND_PANEL_RENDERER_SIZE);
+    }
+
+    public float getSecondPanelRendererSpeed() {
+        return secondPanelRendererSpeed.orElse(TooltipsConfig.SECOND_PANEL_RENDERER_SPEED);
+    }
+
     public String getEffect() {
         return specialEffect.filter(effect -> !effect.trim().isEmpty()).orElse(Defaults.SPECIAL_EFFECT);
     }

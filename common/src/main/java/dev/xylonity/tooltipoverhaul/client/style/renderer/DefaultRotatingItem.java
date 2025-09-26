@@ -13,7 +13,7 @@ import java.awt.*;
 
 public class DefaultRotatingItem implements ITooltipRotatingItem {
 
-    private static final float BASE_SCALE = 2.75f;
+    private static float SCALE = TooltipsConfig.SECOND_PANEL_RENDERER_SIZE;
 
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
@@ -21,15 +21,26 @@ public class DefaultRotatingItem implements ITooltipRotatingItem {
     }
 
     private void renderDefault(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
+
+        if (ctx.data().isPresent()) {
+            SCALE = ctx.data().get().getSecondPanelRendererSize();
+        }
+
+        float speed = 8000 / TooltipsConfig.SECOND_PANEL_RENDERER_SPEED;
+        if (ctx.data().isPresent()) {
+            speed = 8000 / ctx.data().get().getSecondPanelRendererSpeed();
+        }
+
+        float finalSpeed = speed;
         ctx.push(() -> {
             ctx.translate(0, 0, depth.getZ());
 
             ctx.translate(pos.x, pos.y, 0);
 
-            ctx.multiply(Axis.YP, -(Util.calcRotY(8000d / TooltipsConfig.TIERED_ITEM_PREVIEW_ROTATING_SPEED)));
+            ctx.multiply(Axis.YP, -(Util.calcRotY(finalSpeed)));
             ctx.multiply(Axis.ZP, -45);
 
-            ctx.scale(BASE_SCALE, BASE_SCALE, BASE_SCALE);
+            ctx.scale(SCALE, SCALE, SCALE);
 
             // Reverting the default renderItem pivot
             ctx.translate(-8f, -8f, -150f);
