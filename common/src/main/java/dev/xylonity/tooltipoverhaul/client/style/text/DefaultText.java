@@ -37,12 +37,12 @@ public class DefaultText implements ITooltipText {
             }
 
             if (!TooltipScrollState.isIsActive()) {
-                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldShowRating ? 0 : 6) + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y);
+                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldShowRating || !hasStack ? 0 : 6) + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y);
                 for (int i = 0; i < ctx.getComponents().size(); i++) {
                     ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
 
                     if (i == 1) {
-                        y += 3 - (shouldShowRating ? 0 : 6) - Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y) + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.Y);
+                        y += (hasStack ? 3 : 0) - (shouldShowRating || !hasStack ? 0 : 6) - Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y) + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.Y);
                     }
 
                     if (i == 1) {
