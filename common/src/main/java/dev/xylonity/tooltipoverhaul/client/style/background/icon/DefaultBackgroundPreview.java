@@ -21,13 +21,13 @@ public class DefaultBackgroundPreview implements ITooltipPreviewBackground {
         ctx.graphics().fill(x0, y0, x1, y1, depth.getZ(), 0x903E3E3E);
 
         // Top border
-        ctx.graphics().fill(x0, y0 - 1, x1, y0, depth.getZ(), 0x903E3E3E);
+        ctx.graphics().fill(x0, y0 - 1, x1, y0, depth.getZ(), 0x905E5E5E);
         // Bottom border
-        ctx.graphics().fill(x0, y1 + 1, x1, y1, depth.getZ(), 0x903E3E3E);
+        ctx.graphics().fill(x0, y1 + 1, x1, y1, depth.getZ(), 0x905E5E5E);
         // Left border
-        ctx.graphics().fill(x0 - 1, y0, x0, y1, depth.getZ(), 0x903E3E3E);
+        ctx.graphics().fill(x0 - 1, y0, x0, y1, depth.getZ(), 0x905E5E5E);
         // Right border
-        ctx.graphics().fill(x1 + 1, y0, x1, y1, depth.getZ(), 0x903E3E3E);
+        ctx.graphics().fill(x1 + 1, y0, x1, y1, depth.getZ(), 0x905E5E5E);
     }
 
 }
