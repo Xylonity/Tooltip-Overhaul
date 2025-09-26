@@ -128,9 +128,8 @@ public record CustomFrameData(
     //    return particles.filter(p -> !p.trim().isEmpty()).orElse(Defaults.PARTICLES);
     //}
 
-
     public float getIconSize() {
-        return iconSize.orElse(TooltipsConfig.ICON);
+        return iconSize.orElse(TooltipsConfig.ICON_SIZE);
     }
 
     public String getEffect() {
