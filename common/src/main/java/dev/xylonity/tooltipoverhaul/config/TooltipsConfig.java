@@ -101,7 +101,7 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Show rating text"
     )
-    public static boolean SHOW_RATING = true;
+    public static boolean SHOW_RATING = false;
 
     @ConfigEntry(
             comment = "Disable icon"

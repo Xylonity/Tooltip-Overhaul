@@ -26,8 +26,8 @@ public class Util {
         return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldDisableIcon).orElse(TooltipsConfig.DISABLE_ICON);
     }
 
-    public static boolean shouldDisableRating(ItemStack stack) {
-        return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldDisableRating).orElse(TooltipsConfig.DISABLE_RATING);
+    public static boolean shouldShowRating(ItemStack stack) {
+        return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
     }
 
     public static String getIconAppearAnimation(TooltipContext context) {

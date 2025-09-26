@@ -121,7 +121,7 @@ public final class TooltipRenderer {
         Component rating = hasIcon ? computeRating(customFrame, ctx) : Component.empty();
 
         // Approximation of the tooltip size (knowing there could be or not an icon)
-        Point size = calculateSize(font, components, rating, hasIcon);
+        Point size = calculateSize(font, components, rating, hasIcon, ctx);
 
         int margin = 4;
 
@@ -135,10 +135,12 @@ public final class TooltipRenderer {
         if (xRight + size.x <= ctx.width() - margin) {
             // Fits on the right
             x = xRight;
-        } else if (xLeft >= margin) {
+        }
+        else if (xLeft >= margin) {
             // Flips to the left
             x = xLeft;
-        } else {
+        }
+        else {
             // Clamps to screen (if it doesn't fit on either side)
             x = Math.max(margin, ctx.width() - size.x - margin);
         }
@@ -244,7 +246,7 @@ public final class TooltipRenderer {
     /**
      * Computes the main tooltip size. Most of the proportions (in general) are hardcoded
      */
-    private static Point calculateSize(Font font, List<ClientTooltipComponent> components, Component rarity, boolean hasIcon) {
+    private static Point calculateSize(Font font, List<ClientTooltipComponent> components, Component rarity, boolean hasIcon, TooltipContext ctx) {
         // Is there an icon (stack) present
         int iconOffset = hasIcon ? 26 : 0;
         int width = PADDING_X * 2 + iconOffset + components.get(0).getWidth(font);
@@ -254,7 +256,7 @@ public final class TooltipRenderer {
         }
 
         if (hasIcon) {
-            width = Math.max(width, PADDING_X * 2 + iconOffset + font.width(rarity));
+            width = Math.max(width, PADDING_X * 2 + iconOffset + (Util.shouldShowRating(ctx.stack()) ? font.width(rarity) : 0));
         }
 
         int y0 = PADDING_Y + 3;

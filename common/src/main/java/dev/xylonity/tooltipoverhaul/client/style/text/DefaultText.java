@@ -26,23 +26,23 @@ public class DefaultText implements ITooltipText {
             ctx.translate(0, 0, depth.getZ());
 
             boolean hasStack = !ctx.stack().isEmpty();
-            boolean shouldDisableRating = Util.shouldDisableRating(ctx.stack());
+            boolean shouldShowRating = Util.shouldShowRating(ctx.stack());
             int firstLineOffset = TooltipRenderer.PADDING_X + (hasStack ? 26 : 0 ) - (Util.shouldDisableIcon(ctx.stack()) ? 26 : 0);
 
             // If there is a stack present adds padding to the left
-            if (hasStack && rarity != null && !rarity.getString().isEmpty() && !shouldDisableRating) {
+            if (hasStack && rarity != null && !rarity.getString().isEmpty() && shouldShowRating) {
                 int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4) + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.Y);
                 // Rating text
                 ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
             }
 
             if (!TooltipScrollState.isIsActive()) {
-                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldDisableRating ? 6 : 0) + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y);
+                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldShowRating ? 0 : 6) + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y);
                 for (int i = 0; i < ctx.getComponents().size(); i++) {
                     ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
 
                     if (i == 1) {
-                        y += 3 - (shouldDisableRating ? 6 : 0) - Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y) + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.Y);
+                        y += 3 - (shouldShowRating ? 0 : 6) - Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y) + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.Y);
                     }
 
                     if (i == 1) {
@@ -55,7 +55,8 @@ public class DefaultText implements ITooltipText {
 
                     if (i == 0) {
                         x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X), firstLineOffset, size, component, font);
-                    } else {
+                    }
+                    else {
                         x += TooltipRenderer.PADDING_X + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.X);
                     }
 
@@ -85,6 +86,7 @@ public class DefaultText implements ITooltipText {
                         y += 6;
                     }
                 }
+
                 return;
             }
 
@@ -113,6 +115,7 @@ public class DefaultText implements ITooltipText {
                 if (y + h >= toTop && y <= toBottom) {
                     component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
                 }
+
                 y += h;
             }
 
