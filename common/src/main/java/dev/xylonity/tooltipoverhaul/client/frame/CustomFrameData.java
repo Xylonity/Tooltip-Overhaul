@@ -38,7 +38,6 @@ public record CustomFrameData(
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<IconAppearAnimation> iconAppearAnimation,
-        Optional<Boolean> showSecondPanel,
         Optional<Integer> secondPanelX,
         Optional<Integer> secondPanelY,
         Optional<Float> secondPanelRendererSize,
@@ -47,10 +46,11 @@ public record CustomFrameData(
         Optional<String> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
-        Optional<Boolean> disableTooltip,
-        Optional<Boolean> disableRating,
+        Optional<Boolean> showSecondPanel,
+        Optional<Boolean> showRating,
         Optional<Boolean> disableIcon,
-        Optional<Boolean> disableScrolling
+        Optional<Boolean> disableScrolling,
+        Optional<Boolean> disableTooltip
 ) {
 
     public String getTexture() {
@@ -128,6 +128,11 @@ public record CustomFrameData(
     //    return particles.filter(p -> !p.trim().isEmpty()).orElse(Defaults.PARTICLES);
     //}
 
+
+    public float getIconSize() {
+        return iconSize.orElse(TooltipsConfig.ICON);
+    }
+
     public String getEffect() {
         return specialEffect.filter(effect -> !effect.trim().isEmpty()).orElse(Defaults.SPECIAL_EFFECT);
     }
@@ -186,8 +191,8 @@ public record CustomFrameData(
         return itemRating.isPresent() && !itemRating.get().trim().isEmpty();
     }
 
-    public boolean shouldDisableRating() {
-        return disableRating.isPresent() && disableRating.get();
+    public boolean shouldShowRating() {
+        return showRating.orElse(TooltipsConfig.SHOW_RATING);
     }
 
     public boolean shouldDisableIcon() {

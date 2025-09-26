@@ -21,7 +21,7 @@ public class IconLayer implements ITooltipLayer {
 
         ctx.push(() -> {
             ctx.translate(0, 0, LayerDepth.BACKGROUND_RENDERS.getZ());
-            style.renderIcon(LayerDepth.BACKGROUND_RENDERS, ctx, pos.add(new Vec2(-1.7f, 0)), size);
+            style.renderIcon(LayerDepth.BACKGROUND_RENDERS, ctx, pos.add(new Vec2(-2f, 0)), size);
         });
     }
 

@@ -6,6 +6,7 @@ import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipIcon;
 import dev.xylonity.tooltipoverhaul.compat.modernfix.ModernFixCompat;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.world.phys.Vec2;
 
@@ -14,6 +15,7 @@ import java.awt.*;
 public class DefaultIcon implements ITooltipIcon {
 
     private static final float ANIMATION_DURATION = 0.6f;
+    private static float SCALE = TooltipsConfig.ICON_SIZE;
 
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
@@ -21,6 +23,11 @@ public class DefaultIcon implements ITooltipIcon {
     }
 
     private void renderDefault(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
+
+        if (ctx.data().isPresent()) {
+            SCALE = ctx.data().get().getIconSize();
+        }
+
         ctx.push(() -> {
             ctx.translate(0, 0, depth.getZ());
 
@@ -42,11 +49,11 @@ public class DefaultIcon implements ITooltipIcon {
                         scale(ctx, progress);
                     }
                     case "rotate" -> {
-                        ctx.scale(1.5f, 1.5f, 1.5f);
+                        ctx.scale(SCALE, SCALE, SCALE);
                         rotate(ctx, 1);
                     }
                     case "rotate_fast" -> {
-                        ctx.scale(1.5f, 1.5f, 1.5f);
+                        ctx.scale(SCALE, SCALE, SCALE);
                         rotate(ctx, 2);
                     }
                     case "rotate_zoom" -> {
@@ -54,12 +61,14 @@ public class DefaultIcon implements ITooltipIcon {
                         rotate(ctx, 1);
                     }
                     case "zoom_snap" -> {
-                        float scale;
+                        float abs;
                         if (progress < 0.72f) {
-                            scale = 1.10f + 0.70f * easeOutCubic(progress / 0.72f);
-                        } else {
-                            scale = 1.80f - (0.30f * smoothstep(0.0f, 1.0f, (progress - 0.72f) / 0.28f));
+                            abs = 1.10f + 0.70f * easeOutCubic(progress / 0.72f);
                         }
+                        else {
+                            abs = 1.80f - (0.30f * smoothstep(0.0f, 1.0f, (progress - 0.72f) / 0.28f));
+                        }
+                        float scale = scaled(abs);
 
                         ctx.multiply(Axis.YP, 4.0f * (1.0f - progress));
 
@@ -73,7 +82,7 @@ public class DefaultIcon implements ITooltipIcon {
 
                         float undershoot = 0.12f * (1f - progress);
                         float overshoot  = 0.20f * (float) Math.sin(Math.PI * progress);
-                        float scale = 1.5f * (1.0f - undershoot + overshoot);
+                        float scale = SCALE * (1.0f - undershoot + overshoot);
 
                         ctx.scale(scale, scale, scale);
                     }
@@ -82,7 +91,8 @@ public class DefaultIcon implements ITooltipIcon {
 
                         ctx.translate(1.2f * decay * (float) Math.sin(progress * 30.0f), 1.0f * decay * (float) Math.cos(progress * 27.0f), 0);
 
-                        float scale = 1.40f + 0.10f * (1.0f - progress);
+                        float abs = 1.40f + 0.10f * (1.0f - progress);
+                        float scale = scaled(abs);
 
                         ctx.scale(scale, scale, scale);
                     }
@@ -93,14 +103,14 @@ public class DefaultIcon implements ITooltipIcon {
                         ctx.multiply(Axis.ZP, amp * waves);
                         ctx.multiply(Axis.XP, 0.6f * amp * waves);
 
-                        ctx.scale(1.5f, 1.5f, 1.5f);
+                        ctx.scale(SCALE, SCALE, SCALE);
                     }
                     case "flip" -> {
                         ctx.multiply(Axis.XP, (1f - (float) (1.0 - Math.pow(1.0 - progress, 2.2))) * 90.0f);
 
                         float undershoot = 0.12f * (1f - progress);
                         float overshoot  = 0.22f * (float) Math.sin(Math.PI * progress);
-                        float scale = 1.5f * (1f - undershoot + overshoot);
+                        float scale = SCALE * (1f - undershoot + overshoot);
 
                         ctx.scale(scale, scale, scale);
                     }
@@ -111,14 +121,13 @@ public class DefaultIcon implements ITooltipIcon {
 
                         ctx.translate(0, 8, 0);
 
-                        float scale = 1.45f - 0.05f * progress;
-
-                        ctx.scale(scale, scale, scale);
+                        ctx.scale(SCALE, SCALE, SCALE);
                     }
                     case "bounce" -> {
                         ctx.translate(0, dampBounce(progress, 3f, 8f), 0);
 
-                        float scale = 1.45f + 0.05f * (float) Math.sin(progress * Math.PI);
+                        float abs = 1.45f + 0.05f * (float) Math.sin(progress * Math.PI);
+                        float scale = scaled(abs);
 
                         ctx.scale(scale, scale, scale);
                     }
@@ -127,13 +136,14 @@ public class DefaultIcon implements ITooltipIcon {
 
                         ctx.multiply(Axis.ZP, (1f - progress) * -12f);
 
-                        float scale = 1.5f - 0.08f * (1f - progress);
+                        float scale = SCALE - 0.08f * (1f - progress);
 
                         ctx.scale(scale, scale, scale);
                     }
                     case "pulse" -> {
                         float pulses = (float) Math.sin(progress * Math.PI * 4.0f);
-                        float scale = 1.50f + (0.25f * (1f - progress)) * pulses;
+                        float abs = 1.50f + (0.25f * (1f - progress)) * pulses;
+                        float scale = scaled(abs);
 
                         ctx.multiply(Axis.XP, 5f * pulses * (1f - progress));
 
@@ -144,7 +154,7 @@ public class DefaultIcon implements ITooltipIcon {
 
                         float undershoot = 0.12f * (1f - progress);
                         float overshoot  = 0.18f * (float) Math.sin(Math.PI * progress);
-                        float scale = 1.5f * (1.0f - undershoot + overshoot);
+                        float scale = SCALE * (1.0f - undershoot + overshoot);
 
                         ctx.scale(scale, scale, scale);
                     }
@@ -160,18 +170,19 @@ public class DefaultIcon implements ITooltipIcon {
                     case "barrel_roll" -> {
                         ctx.multiply(Axis.ZP, 360.0f * easeOutCubic(progress));
 
-                        float scale = 0.90f + 0.60f * easeOutCubic(progress);
+                        float abs = 0.90f + 0.60f * easeOutCubic(progress);
+                        float scale = scaled(abs);
 
                         ctx.scale(scale, scale, scale);
                     }
                     default -> {
-                        ctx.scale(1.5f, 1.5f, 1.5f);
+                        ctx.scale(SCALE, SCALE, SCALE);
                     }
                 }
 
             }
             else {
-                ctx.scale(1.5f, 1.5f, 1.5f);
+                ctx.scale(SCALE, SCALE, SCALE);
 
                 float elapsed = TooltipRenderer.ELAPSED - ANIMATION_DURATION;
 
@@ -223,7 +234,7 @@ public class DefaultIcon implements ITooltipIcon {
 
     private static void scale(TooltipContext ctx, float progress) {
         float scale = easeOutQuint(progress);
-        ctx.scale(scale * 1.5f, scale * 1.5f, scale * 1.5f);
+        ctx.scale(scale * SCALE, scale * SCALE, scale * SCALE);
     }
 
     private static void rotate(TooltipContext ctx, int times) {
@@ -233,6 +244,10 @@ public class DefaultIcon implements ITooltipIcon {
     private static float easeOutQuint(float t) {
         float cubicPart = 1 - (float) Math.pow(1 - t, 3);
         return cubicPart * t + t * (1 - t);
+    }
+
+    private static float scaled(float value) {
+        return SCALE * (value / 1.5f);
     }
 
 }

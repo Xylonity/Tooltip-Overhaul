@@ -41,7 +41,6 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Float> iconSize = parseFloat(entry, "iconSize");
         Optional<Float> iconRotatingSpeed = parseFloat(entry, "iconRotatingSpeed");
         Optional<CustomFrameData.IconAppearAnimation> iconAppearAnimation = parseEnum(entry, "iconAppearAnimation", CustomFrameData.IconAppearAnimation.class);
-        Optional<Boolean> showSecondPanel = parseBool(entry, "showSecondPanel");
         Optional<Integer> secondPanelX = parseInt(entry, "secondPanelX");
         Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
         Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");
@@ -52,10 +51,12 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<String> particles = parseString(entry, "particles");
         Optional<String> specialEffect = parseString(entry, "specialEffect");
 
-        Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
-        Optional<Boolean> disableRating = parseBool(entry, "disableRating");
+        Optional<Boolean> showSecondPanel = parseBool(entry, "showSecondPanel");
+        Optional<Boolean> showRating = parseBool(entry, "showRating");
+
         Optional<Boolean> disableIcon = parseBool(entry, "disableIcon");
         Optional<Boolean> disableScrolling = parseBool(entry, "disableScrolling");
+        Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
 
         return new CustomFrameData(
                 items,
@@ -79,7 +80,6 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 iconSize,
                 iconRotatingSpeed,
                 iconAppearAnimation,
-                showSecondPanel,
                 secondPanelX,
                 secondPanelY,
                 secondPanelRendererSize,
@@ -88,10 +88,11 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 dividerLineColor,
                 particles,
                 specialEffect,
-                disableTooltip,
-                disableRating,
+                showSecondPanel,
+                showRating,
                 disableIcon,
-                disableScrolling
+                disableScrolling,
+                disableTooltip
         );
     }
 
