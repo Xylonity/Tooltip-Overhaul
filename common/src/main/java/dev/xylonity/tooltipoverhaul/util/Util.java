@@ -93,7 +93,7 @@ public class Util {
 
     }
 
-    public static int getTitleAlignmentX(int posx, int offset, Point size, ClientTooltipComponent component, Font font) {
+    public static int getTitleAlignmentX(int posx, int offset, Point size, ClientTooltipComponent component, Font font, TooltipContext ctx) {
         int startX = posx + offset;
         int rightX = posx + size.x - TooltipRenderer.PADDING_X;
 
@@ -101,7 +101,7 @@ public class Util {
         int available = rightX - startX;
 
         int result;
-        switch (TooltipsConfig.TITLE_X_ALIGNMENT) {
+        switch (ctx.data().map(CustomFrameData::getTitleAlignment).orElse(TooltipsConfig.TITLE_X_ALIGNMENT)) {
             case "middle" -> result = startX + (available - textWidth) / 2;
             case "right" -> result = rightX - textWidth;
             default -> // left
@@ -117,7 +117,7 @@ public class Util {
         return result;
     }
 
-    public static int getRatingAlignmentX(int posx, int offset, Point size, Component rarity, Font font) {
+    public static int getRatingAlignmentX(int posx, int offset, Point size, Component rarity, Font font, TooltipContext ctx) {
         int startX = posx + offset;
         int rightX = posx + size.x - TooltipRenderer.PADDING_X;
         int available = Math.max(0, rightX - startX);
@@ -134,7 +134,7 @@ public class Util {
         }
 
         int result;
-        switch (TooltipsConfig.RATING_X_ALIGNMENT) {
+        switch (ctx.data().map(CustomFrameData::getRatingAlignment).orElse(TooltipsConfig.RATING_X_ALIGNMENT)) {
             case "middle" -> result = startX + (available - compWidth) / 2;
             case "right"  -> result = rightX - compWidth;
             default -> // left

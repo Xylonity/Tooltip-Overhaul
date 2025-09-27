@@ -33,23 +33,23 @@ public record CustomFrameData(
         Optional<Integer> ratingPositionY,
         Optional<Integer> tooltipDescriptionPositionX,
         Optional<Integer> tooltipDescriptionPositionY,
-        Optional<Integer> mainPanelPaddingX,
-        Optional<Integer> mainPanelPaddingY,
+        Optional<Integer> mainPanelPaddingX,//
+        Optional<Integer> mainPanelPaddingY,//
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<IconAppearAnimation> iconAppearAnimation,
-        Optional<Integer> secondPanelX,
-        Optional<Integer> secondPanelY,
+        Optional<Integer> secondPanelX,//
+        Optional<Integer> secondPanelY,//
         Optional<Float> secondPanelRendererSize,
         Optional<Float> secondPanelRendererSpeed,
-        Optional<DividerLineType> dividerLineType,
+        Optional<DividerLineType> dividerLineType,//
         Optional<String> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
         Optional<Boolean> disableIcon,
-        Optional<Boolean> disableScrolling,
+        Optional<Boolean> disableScrolling,//
         Optional<Boolean> disableTooltip
 ) {
 
@@ -122,6 +122,14 @@ public record CustomFrameData(
 
     public int getTooltipDescriptionPositionY() {
         return tooltipDescriptionPositionY.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
+    }
+
+    public String getRatingAlignment() {
+        return ratingAlignment.orElse(TooltipsConfig.RATING_X_ALIGNMENT);
+    }
+
+    public String getTitleAlignment() {
+        return titleAlignment.orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
     }
 
     //public String getParticles() {

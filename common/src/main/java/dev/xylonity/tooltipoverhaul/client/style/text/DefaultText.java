@@ -33,7 +33,7 @@ public class DefaultText implements ITooltipText {
             if (hasStack && rarity != null && !rarity.getString().isEmpty() && shouldShowRating) {
                 int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4) + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.Y);
                 // Rating text
-                ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
+                ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font, ctx), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
             }
 
             if (!TooltipScrollState.isIsActive()) {
@@ -54,7 +54,7 @@ public class DefaultText implements ITooltipText {
                     int x = (int) pos.x;
 
                     if (i == 0) {
-                        x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X), firstLineOffset, size, component, font);
+                        x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X), firstLineOffset, size, component, font, ctx);
                     }
                     else {
                         x += TooltipRenderer.PADDING_X + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.X);
