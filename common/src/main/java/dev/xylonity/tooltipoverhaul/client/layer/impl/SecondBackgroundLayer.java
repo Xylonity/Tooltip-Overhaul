@@ -6,6 +6,8 @@ import dev.xylonity.tooltipoverhaul.client.style.TooltipStyle;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ArmorItem;
@@ -19,7 +21,7 @@ public class SecondBackgroundLayer implements ITooltipLayer {
     @Override
     public void render(TooltipContext ctx, Vec2 pos, Point size, TooltipStyle style, Component rarity, Font font, CustomFrameData customFrame) {
         Point sec = new Point(30, 60);
-        Vec2 p = pos.add(new Vec2(-45 + TooltipsConfig.SECOND_PANEL_X, TooltipsConfig.SECOND_PANEL_Y));
+        Vec2 p = pos.add(new Vec2(-45 + Util.getSecondPanelOffset(ctx, TextAxis.X), Util.getSecondPanelOffset(ctx, TextAxis.Y)));
         ctx.push(() -> {
             ctx.translate(0, 0, LayerDepth.BACKGROUND.getZ());
             style.renderBack(LayerDepth.BACKGROUND, ctx, p, sec);

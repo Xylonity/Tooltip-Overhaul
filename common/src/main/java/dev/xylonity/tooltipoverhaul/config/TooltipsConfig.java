@@ -27,11 +27,6 @@ public final class TooltipsConfig {
     public static int SECOND_PANEL_Y = 0;
 
     @ConfigEntry(
-            comment = "Rotation speed multiplier for the armor preview in the second panel (1.0 = default)."
-    )
-    public static float ARMOR_PREVIEW_ROTATING_SPEED = 1f;
-
-    @ConfigEntry(
             comment = "Default inner overlay style for tooltips. Valid: glint, solid (monochrome), gradient. Default: glint."
     )
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
@@ -119,7 +114,7 @@ public final class TooltipsConfig {
     public static float ICON_ROTATING_SPEED = 0f;
 
     @ConfigEntry(
-            comment = "Icon rotating speed"
+            comment = "Icon size"
     )
     public static float ICON_SIZE = 1.35f;
 
@@ -130,7 +125,7 @@ public final class TooltipsConfig {
 
 
     @ConfigEntry(
-            comment = "Rotation speed multiplier for the tiered item preview in the second panel (1.0 = default)"
+            comment = "Rotation speed multiplier for the tiered item preview in the second panel"
     )
     public static float SECOND_PANEL_RENDERER_SPEED = 1f;
 

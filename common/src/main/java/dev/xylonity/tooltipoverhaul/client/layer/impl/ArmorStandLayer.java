@@ -6,6 +6,8 @@ import dev.xylonity.tooltipoverhaul.client.style.TooltipStyle;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ArmorItem;
@@ -20,7 +22,7 @@ public class ArmorStandLayer implements ITooltipLayer {
 
         if (!(ctx.stack().getItem() instanceof ArmorItem)) return;
 
-        Vec2 finalPos = pos.add(new Vec2(-30 + TooltipsConfig.SECOND_PANEL_X, 56 + TooltipsConfig.SECOND_PANEL_Y));
+        Vec2 finalPos = pos.add(new Vec2(-30 + Util.getSecondPanelOffset(ctx, TextAxis.X), 56 + Util.getSecondPanelOffset(ctx, TextAxis.Y)));
         ctx.push(() -> {
             ctx.translate(0, 0, LayerDepth.BACKGROUND_RENDERS.getZ());
             style.renderArmorStand(LayerDepth.BACKGROUND_RENDERS, ctx, finalPos, size);

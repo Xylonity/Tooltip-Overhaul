@@ -26,6 +26,16 @@ public class Util {
         return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldDisableIcon).orElse(TooltipsConfig.DISABLE_ICON);
     }
 
+    public static int getSecondPanelOffset(TooltipContext ctx, TextAxis axis) {
+        if (axis == TextAxis.X) {
+            return ctx.data().map(CustomFrameData::getSecondPanelX).orElse(TooltipsConfig.SECOND_PANEL_X);
+        }
+        else {
+            return ctx.data().map(CustomFrameData::getSecondPanelY).orElse(TooltipsConfig.SECOND_PANEL_Y);
+        }
+
+    }
+
     public static boolean shouldShowRating(ItemStack stack) {
         return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
     }

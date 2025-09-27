@@ -38,8 +38,8 @@ public record CustomFrameData(
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<IconAppearAnimation> iconAppearAnimation,
-        Optional<Integer> secondPanelX,//
-        Optional<Integer> secondPanelY,//
+        Optional<Integer> secondPanelX,
+        Optional<Integer> secondPanelY,
         Optional<Float> secondPanelRendererSize,
         Optional<Float> secondPanelRendererSpeed,
         Optional<DividerLineType> dividerLineType,//
@@ -122,6 +122,14 @@ public record CustomFrameData(
 
     public int getTooltipDescriptionPositionY() {
         return tooltipDescriptionPositionY.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
+    }
+
+    public int getSecondPanelX() {
+        return secondPanelX.orElse(TooltipsConfig.SECOND_PANEL_X);
+    }
+
+    public int getSecondPanelY() {
+        return secondPanelY.orElse(TooltipsConfig.SECOND_PANEL_Y);
     }
 
     public String getRatingAlignment() {
