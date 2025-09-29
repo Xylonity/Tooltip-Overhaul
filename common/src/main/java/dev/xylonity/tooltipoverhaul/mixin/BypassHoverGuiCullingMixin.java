@@ -7,6 +7,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.BuiltInModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -41,11 +47,40 @@ public abstract class BypassHoverGuiCullingMixin {
     )
     private BakedModel tooltipoverhaul$restoreModelIfHovered(BakedModel model, ItemStack stack, int combinedLight, int combinedOverlay, PoseStack poseStack, VertexConsumer buffer) {
         if (this.tooltipoverhaul$lastCtx == ItemDisplayContext.GUI && ModernFixCompat.isEnabled()) {
-            BakedModel real = Minecraft.getInstance().getItemRenderer().getModel(stack, null, null, 0);
-            return real != null ? real : model;
+            Minecraft minecraft = Minecraft.getInstance();
+            BakedModel real = minecraft.getItemRenderer().getModel(stack, minecraft.level, minecraft.player, 0);
+            if (real instanceof BuiltInModel || !tooltipoverhaul$hasAnyQuads(real)) {
+                try {
+                    ResourceLocation itemKey = BuiltInRegistries.ITEM.getKey(stack.getItem());
+                    BakedModel inv = minecraft.getModelManager().getModel(new ModelResourceLocation(itemKey, "inventory"));
+                    if (!(inv instanceof BuiltInModel) && tooltipoverhaul$hasAnyQuads(inv)) {
+                        return inv;
+                    }
+                }
+                catch (Throwable ignored) {
+                    ;;
+                }
+
+                return model;
+            }
+
+            return real;
         }
 
         return model;
     }
+
+    @Unique
+    private boolean tooltipoverhaul$hasAnyQuads(BakedModel model) {
+        RandomSource random = RandomSource.create(42L);
+        for (Direction direction : Direction.values()) {
+            if (!model.getQuads(null, direction, random).isEmpty()){
+                return true;
+            }
+        }
+
+        return !model.getQuads(null, null, random).isEmpty();
+    }
+
 
 }
