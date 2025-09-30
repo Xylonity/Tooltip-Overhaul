@@ -350,15 +350,15 @@ public class CustomFrameManager {
         // For better color manipulation a conversion to hsl is done
         float[] hsl = rgbToHsl(red, green, blue);
         float hue = hsl[0];
-        float saturn = Math.max(hsl[1], 0.32f); // saturn :imp:
+        float saturn = hsl[1]; // saturn :imp:
         float low = hsl[2];
 
         float lowMid = clamp(low, 0.20f, 0.92f);
-        float highMid = clamp(saturn, 0.32f, 1.0f);
+        float highMid = clamp(saturn, 0f, 1.0f);
         int midColor = (hslToRgb(hue, highMid, lowMid) & 0x00FFFFFF) | (alpha << 24);
 
         float lowDark = clamp(lowMid - 0.12f, MIN_DARK_RATIO, 0.88f);
-        float highDark = clamp(highMid * 1.06f, 0.32f, 1.0f);
+        float highDark = clamp(highMid * 1.06f, 0f, 1.0f);
 
         // Avoid overlap between the min and max values of the dark coloring (because sometimes the darker value
         // becomes invisible or gets a darker value than the one it should)
@@ -382,7 +382,7 @@ public class CustomFrameManager {
         return new int[]{(
                 hslToRgb(
                         hue,
-                        clamp(highMid * 0.92f, 0.28f, 1.0f),
+                        clamp(highMid * 0.92f, 0.0f, 1.0f),
                         clamp(lowMid + 0.12f, 0.20f, 0.95f)) & 0x00FFFFFF) | (alpha << 24),
                 midColor, darkCol};
     }
