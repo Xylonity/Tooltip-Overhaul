@@ -45,12 +45,17 @@ public class DefaultRotatingItem implements ITooltipRotatingItem {
             // Reverting the default renderItem pivot
             ctx.translate(-8f, -8f, -150f);
 
-            ModernFixCompat.push();
-            try {
-                ctx.graphics().renderItem(ctx.stack(), 0, 0);
+            if (ModernFixCompat.SHOULD_RETURN_ORIGINAL_RENDER) {
+                ModernFixCompat.push();
+                try {
+                    ctx.graphics().renderItem(ctx.stack(), 0, 0);
+                }
+                finally {
+                    ModernFixCompat.pop();
+                }
             }
-            finally {
-                ModernFixCompat.pop();
+            else {
+                ctx.graphics().renderItem(ctx.stack(), 0, 0);
             }
 
         });

@@ -46,7 +46,7 @@ public abstract class BypassHoverGuiCullingMixin {
             index = 0
     )
     private BakedModel tooltipoverhaul$restoreModelIfHovered(BakedModel model, ItemStack stack, int combinedLight, int combinedOverlay, PoseStack poseStack, VertexConsumer buffer) {
-        if (this.tooltipoverhaul$lastCtx == ItemDisplayContext.GUI && ModernFixCompat.isEnabled()) {
+        if (ModernFixCompat.SHOULD_RETURN_ORIGINAL_RENDER && this.tooltipoverhaul$lastCtx == ItemDisplayContext.GUI && ModernFixCompat.isEnabled()) {
             Minecraft minecraft = Minecraft.getInstance();
             BakedModel real = minecraft.getItemRenderer().getModel(stack, minecraft.level, minecraft.player, 0);
             if (real instanceof BuiltInModel || !tooltipoverhaul$hasAnyQuads(real)) {
