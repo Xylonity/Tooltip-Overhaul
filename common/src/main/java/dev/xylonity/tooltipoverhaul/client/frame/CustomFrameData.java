@@ -125,6 +125,10 @@ public record CustomFrameData(
         return backgroundColor.orElse(Palette.PANEL_BG);
     }
 
+    public boolean shouldDisableScrolling() {
+        return disableScrolling.orElse(TooltipsConfig.DISABLE_TOOLTIP_SCROLLING);
+    }
+
     public int getTooltipDescriptionPositionY() {
         return tooltipDescriptionPositionY.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
     }

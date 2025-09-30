@@ -17,6 +17,11 @@ public final class TooltipsConfig {
     public static boolean ARMOR_ITEMS_RENDERER = true;
 
     @ConfigEntry(
+            comment = "Disable tooltip scrolling"
+    )
+    public static boolean DISABLE_TOOLTIP_SCROLLING = false;
+
+    @ConfigEntry(
             comment = "Second panel X offset (pixels). Used when a 3D preview is shown. Negative = left, positive = right."
     )
     public static int SECOND_PANEL_X = -5;

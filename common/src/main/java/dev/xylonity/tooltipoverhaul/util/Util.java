@@ -38,6 +38,10 @@ public class Util {
 
     }
 
+    public static boolean isScrollingDisabled(TooltipContext ctx) {
+        return ctx.data().map(CustomFrameData::shouldDisableScrolling).orElse(TooltipsConfig.DISABLE_TOOLTIP_SCROLLING);
+    }
+
     public static int getBackgroundColor(TooltipContext ctx) {
         return ctx.data().map(CustomFrameData::getBackgroundColor).orElse(Palette.PANEL_BG);
     }

@@ -158,9 +158,15 @@ public final class TooltipRenderer {
                 content += components.get(i).getHeight();
             }
 
-            TooltipScrollState.begin(content, Math.max(0, height - LAST_HEADER_ABS - (PADDING_Y + 3) - 7));
-            TooltipScrollState.tick();
-        } else {
+            if (Util.isScrollingDisabled(ctx)) {
+                TooltipScrollState.reset();
+            }
+            else {
+                TooltipScrollState.begin(content, Math.max(0, height - LAST_HEADER_ABS - (PADDING_Y + 3) - 7));
+                TooltipScrollState.tick();
+            }
+        }
+        else {
             TooltipScrollState.reset();
         }
 
