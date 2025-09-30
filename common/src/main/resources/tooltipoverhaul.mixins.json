@@ -8,10 +8,11 @@
   ],
   "client": [
     "AbstractContainerScreenMixin",
+    "BypassHoverGuiCullingMixin",
+    "ItemRendererCacheMixin",
     "ClientTextTooltipAccessor",
     "GuiGraphicsItemMixin",
     "GuiGraphicsMixin",
-    "BypassHoverGuiCullingMixin",
     "MouseHandlerMixin",
     "ScreenRecorderMixin"
   ],
