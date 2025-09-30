@@ -54,7 +54,7 @@ public class DefaultText implements ITooltipText {
                     int x = (int) pos.x;
 
                     if (i == 0) {
-                        x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X), firstLineOffset, size, component, font, ctx);
+                        x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X) - (!hasStack ? 1 : 0), firstLineOffset, size, component, font, ctx);
                     }
                     else {
                         x += TooltipRenderer.PADDING_X + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.X);
