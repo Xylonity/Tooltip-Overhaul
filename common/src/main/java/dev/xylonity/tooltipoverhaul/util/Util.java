@@ -38,6 +38,10 @@ public class Util {
 
     }
 
+    public static int getBackgroundColor(TooltipContext ctx) {
+        return ctx.data().map(CustomFrameData::getBackgroundColor).orElse(Palette.PANEL_BG);
+    }
+
     public static boolean shouldShowRating(ItemStack stack) {
         return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
     }

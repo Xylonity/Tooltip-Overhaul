@@ -22,6 +22,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         List<String> tags = parseStringList(entry, "tags");
 
         Optional<String> texture = parseString(entry, "texture");
+        Optional<Integer> backgroundColor = parseInt(entry, "backgroundColor");
         Optional<CustomFrameData.InnerBorderType> borderType = parseEnum(entry, "borderType", CustomFrameData.InnerBorderType.class);
         Optional<CustomFrameData.GradientType> gradientType = parseEnum(entry, "gradientType", CustomFrameData.GradientType.class);
         Optional<List<String>> gradientColors = parseOptionalStringList(entry);
@@ -62,6 +63,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 items,
                 tags,
                 texture,
+                backgroundColor,
                 borderType,
                 gradientType,
                 gradientColors,

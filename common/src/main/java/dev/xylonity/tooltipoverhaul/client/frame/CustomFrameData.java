@@ -20,6 +20,7 @@ public record CustomFrameData(
         List<String> items,
         List<String> tags,
         Optional<String> texture,
+        Optional<Integer> backgroundColor,
         Optional<InnerBorderType> borderType,
         Optional<GradientType> gradientType,
         Optional<List<String>> gradientColors,
@@ -118,6 +119,10 @@ public record CustomFrameData(
 
     public int getTooltipDescriptionPositionX() {
         return tooltipDescriptionPositionX.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_X);
+    }
+
+    public int getBackgroundColor() {
+        return backgroundColor.orElse(Palette.PANEL_BG);
     }
 
     public int getTooltipDescriptionPositionY() {
