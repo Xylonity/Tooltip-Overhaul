@@ -50,7 +50,7 @@ public record CustomFrameData(
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
         Optional<Boolean> disableIcon,
-        Optional<Boolean> disableScrolling,//
+        Optional<Boolean> disableScrolling,
         Optional<Boolean> disableTooltip
 ) {
 

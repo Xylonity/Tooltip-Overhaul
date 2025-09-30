@@ -104,6 +104,18 @@
       ],
       "gradientType": "custom",
       "borderType": "auto_gradient"
+    },
+    {
+      "items": [
+        "celestisynth:frostbound",
+        "celestisynth:keres",
+        "celestisynth:crescentia",
+        "celestisynth:breezebreaker",
+        "celestisynth:poltergeist",
+        "celestisynth:aquaflora",
+        "celestisynth:rainfall_serenity"
+      ],
+      "disableScrolling": true
     }
   ]
 }
