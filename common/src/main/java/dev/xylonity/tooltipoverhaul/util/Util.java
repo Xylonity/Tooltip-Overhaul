@@ -7,12 +7,14 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 
 import java.awt.*;
 
@@ -59,13 +61,15 @@ public class Util {
     private static int parseDividerLineColor(String matcher, ItemStack stack) {
         switch (matcher) {
             case "match_inner_frame_color" -> {
-                return switch (stack.getRarity()) {
-                    case COMMON -> Palette.COMMON[0];
-                    case UNCOMMON -> Palette.UNCOMMON[0];
-                    case RARE -> Palette.RARE[0];
-                    case EPIC -> Palette.EPIC[0];
-                    default -> Palette.LEGENDARY[0];
-                };
+                final Rarity r = stack.getRarity();
+                // Computes the default color per rarity
+                // Defaults to a simulated legendary rarity
+                int palette = Palette.LEGENDARY[0];
+                if (r == Rarity.COMMON) palette = Palette.COMMON[0];
+                if (r == Rarity.UNCOMMON) palette = Palette.UNCOMMON[0];
+                if (r == Rarity.RARE) palette = Palette.RARE[0];
+                if (r == Rarity.EPIC) palette = Palette.EPIC[0];
+                return palette;
             }
             case "match_item_name_color" -> {
                 TextColor color = stack.getHoverName().getStyle().getColor();

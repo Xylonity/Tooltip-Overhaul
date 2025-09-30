@@ -18,6 +18,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
@@ -205,16 +206,14 @@ public final class TooltipRenderer {
      * stack's rarity
      */
     private static Component computeRating(Optional<CustomFrameData> customFrame, TooltipContext ctx) {
-
+        final Rarity r = ctx.stack().getRarity();
         // Computes the default color per rarity
-        ChatFormatting color = switch (ctx.stack().getRarity()) {
-            case COMMON -> ChatFormatting.GRAY;
-            case UNCOMMON -> ChatFormatting.YELLOW;
-            case RARE -> ChatFormatting.BLUE;
-            case EPIC -> ChatFormatting.DARK_PURPLE;
-            // Defaults to a simulated legendary rarity
-            default -> ChatFormatting.GOLD;
-        };
+        // Defaults to a simulated legendary rarity
+        ChatFormatting color = ChatFormatting.GOLD;
+        if (r == Rarity.COMMON) color = ChatFormatting.GRAY;
+        if (r == Rarity.UNCOMMON) color = ChatFormatting.YELLOW;
+        if (r == Rarity.RARE) color = ChatFormatting.BLUE;
+        if (r == Rarity.EPIC) color = ChatFormatting.DARK_PURPLE;
 
         // If the curent stack is declared in a custom frame format
         if (customFrame.isPresent()) {
