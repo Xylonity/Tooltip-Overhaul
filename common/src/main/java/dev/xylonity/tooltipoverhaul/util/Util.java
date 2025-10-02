@@ -37,6 +37,16 @@ public class Util {
 
     }
 
+    public static int getMainPanelPadding(TooltipContext ctx, TextAxis axis) {
+        if (axis == TextAxis.X) {
+            return ctx.data().map(CustomFrameData::getMainPanelPaddingX).orElse(TooltipsConfig.MAIN_PANEL_PADDING_X);
+        }
+        else {
+            return ctx.data().map(CustomFrameData::getMainPanelPaddingY).orElse(TooltipsConfig.MAIN_PANEL_PADDING_Y);
+        }
+
+    }
+
     public static boolean isScrollingDisabled(TooltipContext ctx) {
         return ctx.data().map(CustomFrameData::shouldDisableScrolling).orElse(TooltipsConfig.DISABLE_TOOLTIP_SCROLLING);
     }

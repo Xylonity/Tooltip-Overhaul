@@ -8,6 +8,7 @@ import dev.xylonity.tooltipoverhaul.compat.apotheosis.ApotheosisHook;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.util.TextAxis;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -37,8 +38,8 @@ import java.util.Optional;
 public final class TooltipRenderer {
 
     // Default extra padding for the main tooltip (components aren't aligned automatically)
-    public static final int PADDING_X = TooltipsConfig.MAIN_PANEL_PADDING_X;
-    public static final int PADDING_Y = TooltipsConfig.MAIN_PANEL_PADDING_Y;
+    public static int PADDING_X = TooltipsConfig.MAIN_PANEL_PADDING_X;
+    public static int PADDING_Y = TooltipsConfig.MAIN_PANEL_PADDING_Y;
 
     // Main chrono for animations and such
     public static float ELAPSED;
@@ -93,6 +94,10 @@ public final class TooltipRenderer {
      */
     public static boolean render(TooltipContext ctx) {
         if (ApotheosisHook.isActive()) return false;
+
+        // Reassign padding
+        PADDING_X = Util.getMainPanelPadding(ctx, TextAxis.X);
+        PADDING_Y = Util.getMainPanelPadding(ctx, TextAxis.Y);
 
         // Passes if there is no text present
         List<?> raw = ctx.getComponents();

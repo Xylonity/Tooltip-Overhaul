@@ -11,8 +11,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
-import java.awt.Color;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,8 +35,8 @@ public record CustomFrameData(
         Optional<Integer> ratingPositionY,
         Optional<Integer> tooltipDescriptionPositionX,
         Optional<Integer> tooltipDescriptionPositionY,
-        Optional<Integer> mainPanelPaddingX,//
-        Optional<Integer> mainPanelPaddingY,//
+        Optional<Integer> mainPanelPaddingX,
+        Optional<Integer> mainPanelPaddingY,
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<IconAppearAnimation> iconAppearAnimation,
@@ -60,15 +60,23 @@ public record CustomFrameData(
     }
 
     public InnerBorderType getBorderType() {
-        return borderType.orElse(Defaults.BORDER_TYPE);
+        InnerBorderType type;
+        try {
+            type = InnerBorderType.valueOf(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE.toUpperCase(Locale.ROOT));
+        }
+        catch (Exception ignore) {
+            type = InnerBorderType.GRADIENT;
+        }
+
+        return borderType.orElse(type);
     }
 
     public GradientType getGradientType() {
-        return gradientType.orElse(Defaults.GRADIENT_TYPE);
+        return gradientType.orElse(GradientType.COMMON);
     }
 
     public List<String> getGradientColors() {
-        return gradientColors.filter(colors -> colors.size() >= 3).map(colors -> colors.subList(0, 3)).orElse(Defaults.GRADIENT_COLORS);
+        return gradientColors.filter(colors -> colors.size() >= 3).map(colors -> colors.subList(0, 3)).orElse(List.of("#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF"));
     }
 
     public String getItemRating(ItemStack stack) {
@@ -168,7 +176,7 @@ public record CustomFrameData(
     }
 
     public String getEffect() {
-        return specialEffect.filter(effect -> !effect.trim().isEmpty()).orElse(Defaults.SPECIAL_EFFECT);
+        return specialEffect.filter(effect -> !effect.trim().isEmpty()).orElse("none");
     }
 
     public List<ResourceLocation> getItemLocations() {
@@ -177,14 +185,6 @@ public record CustomFrameData(
 
     public List<TagKey<Item>> getTagKeys() {
         return tags.stream().map(name -> TagKey.create(Registries.ITEM, new ResourceLocation(name))).collect(Collectors.toList());
-    }
-
-    public ResourceLocation getTextureLocation() {
-        return new ResourceLocation(getTexture());
-    }
-
-    public List<Color> getGradientColorValues() {
-        return getGradientColors().stream().map(hex -> Color.decode(hex.startsWith("#") ? hex : "#" + hex)).collect(Collectors.toList());
     }
 
     public boolean matches(ItemStack stack) {
@@ -215,24 +215,20 @@ public record CustomFrameData(
         return false;
     }
 
+    public int getMainPanelPaddingX() {
+        return mainPanelPaddingX.orElse(TooltipsConfig.MAIN_PANEL_PADDING_X);
+    }
+
+    public int getMainPanelPaddingY() {
+        return mainPanelPaddingY.orElse(TooltipsConfig.MAIN_PANEL_PADDING_Y);
+    }
+
     public String getDividerLineColor() {
         return dividerLineColor.orElse(TooltipsConfig.DIVIDER_LINE_COLOR);
     }
 
     public boolean hasCustomTexture() {
         return texture.isPresent() && !texture.get().trim().isEmpty();
-    }
-
-    public boolean hasCustomBorderType() {
-        return borderType.isPresent();
-    }
-
-    public boolean hasCustomGradientType() {
-        return gradientType.isPresent();
-    }
-
-    public boolean hasCustomGradientColors() {
-        return gradientColors.isPresent() && gradientColors.get().size() >= 3;
     }
 
     public boolean hasCustomItemRating() {
@@ -253,30 +249,6 @@ public record CustomFrameData(
 
     public boolean hasCustomColorItemRating() {
         return colorItemRating.isPresent();
-    }
-
-    public boolean hasCustomParticles() {
-        return particles.isPresent() && !particles.get().trim().isEmpty();
-    }
-
-    public boolean hasCustomSpecialEffect() {
-        return specialEffect.isPresent() && !specialEffect.get().trim().isEmpty();
-    }
-
-    public boolean hasCustomDisableTooltip() {
-        return disableTooltip.isPresent();
-    }
-
-    private static String formatRarity(Rarity rarity) {
-        String name = rarity.name();
-        return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
-    }
-
-    public static final class Defaults {
-        public static final InnerBorderType BORDER_TYPE = InnerBorderType.GRADIENT;
-        public static final GradientType GRADIENT_TYPE = GradientType.COMMON;
-        public static final List<String> GRADIENT_COLORS = List.of("#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF");
-        public static final String SPECIAL_EFFECT = "none";
     }
 
     public enum InnerBorderType {
@@ -302,12 +274,6 @@ public record CustomFrameData(
     public enum DividerLineType {
         NONE,
         NORMAL
-    }
-
-    public enum DividerLineColor {
-        MATCH_RARITY,
-        MATCH_ITEM_NAME,
-        WHITE
     }
 
     public enum IconAppearAnimation {
