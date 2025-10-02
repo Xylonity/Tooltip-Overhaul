@@ -1,6 +1,12 @@
+import net.darkhax.curseforgegradle.TaskPublishCurseForge
+
+import java.util.regex.Pattern
+
 plugins {
     id 'multiloader-loader'
     id 'net.neoforged.moddev.legacyforge' version '2.0.105'
+    id 'net.darkhax.curseforgegradle' version '1.1.26'
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 mixin {
@@ -116,6 +122,10 @@ dependencies {
 
     modImplementation ("curse.maven:tetra-289712:6912921")
     modImplementation ("curse.maven:mutil-351914:6418901")
+
+    modImplementation ("curse.maven:alexs-caves-924854:5848216")
+    modImplementation ("curse.maven:citadel-331936:6702068")
+
     //compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
     //runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
@@ -126,4 +136,84 @@ jar {
     manifest.attributes([
             "MixinConfigs": "${mod_id}.mixins.json,${mod_id}.forge.mixins.json"
     ])
+}
+
+def extractChangelogForVersion = { File file, String version ->
+    if (!file || !file.exists()) {
+        return null
+    }
+
+    def lines = file.getText('UTF-8').readLines()
+    if (lines.isEmpty()) return null
+    lines[0] = lines[0].replaceFirst('^\\uFEFF', '')
+
+    def lead = '^\\s*#{1,6}\\s*'
+    def ver  = Pattern.quote(version)
+
+    def headerPattern = Pattern.compile(lead + '[vV]?' + ver + '\\b.*\\s*$')
+    def nextHeaderPattern = Pattern.compile(lead + '[vV]?\\d+\\.\\d+(?:\\.\\d+)?(?:[-+][\\w.]+)?\\b.*\\s*$')
+
+    int start = -1
+    for (int i = 0; i < lines.size(); i++) {
+        if (headerPattern.matcher(lines[i]).matches()) { start = i + 1; break }
+    }
+
+    if (start == -1) {
+        return null
+    }
+
+    def collected = []
+    for (int j = start; j < lines.size(); j++) {
+        def line = lines[j]
+        if (nextHeaderPattern.matcher(line).matches()) {
+            break
+        }
+
+        collected << line
+    }
+
+    while (!collected.isEmpty() && collected[0].trim().isEmpty()) {
+        collected.remove(0)
+    }
+
+    while (!collected.isEmpty() && collected[collected.size()-1].trim().isEmpty()) {
+        collected.remove(collected.size()-1)
+    }
+
+    return collected.isEmpty() ? null : collected.join(System.lineSeparator())
+}
+
+def changelogSection = extractChangelogForVersion(project.file('../CHANGELOG.md'), project.property('version').toString())
+
+tasks.register('publishCurseForge', TaskPublishCurseForge) {
+    group = 'publishing'
+    apiToken = System.getenv("CURSEFORGE_TOKEN")
+    def mainFile = upload("1327508", jar)
+
+    mainFile.displayName = "[FORGE] Tooltip Overhaul " + project.property('version').toString() + "-" + minecraft_version
+
+    mainFile.addEnvironment("Client")
+    mainFile.addModLoader("Forge")
+    mainFile.addGameVersion("1.20")
+    mainFile.addGameVersion("1.20.1")
+
+    mainFile.releaseType = "release"
+
+    mainFile.changelog = changelogSection
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "tooltip-overhaul"
+
+    versionName = "[FORGE] Tooltip Overhaul " + project.property('version').toString() + "-" + minecraft_version
+
+    loaders = ["forge"]
+    gameVersions = ["1.20", "1.20.1"]
+
+    uploadFile = jar
+    versionNumber = project.property('version').toString()
+    versionType = "release"
+
+    changelog = changelogSection
 }

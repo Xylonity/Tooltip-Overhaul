@@ -1,0 +1,52 @@
+# 1.1.1
+- Added a config option to set custom frames to certain namespaces, apart from specific items and tags
+- Fixed rating color not applying correctly for custom frame itemstacks
+- Fixed wrong rating translation key for items with a custom rarity
+- Enhanced config descriptions
+- Added a config option to add a frame overlay texture to every single item (as a global config option)
+
+# 1.1.0
+IT IS RECOMMENDED TO DELETE THE CONFIG FILE (tooltipoverhaul.toml)
+
+- Added 5 new overlay frames: cataclysm_frame.png, flower_frame.png, gear_frame.png, zombie_brain_frame.png and guns_and_wires.png
+- Decreased the default size and corrected the position of the icon.
+- Redesign of the following overlay frames: silver, amber, diamond and amethyst
+- Now rating is disabled by default
+- Optimized glint inner frame rendering so now performance should be increased slightly
+- Optimized divider line rendering so now performance should be increased slightly
+- Default rarity is now a translatable component, thus matching the current language package
+- Added 16 brand new icon appear animations: zoom, rotate, rotate_fast, rotate_zoom, zoom_snap, skew, vibration, tilt_wave, flip, pendulum, bounce, go_down, pulse, fan_in, hover_pop and barrel_roll
+- Config is now hotreloaded, which means you don’t need to reload the game in order to update the config options
+- Decreased default tooltip padding
+- Fixed EMI recipe categories not detecting the hovered stack correctly
+- Fixed the tooltip position blocking the view on certain scenarios
+- Fixed custom frames not working with item-tags only (thanks Elenterius)
+- Fixed a bug where the second panel wasn’t disappearing completely after disabling it
+- Fixed wrong icon rotation (now present in rotate and rotate_zoom animations)
+- Fixed icon not scaled correctly on certain scenarios
+- Fixed non-stack tooltip rendered with a wrong text position
+- Fixed FTB Quests GUIs showing a previously hovered itemstack
+- Fixed some items (icon) being larger than the tooltip itself or going outside the margins
+- Fixed a hard crash when loading some Lethality item tooltips inside JEI categories
+- Fixed color parser algorithm not approximating the color correctly
+- Now this mod overrides modernfix and flerovium item model culling just on the hovered stack
+- [Fabric only] Fixed an internal bug where tooltipoverhaul could crash if knightlib (although there is no direct link between both mods) was present in the same modpack, caused by a wrong shadowing in the package methodology
+- Enhanced compatibility with apotheosis
+- Celestisynth weapons now have scrolling state disabled by default
+- Now using gradient as the default inner frame, instead of glint
+- Default color palette is now darker
+- Default background color is now black instead of dark blue
+- Default icon background has been changed
+- Certain overlay frames are now darker in order to reduce the visual noise due to big differences in the color schema
+- Added a config option to change the color of the divider line. You can now select if it should match the inner frame color, the item name color or if you want to use a custom color
+- Added a config option to modify the padding of the main panel
+- Added a config option to modify the aligment of the title text and the rating text (left, middle or right)
+- Added a config option to disable the item rating
+- Added a config option to disable the icon renderer
+- Added a config option to change the title, rating and content positions (x and y)
+- Added a config option to modify the size of the icon
+- Added a config option to modify the size of the second panel renderer
+- Added a config option to modify the speed of the second panel renderer
+- Added a config option to modify the second panel position (x and y)
+- Added a config option to modify the default tooltip background color
+- Added a config option to disable tooltip scrolling
