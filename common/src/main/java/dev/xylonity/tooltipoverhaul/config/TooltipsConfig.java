@@ -22,22 +22,22 @@ public final class TooltipsConfig {
     public static boolean DISABLE_TOOLTIP_SCROLLING = false;
 
     @ConfigEntry(
-            comment = "Second panel X offset (pixels). Used when a 3D preview is shown. Negative = left, positive = right."
+            comment = "Horizontal offset (in pixels) for the second panel when a 3D preview is shown. Negative = left, positive = right."
     )
     public static int SECOND_PANEL_X = -5;
 
     @ConfigEntry(
-            comment = "Second panel Y offset (pixels). Used when a 3D preview is shown. Negative = up, positive = down."
+            comment = "Vertical offset (in pixels) for the second panel when a 3D preview is shown. Negative = up, positive = down."
     )
     public static int SECOND_PANEL_Y = 0;
 
     @ConfigEntry(
-            comment = "Default inner overlay style for tooltips. Valid: glint, solid (monochrome), gradient. Default: glint."
+            comment = "Default inner overlay style for tooltips. Options: glint, solid (monochrome), gradient."
     )
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
 
     @ConfigEntry(
-            comment = "Default tooltip background color in ARGB (0xAARRGGBB). For instance: 0xF0010110."
+            comment = "Default tooltip background color in ARGB format (0xAARRGGBB). Example: 0xF0010110."
     )
     public static int DEFAULT_BACKGROUND_COLOR = 0xF0000000;
 
@@ -49,123 +49,123 @@ public final class TooltipsConfig {
     public static boolean SHOW_TOOLTIP_WITHOUT_STACK = true;
 
     @ConfigEntry(
-            comment = "Main panel padding X coordinate"
+            comment = "Horizontal padding for the main panel."
     )
     public static int MAIN_PANEL_PADDING_X = 4;
 
     @ConfigEntry(
-            comment = "Main panel padding Y coordinate"
+            comment = "Vertical padding for the main panel."
     )
     public static int MAIN_PANEL_PADDING_Y = 2;
 
     @ConfigEntry(
-            comment = "Title alignment. left, middle or right"
+            comment = "Title alignment. Options: left, middle, right."
     )
     public static String TITLE_X_ALIGNMENT = "left";
 
     @ConfigEntry(
-            comment = "Rating alignment. left, middle or right"
+            comment = "Rating alignment. Options: left, middle, right."
     )
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
-            comment = "Title position X"
+            comment = "Horizontal position offset for the title."
     )
     public static int TITLE_POSITION_X = 1;
 
     @ConfigEntry(
-            comment = "Title position Y"
+            comment = "Vertical position offset for the title."
     )
     public static int TITLE_POSITION_Y = 0;
 
     @ConfigEntry(
-            comment = "Rating position X"
+            comment = "Horizontal position offset for the rating text."
     )
     public static int RATING_POSITION_X = 1;
 
     @ConfigEntry(
-            comment = "Rating position Y"
+            comment = "Vertical position offset for the rating text."
     )
     public static int RATING_POSITION_Y = 0;
 
     @ConfigEntry(
-            comment = "Tooltip description (the content of the tooltip, apart from the rating text and the name of the item) position X"
+            comment = "Horizontal position offset for the tooltip description (the main content text)."
     )
     public static int TOOLTIP_DESCRIPTION_POSITION_X = 0;
 
     @ConfigEntry(
-            comment = "Tooltip description (the content of the tooltip, apart from the rating text and the name of the item) position Y"
+            comment = "Vertical position offset for the tooltip description (the main content text)."
     )
     public static int TOOLTIP_DESCRIPTION_POSITION_Y = 0;
 
     @ConfigEntry(
-            comment = "Show rating text"
+            comment = "Show rating text."
     )
     public static boolean SHOW_RATING = false;
 
     @ConfigEntry(
-            comment = "Disable icon"
+            comment = "Disable the item icon."
     )
     public static boolean DISABLE_ICON = false;
 
     @ConfigEntry(
-            comment = "Icon appear animation"
+            comment = "Animation style for the icon appearance."
     )
     public static String ICON_APPEAR_ANIMATION = "skew";
 
     @ConfigEntry(
-            comment = "Icon rotating speed"
+            comment = "Rotation speed of the icon."
     )
     public static float ICON_ROTATING_SPEED = 0f;
 
     @ConfigEntry(
-            comment = "Icon size"
+            comment = "Size of the icon."
     )
     public static float ICON_SIZE = 1.35f;
 
     @ConfigEntry(
-            comment = "Second panel renderer size"
+            comment = "Size of the second panel renderer."
     )
     public static float SECOND_PANEL_RENDERER_SIZE = 2.75f;
 
 
     @ConfigEntry(
-            comment = "Rotation speed multiplier for the tiered item preview in the second panel"
+            comment = "Rotation speed multiplier for the tiered item preview in the second panel."
     )
     public static float SECOND_PANEL_RENDERER_SPEED = 1f;
 
     @ConfigEntry(
-            comment = "Divider line color. You can either specify 'match_inner_frame_color', 'match_item_name_color' or a color, such as '0xA0EFEFEF'"
+            comment = "Divider line color. Options: 'match_inner_frame_color', 'match_item_name_color' or a hex ARGB color (e.g., 0xA0EFEFEF)."
     )
     public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
 
     @ConfigEntry(
-            comment = "Common palette colors (from brigth to dark). You can only specify 3 exact colors"
+            comment = "Color palette for COMMON rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String COMMON_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";
 
     @ConfigEntry(
-            comment = "Uncommon palette colors (from brigth to dark). You can only specify 3 exact colors"
+            comment = "Color palette for UNCOMMON rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String UNCOMMON_PALETTE_COLORS = "0xFF9CA028, 0xFF6A6D18, 0xFF4B4D0E";
 
     @ConfigEntry(
-            comment = "Rare palette colors (from brigth to dark). You can only specify 3 exact colors"
+            comment = "Color palette for RARE rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String RARE_PALETTE_COLORS = "0xFF335FA0, 0xFF193A6D, 0xFF0A1D38";
 
     @ConfigEntry(
-            comment = "Epic palette colors (from brigth to dark). You can only specify 3 exact colors"
+            comment = "Color palette for EPIC rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String EPIC_PALETTE_COLORS = "0xFFA02283, 0xFF691356, 0xFF3C0730";
 
     @ConfigEntry(
-            comment = "Legendary palette colors (from brigth to dark). You can only specify 3 exact colors"
+            comment = "Color palette for LEGENDARY rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String LEGENDARY_PALETTE_COLORS = "0xFFA0803C, 0xFF815F19, 0xFF372808";
 
     @ConfigEntry(
-            comment = "Chaos palette colors (from brigth to dark). You can only specify 3 exact colors"
+            comment = "Color palette for CHAOS rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String CHAOS_PALETTE_COLORS = "0xFF9F373A, 0xFF81191B, 0xFF370809";
 
