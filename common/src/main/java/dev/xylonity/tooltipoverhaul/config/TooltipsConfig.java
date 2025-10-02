@@ -17,6 +17,13 @@ public final class TooltipsConfig {
     public static boolean ARMOR_ITEMS_RENDERER = true;
 
     @ConfigEntry(
+            comment = "Apply a custom frame overlay texture to every item. This option is overrided if the hovered itemstack has " +
+                    "a custom frame. Write down the texture location (such as tooltipoverhaul:textures/overlay/silver_frame.png) or " +
+                    "leave it empty. No frame overlays are applied globally by default."
+    )
+    public static String GLOBAL_FRAME_OVERLAY_LOCATION = "";
+
+    @ConfigEntry(
             comment = "Disable tooltip scrolling"
     )
     public static boolean DISABLE_TOOLTIP_SCROLLING = false;

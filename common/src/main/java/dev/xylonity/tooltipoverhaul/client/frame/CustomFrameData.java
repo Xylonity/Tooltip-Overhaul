@@ -56,7 +56,7 @@ public record CustomFrameData(
 ) {
 
     public String getTexture() {
-        return texture.filter(t -> !t.trim().isEmpty()).orElse(Defaults.TEXTURE);
+        return texture.filter(t -> !t.trim().isEmpty()).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
     }
 
     public InnerBorderType getBorderType() {
@@ -273,7 +273,6 @@ public record CustomFrameData(
     }
 
     public static final class Defaults {
-        public static final String TEXTURE = null;
         public static final InnerBorderType BORDER_TYPE = InnerBorderType.GRADIENT;
         public static final GradientType GRADIENT_TYPE = GradientType.COMMON;
         public static final List<String> GRADIENT_COLORS = List.of("#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF");

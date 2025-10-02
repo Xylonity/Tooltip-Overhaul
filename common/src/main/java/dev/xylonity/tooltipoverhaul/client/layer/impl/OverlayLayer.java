@@ -19,7 +19,7 @@ public class OverlayLayer implements ITooltipLayer {
     public void render(TooltipContext ctx, Vec2 pos, Point size, TooltipStyle style, Component rarity, Font font, CustomFrameData customFrame) {
         ctx.push(() -> {
             ctx.translate(0, 0, LayerDepth.BACKGROUND_OVERLAY.getZ());
-            Optional.ofNullable(customFrame).ifPresent(frame -> CustomFrameManager.renderCustomFrame(ctx, frame, pos, size));
+            CustomFrameManager.renderCustomFrame(ctx, pos, size);
         });
     }
 

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -94,10 +95,11 @@ public class CustomFrameManager {
      * Core renderer for custom frames
      * Gone through hard times trying to sync the positions correctly :skull:
      */
-    public static void renderCustomFrame(TooltipContext ctx, CustomFrameData frameData, Vec2 pos, Point size) {
-        if (frameData.getTexture() == null) return;
+    public static void renderCustomFrame(TooltipContext ctx, Vec2 pos, Point size) {
+        String textureLocation = ctx.data().map(CustomFrameData::getTexture).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
+        if (textureLocation == null || textureLocation.isEmpty() || textureLocation.isBlank()) return;
 
-        ResourceLocation texture = new ResourceLocation(frameData.getTexture());
+        ResourceLocation texture = new ResourceLocation(textureLocation);
 
         // Computes the exact texture dimensions, thus automatically handling animated frames. The textures have a fixed
         // dimension of 132x132n, as n being the number of frames. Albeit this doesn't require much computation, meta info
