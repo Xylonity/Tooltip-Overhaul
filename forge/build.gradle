@@ -188,7 +188,7 @@ def changelogSection = extractChangelogForVersion(project.file('../CHANGELOG.md'
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
     group = 'publishing'
     apiToken = System.getenv("CURSEFORGE_TOKEN")
-    def mainFile = upload("1327508", jar)
+    def mainFile = upload("1327508", reobfJar)
 
     mainFile.displayName = "[FORGE] Tooltip Overhaul " + project.property('version').toString() + "-" + minecraft_version
 
@@ -211,7 +211,7 @@ modrinth {
     loaders = ["forge"]
     gameVersions = ["1.20", "1.20.1"]
 
-    uploadFile = jar
+    uploadFile = reobfJar
     versionNumber = project.property('version').toString()
     versionType = "release"
 
