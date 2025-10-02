@@ -8,6 +8,7 @@ import dev.xylonity.tooltipoverhaul.config.wrapper.ConfigEntry;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
@@ -28,6 +29,7 @@ public final class ConfigManager {
 
     private static final Map<Path, Class<?>> FILE2CLASS = new ConcurrentHashMap<>();
 
+    private static final Map<Path, WatchKey> WATCHED_DIRS = new ConcurrentHashMap<>();
     private static WatchService WATCH;
     private static volatile boolean RUN_WATCHER;
 
@@ -61,8 +63,17 @@ public final class ConfigManager {
         AutoConfig meta = clazz.getAnnotation(AutoConfig.class);
         if (meta == null) return;
 
-        String fileName = meta.file() + ".toml";
-        Path tomlPath = CONFIG_DIR.resolve(fileName);
+        String fileName = meta.file();
+        Path subDir = CONFIG_DIR.resolve(fileName);
+        Path tomlPath = subDir.resolve(fileName + ".toml");
+
+        try {
+            Files.createDirectories(subDir);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         CommentedFileConfig cfg = CommentedFileConfig
                 .builder(tomlPath, TomlFormat.instance())
@@ -138,7 +149,6 @@ public final class ConfigManager {
             }
 
             WATCH = FileSystems.getDefault().newWatchService();
-            CONFIG_DIR.register(WATCH, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
         }
         catch (Exception exception) {
             return;
@@ -147,16 +157,33 @@ public final class ConfigManager {
         RUN_WATCHER = true;
         WATCHER.submit(() -> {
             try {
+                for (Path configFile : FILE2CLASS.keySet()) {
+                    Path parent = configFile.getParent();
+                    if (parent != null && !WATCHED_DIRS.containsKey(parent)) {
+                        try {
+                            WatchKey key = parent.register(WATCH,
+                                    StandardWatchEventKinds.ENTRY_MODIFY,
+                                    StandardWatchEventKinds.ENTRY_CREATE,
+                                    StandardWatchEventKinds.ENTRY_DELETE);
+                            WATCHED_DIRS.put(parent, key);
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+
                 while (RUN_WATCHER && !Thread.currentThread().isInterrupted()) {
                     WatchKey key = WATCH.take();
                     Path direct = (Path) key.watchable();
-
                     for (WatchEvent<?> event : key.pollEvents()) {
                         WatchEvent.Kind<?> kind = event.kind();
                         if (kind == StandardWatchEventKinds.OVERFLOW) continue;
 
                         Path file = direct.resolve((Path) event.context());
                         Class<?> clazz = FILE2CLASS.get(file);
+
                         if (clazz == null || !file.toString().endsWith(".toml")) continue;
 
                         long now = System.currentTimeMillis();
@@ -210,7 +237,6 @@ public final class ConfigManager {
         Matcher m = Pattern.compile("Default:\\s*([^\\|\\n]+)").matcher(s);
         if (!m.find()) return null;
         String raw = m.group(1).trim();
-
         try {
             return switch (clazz.getName()) {
                 case "int" -> Integer.parseInt(raw);
@@ -253,12 +279,12 @@ public final class ConfigManager {
                 : String.valueOf(defaultValue);
 
         StringBuilder sb = new StringBuilder(base).append("\n\nDefault: ").append(defVal);
-
         if (isNumber) {
             String minVal = hasDecimals(entry.min(), isFloating);
             String maxVal = hasDecimals(entry.max(), isFloating);
             sb.append("\nRange: ").append(minVal).append(" ~ ").append(maxVal);
         }
+
         if (!note.isEmpty()) sb.append("\n\nNote: ").append(note);
 
         return sb.toString();
@@ -283,7 +309,8 @@ public final class ConfigManager {
                 if (col + w.length() > 130) {
                     out.append("\n");
                     col = 0;
-                } else if (col > 0) {
+                }
+                else if (col > 0) {
                     out.append(" "); col++;
                 }
 
