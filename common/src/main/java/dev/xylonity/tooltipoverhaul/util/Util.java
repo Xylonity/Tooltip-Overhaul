@@ -7,7 +7,6 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
@@ -175,7 +174,11 @@ public class Util {
             return Component.translatable("tooltipoverhaul." + string.trim().toLowerCase() + "_rarity");
         }
 
-        return Component.translatable(string.trim().toLowerCase());
+        if (string.contains("alexscaves")) {
+            return Component.translatable("rarity.alexscaves." + string.split(":")[1] + ".name");
+        }
+
+        return Component.translatable(r.name().trim().toLowerCase());
     }
 
 }
