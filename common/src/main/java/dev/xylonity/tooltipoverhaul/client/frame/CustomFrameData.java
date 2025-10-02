@@ -39,7 +39,7 @@ public record CustomFrameData(
         Optional<Integer> mainPanelPaddingY,
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
-        Optional<IconAppearAnimation> iconAppearAnimation,
+        Optional<String> iconAppearAnimation,
         Optional<Integer> secondPanelX,
         Optional<Integer> secondPanelY,
         Optional<Float> secondPanelRendererSize,
@@ -104,7 +104,7 @@ public record CustomFrameData(
     }
 
     public String getIconAppearAnimation() {
-        return iconAppearAnimation.map(a -> a.toString().trim()).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION.trim());
+        return iconAppearAnimation.orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
     }
 
     public float getIconRotatingSpeed() {
@@ -274,25 +274,6 @@ public record CustomFrameData(
     public enum DividerLineType {
         NONE,
         NORMAL
-    }
-
-    public enum IconAppearAnimation {
-        ZOOM,
-        ROTATE,
-        ROTATE_FAST,
-        ROTATE_ZOOM,
-        ZOOM_SNAP,
-        SKEW,
-        VIBRATION,
-        TILT_WAVE,
-        FLIP,
-        PENDULUM,
-        BOUNCE,
-        GO_DOWN,
-        PULSE,
-        FIN_IN,
-        HOVER_POP,
-        BARREL_ROLL
     }
 
 }

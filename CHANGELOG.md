@@ -1,3 +1,9 @@
+# 1.1.2
+- Fixed a crash when loading the forge version
+- Added a config option to change the padding of the main tooltip
+- Fixed icon animations not applying on items with a custom frame
+- Fixed text position not correctly aligned when the rating is enabled
+
 # 1.1.1
 - Added a config option to set custom frames to certain namespaces, apart from specific items and tags
 - Enhanced config descriptions

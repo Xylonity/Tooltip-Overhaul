@@ -1,6 +1,5 @@
 package dev.xylonity.tooltipoverhaul.client.style.background.icon;
 
-import dev.xylonity.tooltipoverhaul.client.Palette;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipPreviewBackground;

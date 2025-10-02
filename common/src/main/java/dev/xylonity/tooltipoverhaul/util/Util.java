@@ -60,7 +60,7 @@ public class Util {
     }
 
     public static String getIconAppearAnimation(TooltipContext context) {
-        return context.data().isPresent() ? context.data().get().getIconAppearAnimation() : TooltipsConfig.ICON_APPEAR_ANIMATION;
+        return context.data().map(CustomFrameData::getIconAppearAnimation).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
     }
 
     public static float getIconRotatingSpeed(TooltipContext context) {

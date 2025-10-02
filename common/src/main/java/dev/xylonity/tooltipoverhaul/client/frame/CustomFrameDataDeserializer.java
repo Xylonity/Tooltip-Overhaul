@@ -42,7 +42,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
         Optional<Float> iconSize = parseFloat(entry, "iconSize");
         Optional<Float> iconRotatingSpeed = parseFloat(entry, "iconRotatingSpeed");
-        Optional<CustomFrameData.IconAppearAnimation> iconAppearAnimation = parseEnum(entry, "iconAppearAnimation", CustomFrameData.IconAppearAnimation.class);
+        Optional<String> iconAppearAnimation = parseString(entry, "iconAppearAnimation");
         Optional<Integer> secondPanelX = parseInt(entry, "secondPanelX");
         Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
         Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");

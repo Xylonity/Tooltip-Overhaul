@@ -31,7 +31,7 @@ public class DefaultIcon implements ITooltipIcon {
         ctx.push(() -> {
             ctx.translate(0, 0, depth.getZ());
 
-            ctx.translate((pos.x + TooltipRenderer.PADDING_X + 4) + 8, (pos.y + TooltipRenderer.PADDING_Y + 4) + 8, 0);
+            ctx.translate(pos.x + 8, pos.y + 8, 0);
             ctx.translate(0, 0, 150);
 
             float progress = Math.min(TooltipRenderer.ELAPSED / ANIMATION_DURATION, 1.0f);
