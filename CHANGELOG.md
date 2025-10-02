@@ -1,9 +1,11 @@
 # 1.1.1
 - Added a config option to set custom frames to certain namespaces, apart from specific items and tags
-- Fixed rating color not applying correctly for custom frame itemstacks
-- Fixed wrong rating translation key for items with a custom rarity
 - Enhanced config descriptions
 - Added a config option to add a frame overlay texture to every single item (as a global config option)
+- Added 8 new translation packages for the default rarities
+- Fixed wrong rating translation key for items with a custom rarity
+- Fixed rating color not applying correctly for custom frame itemstacks
+- Fixed alexscaves rarities not translated correctly
 
 # 1.1.0
 IT IS RECOMMENDED TO DELETE THE CONFIG FILE (tooltipoverhaul.toml)
