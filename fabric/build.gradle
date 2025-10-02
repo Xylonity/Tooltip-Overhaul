@@ -130,7 +130,7 @@ def changelogSection = extractChangelogForVersion(project.file('../CHANGELOG.md'
 tasks.register('publishCurseForge', TaskPublishCurseForge) {
     group = 'publishing'
     apiToken = System.getenv("CURSEFORGE_TOKEN")
-    def mainFile = upload("1327508", jar)
+    def mainFile = upload("1327508", remapJar)
 
     mainFile.displayName = "[FABRIC] Tooltip Overhaul " + project.property('version').toString() + "-" + minecraft_version
 
