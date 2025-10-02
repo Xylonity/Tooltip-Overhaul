@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public record CustomFrameData(
         List<String> items,
         List<String> tags,
+        Optional<String> namespace,
         Optional<String> texture,
         Optional<Integer> backgroundColor,
         Optional<InnerBorderType> borderType,
@@ -186,8 +187,22 @@ public record CustomFrameData(
     }
 
     public boolean matches(ItemStack stack) {
-        if (items.contains(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString())) {
+        ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (items.contains(key.toString())) {
             return true;
+        }
+
+        if (namespace.isPresent()) {
+            String namespace = this.namespace.get().trim();
+            if (!namespace.isEmpty()) {
+                if (namespace.equals("*") || namespace.equalsIgnoreCase("all")) {
+                    return true;
+                }
+                if (key.getNamespace().equals(namespace)) {
+                    return true;
+                }
+            }
+
         }
 
         for (TagKey<Item> tagKey : getTagKeys()) {

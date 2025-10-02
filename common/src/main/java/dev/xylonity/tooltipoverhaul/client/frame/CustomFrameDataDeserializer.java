@@ -20,6 +20,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
 
         List<String> items = parseStringList(entry, "items");
         List<String> tags = parseStringList(entry, "tags");
+        Optional<String> namespace = parseString(entry, "namespace");
 
         Optional<String> texture = parseString(entry, "texture");
         Optional<Integer> backgroundColor = parseInt(entry, "backgroundColor");
@@ -62,6 +63,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         return new CustomFrameData(
                 items,
                 tags,
+                namespace,
                 texture,
                 backgroundColor,
                 borderType,

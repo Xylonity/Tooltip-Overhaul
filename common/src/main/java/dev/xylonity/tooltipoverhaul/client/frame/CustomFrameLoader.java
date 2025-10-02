@@ -97,6 +97,15 @@ public class CustomFrameLoader {
                 else if (!frameData.tags().isEmpty()) {
                     TooltipOverhaul.LOGGER.debug("Entry will also match tags (mixed): {}", frameData.tags());
                 }
+
+                if (itemLocations.isEmpty() && frameData.tags().isEmpty() && frameData.namespace().isPresent() && !frameData.namespace().get().trim().isEmpty()) {
+                    String currNamespace = frameData.namespace().get().trim();
+                    ResourceLocation key = new ResourceLocation(namespace, "namespace_only/" + currNamespace + "/" + Integer.toUnsignedString(System.identityHashCode(frameData), 36));
+
+                    frames.put(key, frameData);
+
+                    TooltipOverhaul.LOGGER.debug("Registered namespace-only entry {} for namespace '{}'", key, currNamespace);
+                }
             }
 
         }
