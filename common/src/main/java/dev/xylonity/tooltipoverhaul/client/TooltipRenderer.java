@@ -244,8 +244,7 @@ public final class TooltipRenderer {
 
         }
 
-        String s = Util.getDefaultRarity(ctx.stack());
-        return Component.literal(s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase()).withStyle(color);
+        return Util.getDefaultRarity(ctx.stack()).copy().withStyle(color);
     }
 
     /**

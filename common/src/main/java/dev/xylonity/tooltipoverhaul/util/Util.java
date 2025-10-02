@@ -168,8 +168,14 @@ public class Util {
         return Math.max(startX, Math.min(result, rightX - compWidth));
     }
 
-    public static String getDefaultRarity(ItemStack stack) {
-        return Component.translatable("tooltipoverhaul." + stack.getRarity().toString().toLowerCase() + "_rarity").getString();
+    public static Component getDefaultRarity(ItemStack stack) {
+        Rarity r = stack.getRarity();
+        String string = r.toString();
+        if (r == Rarity.COMMON || r == Rarity.UNCOMMON || r == Rarity.RARE || r == Rarity.EPIC) {
+            return Component.translatable("tooltipoverhaul." + string.trim().toLowerCase() + "_rarity");
+        }
+
+        return Component.translatable(string.trim().toLowerCase());
     }
 
 }

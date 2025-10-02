@@ -72,26 +72,27 @@ public record CustomFrameData(
     }
 
     public String getItemRating(ItemStack stack) {
-        return itemRating.filter(rating -> !rating.trim().isEmpty()).orElseGet(() -> Util.getDefaultRarity(stack));
+        return itemRating.filter(rating -> !rating.trim().isEmpty()).orElse(Util.getDefaultRarity(stack).getString());
     }
 
     public int getItemRatingColor(ItemStack stack) {
-        return colorItemRating.orElseGet(() -> getRarityColor(stack));
+        return colorItemRating.orElse(getRarityColor(stack));
     }
 
     public boolean shouldDisableTooltip() {
-        return disableTooltip.orElse(Defaults.DISABLE_TOOLTIP);
+        return disableTooltip.orElse(false);
     }
 
-    private static int getRarityColor(ItemStack stack) {
-        return switch (stack.getRarity()) {
-            case COMMON -> Palette.COMMON[0];
-            case UNCOMMON -> Palette.UNCOMMON[0];
-            case RARE -> Palette.RARE[0];
-            case EPIC -> Palette.EPIC[0];
-            // Simulated legendary rarity
-            default -> Palette.LEGENDARY[0];
-        };
+    private int getRarityColor(ItemStack stack) {
+        final Rarity r = stack.getRarity();
+        // Computes the default color per rarity
+        // Defaults to a simulated legendary rarity
+        int palette = Palette.LEGENDARY[0];
+        if (r == Rarity.COMMON) palette = Palette.COMMON[0];
+        if (r == Rarity.UNCOMMON) palette = Palette.UNCOMMON[0];
+        if (r == Rarity.RARE) palette = Palette.RARE[0];
+        if (r == Rarity.EPIC) palette = Palette.EPIC[0];
+        return palette;
     }
 
     public String getIconAppearAnimation() {
@@ -276,9 +277,7 @@ public record CustomFrameData(
         public static final InnerBorderType BORDER_TYPE = InnerBorderType.GRADIENT;
         public static final GradientType GRADIENT_TYPE = GradientType.COMMON;
         public static final List<String> GRADIENT_COLORS = List.of("#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF");
-        //public static final String PARTICLES = "none";
         public static final String SPECIAL_EFFECT = "none";
-        public static final boolean DISABLE_TOOLTIP = false;
     }
 
     public enum InnerBorderType {
