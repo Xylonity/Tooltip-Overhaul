@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.frame;
 
 import dev.xylonity.tooltipoverhaul.client.Palette;
+import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -52,7 +53,8 @@ public record CustomFrameData(
         Optional<Boolean> showRating,
         Optional<Boolean> disableIcon,
         Optional<Boolean> disableScrolling,
-        Optional<Boolean> disableTooltip
+        Optional<Boolean> disableTooltip,
+        Optional<Boolean> disableDividerLine
 ) {
 
     public String getTexture() {
@@ -85,6 +87,10 @@ public record CustomFrameData(
 
     public int getItemRatingColor(ItemStack stack) {
         return colorItemRating.orElse(getRarityColor(stack));
+    }
+
+    public boolean shouldDisableDividerLine() {
+        return disableDividerLine.orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
     }
 
     public boolean shouldDisableTooltip() {

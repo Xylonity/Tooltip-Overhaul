@@ -303,6 +303,10 @@ public final class TooltipRenderer {
         int minHeight = topPadding + 18 + (PADDING_Y + 3);
         if (hasIcon && height < minHeight) height = minHeight;
 
+        if (Util.shouldDisableDividerLine(ctx) && components.size() > 1) {
+            height -= 6;
+        }
+
         return new Point(width, height);
     }
 

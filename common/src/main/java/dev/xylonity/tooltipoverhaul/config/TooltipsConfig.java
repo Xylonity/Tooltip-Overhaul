@@ -29,6 +29,11 @@ public final class TooltipsConfig {
     public static boolean DISABLE_TOOLTIP_SCROLLING = false;
 
     @ConfigEntry(
+            comment = "Disable the divider line"
+    )
+    public static boolean DISABLE_DIVIDER_LINE = false;
+
+    @ConfigEntry(
             comment = "Horizontal offset (in pixels) for the second panel when a 3D preview is shown. Negative = left, positive = right."
     )
     public static int SECOND_PANEL_X = -5;

@@ -49,6 +49,9 @@ public class DefaultText implements ITooltipText {
                         if (hasStack || Util.shouldDisableIcon(ctx.stack())) {
                             y += 12;
                         }
+                        if (Util.shouldDisableDividerLine(ctx)) {
+                            y -= 6;
+                        }
                     }
 
                     int x = (int) pos.x;

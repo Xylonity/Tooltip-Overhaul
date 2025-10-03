@@ -59,6 +59,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Boolean> disableIcon = parseBool(entry, "disableIcon");
         Optional<Boolean> disableScrolling = parseBool(entry, "disableScrolling");
         Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
+        Optional<Boolean> disableDividerLine = parseBool(entry, "disableDividerLine");
 
         return new CustomFrameData(
                 items,
@@ -96,7 +97,8 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 showRating,
                 disableIcon,
                 disableScrolling,
-                disableTooltip
+                disableTooltip,
+                disableDividerLine
         );
     }
 

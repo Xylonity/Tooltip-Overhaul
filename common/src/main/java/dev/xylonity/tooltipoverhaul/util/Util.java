@@ -59,6 +59,10 @@ public class Util {
         return !stack.isEmpty() && CustomFrameManager.of(stack).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
     }
 
+    public static boolean shouldDisableDividerLine(TooltipContext ctx) {
+        return ctx.data().map(CustomFrameData::shouldDisableDividerLine).orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
+    }
+
     public static String getIconAppearAnimation(TooltipContext context) {
         return context.data().map(CustomFrameData::getIconAppearAnimation).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
     }
