@@ -49,6 +49,7 @@ public record CustomFrameData(
         Optional<String> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
+        Optional<String> iconBackgroundType,
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
         Optional<Boolean> disableIcon,
@@ -111,6 +112,10 @@ public record CustomFrameData(
 
     public String getIconAppearAnimation() {
         return iconAppearAnimation.orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
+    }
+
+    public String getIconBackground() {
+        return iconBackgroundType.orElse(TooltipsConfig.ICON_BACKGROUND_TYPE);
     }
 
     public float getIconRotatingSpeed() {

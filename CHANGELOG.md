@@ -2,6 +2,8 @@
 - Now the custom_frames.json from tooltipoverhaul is located under config/tooltipoverhaul/custom_frames.json for better customization, without needing to create a texture pack to change the default custom frames. Any other mod/texture pack needs to create a texture pack including the custom_frames.json file under a certain modid, the same way as it has been done before.
 - Now the color approximator algorithm handles colors in a better way
 - Added a config option to disable the divider line
+- Added a config option to change the default icon background
+- Added 3 new icon backgrounds: void, slot, focus. slot_border is the default one
 
 # 1.1.2
 - Now the tooltipoverhaul.toml config file will be inside config/tooltipoverhaul/tooltipoverhaul.toml instead of config/tooltipoverhaul.toml

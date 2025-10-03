@@ -81,6 +81,11 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
+            comment = "Icon background type. Options: focus, void, slot and slot_border"
+    )
+    public static String ICON_BACKGROUND_TYPE = "slot_border";
+
+    @ConfigEntry(
             comment = "Horizontal position offset for the title."
     )
     public static int TITLE_POSITION_X = 1;
@@ -139,7 +144,6 @@ public final class TooltipsConfig {
             comment = "Size of the second panel renderer."
     )
     public static float SECOND_PANEL_RENDERER_SIZE = 2.75f;
-
 
     @ConfigEntry(
             comment = "Rotation speed multiplier for the tiered item preview in the second panel."

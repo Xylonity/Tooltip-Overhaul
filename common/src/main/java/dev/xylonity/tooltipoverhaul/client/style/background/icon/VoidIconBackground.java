@@ -11,13 +11,13 @@ import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
 
-public class VoidBackgroundPreview implements ITooltipPreviewBackground {
+public class VoidIconBackground implements ITooltipPreviewBackground {
 
     private static final ResourceLocation PREVIEW = new ResourceLocation(TooltipOverhaul.MOD_ID, "textures/gui/star.png");
 
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
-        ctx.translate(pos.x + TooltipRenderer.PADDING_X + 12, pos.y + TooltipRenderer.PADDING_Y + 12, LayerDepth.BACKGROUND_TEXT.getZ());
+        ctx.translate(pos.x + TooltipRenderer.PADDING_X + 10, pos.y + TooltipRenderer.PADDING_Y + 12, LayerDepth.BACKGROUND_TEXT.getZ());
         ctx.multiply(Axis.ZP, -TooltipRenderer.ELAPSED * 45f);
 
         ctx.scale(0.4225f, 0.4225f, 0.4225f);

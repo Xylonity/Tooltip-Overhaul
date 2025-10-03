@@ -7,7 +7,7 @@ import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
 
-public class DefaultBackgroundPreview implements ITooltipPreviewBackground {
+public class SlotBorderIconBackground implements ITooltipPreviewBackground {
 
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {

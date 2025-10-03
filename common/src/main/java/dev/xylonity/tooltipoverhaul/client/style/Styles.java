@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Optional;
 
 import dev.xylonity.tooltipoverhaul.client.Palette;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.SlotBorderIconBackground;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.FocusIconBackground;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.SlotIconBackground;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.VoidIconBackground;
 import dev.xylonity.tooltipoverhaul.client.style.effect.*;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GlintInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
@@ -58,6 +62,40 @@ public class Styles {
             }
         }
 
+        switch (TooltipsConfig.ICON_BACKGROUND_TYPE) {
+            case "void" -> {
+                COMMON.addIconBackground(new VoidIconBackground());
+                UNCOMMON.addIconBackground(new VoidIconBackground());
+                RARE.addIconBackground(new VoidIconBackground());
+                EPIC.addIconBackground(new VoidIconBackground());
+                LEGENDARY.addIconBackground(new VoidIconBackground());
+                CHAOS.addIconBackground(new VoidIconBackground());
+            }
+            case "slot_border" -> {
+                COMMON.addIconBackground(new SlotBorderIconBackground());
+                UNCOMMON.addIconBackground(new SlotBorderIconBackground());
+                RARE.addIconBackground(new SlotBorderIconBackground());
+                EPIC.addIconBackground(new SlotBorderIconBackground());
+                LEGENDARY.addIconBackground(new SlotBorderIconBackground());
+                CHAOS.addIconBackground(new SlotBorderIconBackground());
+            }
+            case "slot" -> {
+                COMMON.addIconBackground(new SlotIconBackground());
+                UNCOMMON.addIconBackground(new SlotIconBackground());
+                RARE.addIconBackground(new SlotIconBackground());
+                EPIC.addIconBackground(new SlotIconBackground());
+                LEGENDARY.addIconBackground(new SlotIconBackground());
+                CHAOS.addIconBackground(new SlotIconBackground());
+            }
+            case "focus" -> {
+                COMMON.addIconBackground(new FocusIconBackground());
+                UNCOMMON.addIconBackground(new FocusIconBackground());
+                RARE.addIconBackground(new FocusIconBackground());
+                EPIC.addIconBackground(new FocusIconBackground());
+                LEGENDARY.addIconBackground(new FocusIconBackground());
+                CHAOS.addIconBackground(new FocusIconBackground());
+            }
+        }
     }
 
     public static Optional<TooltipStyle> of(ItemStack stack, CustomFrameData data) {
@@ -144,6 +182,13 @@ public class Styles {
                 case "sonar" -> builder.addEffect(new SonarEffect());
                 case "cinder" -> builder.addEffect(new CinderEffect());
                 case "rim_light" -> builder.addEffect(new RimLightEffect(0x88154c79, 0x0));
+            }
+
+            switch (data.getIconBackground()) {
+                case "void" -> builder.addIconBackground(new VoidIconBackground());
+                case "slot_border" -> builder.addIconBackground(new SlotBorderIconBackground());
+                case "slot" -> builder.addIconBackground(new SlotIconBackground());
+                case "focus" -> builder.addIconBackground(new FocusIconBackground());
             }
 
             return Optional.of(builder.build());

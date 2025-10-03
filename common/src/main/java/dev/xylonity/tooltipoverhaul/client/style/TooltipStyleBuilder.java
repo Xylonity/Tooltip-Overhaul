@@ -1,10 +1,8 @@
 package dev.xylonity.tooltipoverhaul.client.style;
 
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipDividerLine;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipFrame;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipPanel;
+import dev.xylonity.tooltipoverhaul.client.layer.bridge.*;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultPanel;
+import dev.xylonity.tooltipoverhaul.client.style.background.icon.SlotBorderIconBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.DefaultDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GlintInnerOverlay;
 
@@ -13,6 +11,7 @@ public class TooltipStyleBuilder {
     private ITooltipFrame frame = new GlintInnerOverlay(0xFFEFEFEF, 0xFF8A8A8A, 0x0, 5, 3);
     private ITooltipEffect effect = null;
     private ITooltipDividerLine dividerLine = new DefaultDividerLine();
+    private ITooltipPreviewBackground iconBackground = new SlotBorderIconBackground();
 
     public TooltipStyleBuilder innerOverlay(ITooltipFrame frame) {
         this.frame = frame;
@@ -29,10 +28,15 @@ public class TooltipStyleBuilder {
         return this;
     }
 
+    public TooltipStyleBuilder addIconBackground(ITooltipPreviewBackground iconBackground) {
+        this.iconBackground = iconBackground;
+        return this;
+    }
+
     // Particles are temporary disabled
 
     public TooltipStyle build() {
-        return new TooltipStyle(panel, frame, effect, dividerLine);
+        return new TooltipStyle(panel, frame, effect, dividerLine, iconBackground);
     }
 
 }
