@@ -34,17 +34,14 @@ public class CustomFrameManager {
     // Color palette per frame (3 colors for the gradient inner overlay)
     private static final Map<ResourceLocation, int[][]> ACCENT_CACHE = new ConcurrentHashMap<>();
 
-    private static final float MIN_DARK_RATIO = 0.30f;
-    private static final double LUMINISCE = 0.075;
     private static final int SAMPLEX = 2;
-    private static final int ALPHA_RATIO = 48;
 
     public static void initialize() {
         if (INIT) return;
 
         try {
             customFrames.clear();
-            customFrames.putAll(CustomFrameLoader.loadCustomFrames(Minecraft.getInstance().getResourceManager()));
+            customFrames.putAll(CustomFrameLoader.loadCustomFrames(Minecraft.getInstance().getResourceManager(), TooltipOverhaul.PLATFORM.getConfigPath()));
 
             INIT = true;
 
@@ -61,7 +58,7 @@ public class CustomFrameManager {
 
         try {
             customFrames.clear();
-            customFrames.putAll(CustomFrameLoader.loadCustomFrames(resourceManager));
+            customFrames.putAll(CustomFrameLoader.loadCustomFrames(resourceManager, TooltipOverhaul.PLATFORM.getConfigPath()));
 
             INIT = true;
 
@@ -70,6 +67,7 @@ public class CustomFrameManager {
         catch (Exception e) {
             TooltipOverhaul.LOGGER.error("Failed to initialize custom frames loader: {}", e.getMessage());
         }
+
     }
 
     /**
@@ -174,122 +172,69 @@ public class CustomFrameManager {
     }
 
     /**
-     * Estimates a hard main color for the actual frame by sampling only the side patches (TOP/LEFT/RIGHT/BOTTOM),
-     * skipping corners and extremes, and normalizing per alpha and sat.
+     * Samples a specific region of the frame and calculates its average color
      */
-    private static int getMainColor(NativeImage img, int frameIdx) {
-        int frameNum = frameIdx * FRAME_DIM;
+    private static Integer sampleRegionColor(NativeImage img, int x0, int y0, int width, int height) {
+        Accumulator acc = new Accumulator();
+
+        int x1 = x0 + width;
+        int y1 = y0 + height;
+
         int marginX = 8;
         int marginY = 8;
+        for (int y = y0 + marginY; y < y1 - marginY; y += SAMPLEX) {
+            for (int x = x0 + marginX; x < x1 - marginX; x += SAMPLEX) {
+                int abgr = img.getPixelRGBA(x, y);
 
-        Accumulator acc = new Accumulator();
+                // Minecraft NativeImage uses abgr format
+                int a = (abgr >> 24) & 0xFF;
+                int b = (abgr >> 16) & 0xFF;
+                int g = (abgr >> 8) & 0xFF;
+                int r = abgr & 0xFF;
 
-        // Top
-        linearRGB(img, 44, frameNum, marginX, marginY, acc);
-        // Left
-        linearRGB(img, 0,  frameNum + 44, marginX, marginY, acc);
-        // Right
-        linearRGB(img, 88, frameNum + 44, marginX, marginY, acc);
-        // Bottom
-        linearRGB(img, 44, frameNum + 88, marginX, marginY, acc);
+                // Alpha ratio
+                if (a < 48) {
+                    continue;
+                }
 
-        // Fallback if there is much diff between the calculated chucks, so a global avg is computed
+                float[] hsv = Color.RGBtoHSB(r, g, b, null);
+                float s = hsv[1];
+                float v = hsv[2];
+
+                // Minimum saturation
+                if (s < 0.05) {
+                    continue;
+                }
+
+                // min/max brightness margins
+                if (v < 0.1 || v > 0.98f) {
+                    continue;
+                }
+
+                float weight = (a / 255.0f) * (0.2f + 0.8f * s);
+
+                acc.redTotal += weight * srgbToLinear(r / 255.0);
+                acc.greenTotal += weight * srgbToLinear(g / 255.0);
+                acc.blueTotal += weight * srgbToLinear(b / 255.0);
+                acc.alphaTotal += weight;
+            }
+
+        }
+
         if (acc.alphaTotal < 1e-5) {
-            return colorFallback(img, frameIdx);
+            return null;
         }
 
-        float[] hsl = accumulateRGB2HSL(acc);
-        hsl[2] = clamp(hsl[2], 0.22f, 0.90f);
-        return 0xFF000000 | (hslToRgb(hsl[0], hsl[1], hsl[2]) & 0x00FFFFFF);
-    }
-
-    // Patches and accumulates alpha and saturation data
-    private static void linearRGB(NativeImage img, int x0, int y0, int mx, int my, Accumulator acc) {
-        int x1 = 2 + x0 + 42;
-        int y1 = 2 + y0 + 42;
-        for (int y = y0 + my; y < y1 - my; y += SAMPLEX) {
-            for (int x = x0 + mx; x < x1 - mx; x += SAMPLEX) {
-                int colorr = img.getPixelRGBA(x, y);
-                int a = (colorr >>> 24) & 0xFF;
-
-                if (a < ALPHA_RATIO) continue;
-
-                int blue = (colorr >>> 16) & 0xFF;
-                int green = (colorr >>> 8) & 0xFF;
-                int red = (colorr) & 0xFF;
-
-                float[] HSVParser = Color.RGBtoHSB(red, green, blue, null);
-
-                float s = HSVParser[1];
-                if (s < 0.15f) continue;
-
-                float v = HSVParser[2];
-                if (v < 0.15f || v > 0.92f) continue;
-
-                acc.redTotal += ((a / 255.0) * (0.6 + 0.4 * s)) * srgbToLinear(red / 255.0);
-                acc.greenTotal += ((a / 255.0) * (0.6 + 0.4 * s)) * srgbToLinear(green / 255.0);
-                acc.blueTotal += ((a / 255.0) * (0.6 + 0.4 * s)) * srgbToLinear(blue / 255.0);
-                acc.alphaTotal += ((a / 255.0) * (0.6 + 0.4 * s));
-            }
-        }
-
-    }
-
-    private static int colorFallback(NativeImage img, int frameIdx) {
-        int y0 = frameIdx * FRAME_DIM;
-        Accumulator acc = new Accumulator();
-        for (int y = 0; y < FRAME_DIM; y += SAMPLEX) {
-            for (int x = 0; x < FRAME_DIM; x += SAMPLEX) {
-                int abgr = img.getPixelRGBA(x, y0 + y);
-                int a = (abgr >>> 24) & 0xFF;
-
-                if (a < ALPHA_RATIO) {
-                    continue;
-                }
-
-                int red = (abgr) & 0xFF;
-                int green = (abgr >>> 8) & 0xFF;
-                int blue = (abgr >>> 16) & 0xFF;
-
-                float[] hsv = Color.RGBtoHSB(red, green, blue, null);
-                float s = hsv[1], v = hsv[2];
-
-                if (v < 0.12f || v > 0.96f) {
-                    continue;
-                }
-
-                acc.redTotal += ((a / 255.0) * (0.5 + 0.5 * s)) * srgbToLinear(red / 255.0);
-                acc.greenTotal += ((a / 255.0) * (0.5 + 0.5 * s)) * srgbToLinear(green / 255.0);
-                acc.blueTotal += ((a / 255.0) * (0.5 + 0.5 * s)) * srgbToLinear(blue / 255.0);
-                acc.alphaTotal += ((a / 255.0) * (0.5 + 0.5 * s));
-            }
-
-        }
-
-        if (acc.alphaTotal <= 1e-6) {
-            return 0xFFFFFFFF;
-        }
-
-        float[] hsl = accumulateRGB2HSL(acc);
-        hsl[2] = clamp(hsl[2], 0.22f, 0.92f);
-        int rgb = hslToRgb(hsl[0], hsl[1], hsl[2]) & 0x00FFFFFF;
-
-        return 0xFF000000 | rgb;
-    }
-
-    // Color parser bridge
-    private static float[] accumulateRGB2HSL(Accumulator acc) {
-        double invAlpha = acc.alphaTotal > 0.0 ? 1.0 / acc.alphaTotal : 0.0;
-
+        double invAlpha = 1.0 / acc.alphaTotal;
         int r = (int) Math.round(linearToSrgb(acc.redTotal * invAlpha) * 255.0);
         int g = (int) Math.round(linearToSrgb(acc.greenTotal * invAlpha) * 255.0);
         int b = (int) Math.round(linearToSrgb(acc.blueTotal * invAlpha) * 255.0);
 
-        // converts to HSL and enforces minimum saturation
-        float[] hsl = rgbToHsl(r, g, b);
-        hsl[1] = Math.max(hsl[1], 0.30f);
+        r = clamp(r);
+        g = clamp(g);
+        b = clamp(b);
 
-        return hsl;
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
     /**
@@ -337,135 +282,77 @@ public class CustomFrameManager {
 
     /**
      * Returns the 3 front colors from the given img
-     * Derived from:
+     * Derived from (altho not much is similar):
      * https://github.com/material-foundation/material-color-utilities/blob/main/java/utils/ColorUtils.java
      */
     private static int[] getFrontColors(NativeImage img, int frameIdx) {
-        int base = getMainColor(img, frameIdx);
+        int frameOffset = frameIdx * FRAME_DIM;
 
-        // Extracts the base color components
-        int alpha = 0xFF;
-        int red = (base >>> 16) & 0xFF;
-        int green = (base >>> 8) & 0xFF;
-        int blue = (base) & 0xFF;
+        // Samples top patch
+        Integer topColor = sampleRegionColor(img, 44, frameOffset, 44, 44);
 
-        // For better color manipulation a conversion to hsl is done
-        float[] hsl = rgbToHsl(red, green, blue);
-        float hue = hsl[0];
-        float saturn = hsl[1]; // saturn :imp:
-        float low = hsl[2];
+        // Samples middle sections
+        Integer leftColor = sampleRegionColor(img, 0, frameOffset + 44, 44, 44);
+        Integer rightColor = sampleRegionColor(img, 88, frameOffset + 44, 44, 44);
 
-        float lowMid = clamp(low, 0.20f, 0.92f);
-        float highMid = clamp(saturn, 0f, 1.0f);
-        int midColor = (hslToRgb(hue, highMid, lowMid) & 0x00FFFFFF) | (alpha << 24);
-
-        float lowDark = clamp(lowMid - 0.12f, MIN_DARK_RATIO, 0.88f);
-        float highDark = clamp(highMid * 1.06f, 0f, 1.0f);
-
-        // Avoid overlap between the min and max values of the dark coloring (because sometimes the darker value
-        // becomes invisible or gets a darker value than the one it should)
-        if (lowDark >= lowMid) {
-            lowDark = Math.max(MIN_DARK_RATIO, lowMid - 0.06f);
+        Integer midColor = null;
+        if (leftColor != null && rightColor != null) {
+            midColor = blendColors(leftColor, rightColor);
+        }
+        else if (leftColor != null) {
+            midColor = leftColor;
+        }
+        else if (rightColor != null) {
+            midColor = rightColor;
         }
 
-        int darkCol = (hslToRgb(hue, highDark, lowDark) & 0x00FFFFFF) | (alpha << 24);
+        // Samples bottom section
+        Integer bottomColor = sampleRegionColor(img, 44, frameOffset + 88, 44, 44);
 
-        // The darker color is only decreased a bit
-        if (luminanceParser(darkCol) < LUMINISCE) {
-            int cap = 0;
-            while (luminanceParser(darkCol) < LUMINISCE && cap++ < 8) {
-                lowDark = clamp(lowDark + 0.02f, MIN_DARK_RATIO, Math.min(0.88f, lowMid - 0.02f));
-                darkCol = (hslToRgb(hue, highDark, lowDark) & 0x00FFFFFF) | (alpha << 24);
-            }
+        int validColors = 0;
+        if (topColor != null) validColors++;
+        if (midColor != null) validColors++;
+        if (bottomColor != null) validColors++;
 
+        // If the section is empty (like in the silver frame)
+        if (validColors == 0) {
+            int neutral = 0xFFC0C0C0;
+            return new int[]{neutral, neutral, neutral};
         }
 
-        // Returns the actual colors
-        return new int[]{(
-                hslToRgb(
-                        hue,
-                        clamp(highMid * 0.92f, 0.0f, 1.0f),
-                        clamp(lowMid + 0.12f, 0.20f, 0.95f)) & 0x00FFFFFF) | (alpha << 24),
-                midColor, darkCol};
+        // Fills missing colors
+        if (topColor == null) {
+            topColor = midColor != null ? midColor : bottomColor;
+        }
+        if (midColor == null) {
+            midColor = topColor;
+        }
+        if (bottomColor == null) {
+            bottomColor = midColor;
+        }
+
+        return new int[]{topColor, midColor, bottomColor};
     }
 
     /**
-     * Hsx parser
-     * https://github.com/gka/chroma.js/blob/main/src/interpolator/_hsx.js
+     * Blends two colors by averaging them in linear RGB space (srgb)
+     * https://www.nayuki.io/res/srgb-transform-library/SrgbTransform.java
+     * https://alexanderhoughton.co.uk/blog/visualising-srgb-gamma-correction/
      */
-    private static float[] rgbToHsl(int r, int g, int b) {
-        float red = r / 255f;
-        float green = g / 255f;
-        float blue = b / 255f;
-        float max = Math.max(red, Math.max(green, blue));
-        float min = Math.min(red, Math.min(green, blue));
-        float hue;
-        float sat;
-        float l = (max + min) / 2f;
-        if (max == min) {
-            hue = 0f; sat = 0f;
-        } else {
-            float dist = max - min;
-            sat = l > 0.5f ? dist / (2f - max - min) : dist / (max + min);
-            if (max == red) {
-                hue = (green - blue) / dist + (green < blue ? 6f : 0f);
-            } else if (max == green) {
-                hue = (blue - red) / dist + 2f;
-            } else {
-                hue = (red - green) / dist + 4f;
-            }
+    private static int blendColors(int color1, int color2) {
+        int r1 = (color1 >> 16) & 0xFF;
+        int g1 = (color1 >> 8) & 0xFF;
+        int b1 = color1 & 0xFF;
 
-            hue /= 6f;
-        }
+        int r2 = (color2 >> 16) & 0xFF;
+        int g2 = (color2 >> 8) & 0xFF;
+        int b2 = color2 & 0xFF;
 
-        return new float[]{hue, sat, l};
-    }
+        int r = (int) Math.round(linearToSrgb((srgbToLinear(r1 / 255.0) + srgbToLinear(r2 / 255.0)) * 0.5) * 255.0);
+        int g = (int) Math.round(linearToSrgb((srgbToLinear(g1 / 255.0) + srgbToLinear(g2 / 255.0)) * 0.5) * 255.0);
+        int b = (int) Math.round(linearToSrgb((srgbToLinear(b1 / 255.0) + srgbToLinear(b2 / 255.0)) * 0.5) * 255.0);
 
-    /**
-     * Derived from hsl2rgb npm package
-     * https://github.com/Experience-Monks/glsl-hsl2rgb/blob/master/index.glsl
-     */
-    private static int hslToRgb(float h, float s, float l) {
-        float r;
-        float g;
-        float b;
-        if (s == 0f) {
-            r = g = b = l;
-        } else {
-            float q = l < 0.5f ? l * (1f + s) : (l + s - l * s);
-            float p = 2f * l - q;
-            r = hue2rgb(p, q, h + 1f / 3f);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1f / 3f);
-        }
-
-        return ((int) (r * 255 + 0.5f) << 16) | ((int) (g * 255 + 0.5f) << 8) | (int) (b * 255 + 0.5f);
-    }
-
-    /**
-     * Derived from hsl2rgb npm package
-     * https://github.com/Experience-Monks/glsl-hsl2rgb/blob/master/index.glsl
-     */
-    private static float hue2rgb(float p, float q, float t) {
-        if (t < 0f) t += 1f;
-        if (t > 1f) t -= 1f;
-        if (t < 1f/6f) return p + (q - p) * 6f * t;
-        if (t < 1f/2f) return q;
-        if (t < 2f/3f) return p + (q - p) * (2f/3f - t) * 6f;
-
-        return p;
-    }
-
-    /**
-     * Luminance compute
-     * https://github.com/tmcw/wcag-contrast/blob/master/index.js
-     */
-    private static double luminanceParser(int argb) {
-        double rl = srgbToLinear(((argb >>> 16) & 0xFF) / 255.0);
-        double gl = srgbToLinear(((argb >>> 8) & 0xFF) / 255.0);
-        double bl = srgbToLinear(((argb) & 0xFF) / 255.0);
-
-        return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
+        return 0xFF000000 | (clamp(r) << 16) | (clamp(g) << 8) | clamp(b);
     }
 
     private static double srgbToLinear(double x) {
@@ -476,8 +363,8 @@ public class CustomFrameManager {
         return x <= 0.0031308 ? x * 12.92 : 1.055 * Math.pow(x, 1.0 / 2.4) - 0.055;
     }
 
-    private static float clamp(float c1, float c2, float hu) {
-        return c1 < c2 ? c2 : (Math.min(c1, hu));
+    private static int clamp(int value) {
+        return Math.max(0, Math.min(255, value));
     }
 
     private record TextureInfo(int width, int height, int frames) { ;; }

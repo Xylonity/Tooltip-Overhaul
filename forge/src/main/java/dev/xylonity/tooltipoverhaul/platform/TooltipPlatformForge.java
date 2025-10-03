@@ -17,4 +17,9 @@ public class TooltipPlatformForge implements TooltipPlatform {
         return FMLPaths.CONFIGDIR.get().resolve(config);
     }
 
+    @Override
+    public Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get();
+    }
+
 }

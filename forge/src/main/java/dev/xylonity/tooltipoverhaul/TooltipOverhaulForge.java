@@ -20,8 +20,9 @@ public class TooltipOverhaulForge {
     public TooltipOverhaulForge() {
         if (FMLLoader.getDist().isClient()) {
             ClientEntrypoint.init(FMLJavaModLoadingContext.get().getModEventBus());
-        } else {
-            TooltipOverhaul.LOGGER.warn("Won't load as the mod should be initialized on the client side.");
+        }
+        else {
+            TooltipOverhaul.LOGGER.warn("Won't load as the mod should be initialized on the client.");
         }
 
     }
