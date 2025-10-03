@@ -3,8 +3,6 @@ package dev.xylonity.tooltipoverhaul.client.style;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.*;
-import dev.xylonity.tooltipoverhaul.client.style.background.preview.DefaultBackgroundPreview;
-import dev.xylonity.tooltipoverhaul.client.style.divider.DefaultDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultArmorStand;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultRotatingItem;
@@ -30,14 +28,14 @@ public class TooltipStyle {
     private final ITooltipArmorStand armorStand;
     private final ITooltipRotatingItem rotatingItem;
 
-    public TooltipStyle(ITooltipPanel panel, ITooltipFrame innerFrame, ITooltipEffect effect) {
+    public TooltipStyle(ITooltipPanel panel, ITooltipFrame innerFrame, ITooltipEffect effect, ITooltipDividerLine dividerLine, ITooltipPreviewBackground iconBackground) {
         this.effect = effect;
         this.panel = panel;
         this.frame = innerFrame;
-        this.previewBackground = new DefaultBackgroundPreview();
+        this.previewBackground = iconBackground;
         this.icon = new DefaultIcon();
         this.text = new DefaultText();
-        this.dividerLine = new DefaultDividerLine();
+        this.dividerLine = dividerLine;
         this.armorStand = new DefaultArmorStand();
         this.rotatingItem = new DefaultRotatingItem();
     }

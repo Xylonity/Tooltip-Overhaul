@@ -6,7 +6,7 @@ import net.minecraft.world.item.ItemStack;
 import java.lang.reflect.Method;
 
 /**
- * Proxy used for dedicated EMI compat, in order to 'detect' the hovered stack only on EMI categories
+ * Proxy used for dedicated EMI compat, in order to 'detect' the hovered stack on EMI categories (and the recipe viewer)
  */
 public final class EmiProxy {
 
@@ -24,6 +24,25 @@ public final class EmiProxy {
         catch (Exception ignored) {
             return ItemStack.EMPTY;
         }
+
+    }
+
+    // Fallbacks to the category viewer if there is no hovered stack in the current coordinates (for the recipe viewer)
+    public static ItemStack getItemStack(int mouseX, int mouseY) {
+        if (!TooltipOverhaul.PLATFORM.isModLoaded("emi")) return ItemStack.EMPTY;
+        try {
+            Class<?> holder = Class.forName(CLASS_LOCATION, false, EmiProxy.class.getClassLoader());
+            Method method = holder.getMethod(CLASS_METHOD, int.class, int.class);
+            Object stack = method.invoke(null, mouseX, mouseY);
+            return (stack instanceof ItemStack s) ? s : ItemStack.EMPTY;
+        }
+        catch (NoSuchMethodException e) {
+            return getItemStack();
+        }
+        catch (Exception ignored) {
+            return ItemStack.EMPTY;
+        }
+
     }
 
 }

@@ -5,6 +5,8 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.style.TooltipStyle;
+import dev.xylonity.tooltipoverhaul.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
@@ -15,9 +17,12 @@ public class IconLayer implements ITooltipLayer {
 
     @Override
     public void render(TooltipContext ctx, Vec2 pos, Point size, TooltipStyle style, Component rarity, Font font, CustomFrameData customFrame) {
+
+        if (Util.shouldDisableIcon(ctx.stack())) return;
+
         ctx.push(() -> {
             ctx.translate(0, 0, LayerDepth.BACKGROUND_RENDERS.getZ());
-            style.renderIcon(LayerDepth.BACKGROUND_RENDERS, ctx, pos, size);
+            style.renderIcon(LayerDepth.BACKGROUND_RENDERS, ctx, pos.add(new Vec2(Util.getMainPanelPadding(ctx, TextAxis.X) / 2f + 4, Util.getMainPanelPadding(ctx, TextAxis.Y) + 4)), size);
         });
     }
 

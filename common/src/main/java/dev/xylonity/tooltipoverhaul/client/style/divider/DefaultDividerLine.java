@@ -1,11 +1,16 @@
 package dev.xylonity.tooltipoverhaul.client.style.divider;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipDividerLine;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec2;
+import org.joml.Matrix4f;
 
 import java.awt.*;
 import java.util.List;
@@ -13,38 +18,94 @@ import java.util.List;
 @SuppressWarnings("unchecked")
 public class DefaultDividerLine implements ITooltipDividerLine {
 
+    private static final int MIN_SEGMENTS = 2;
+    private static final int MAX_SEGMENTS = 24;
+
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
-        if (ctx.getComponents().size() > 1) {
-            int y = (int) pos.y + 4 + TooltipRenderer.PADDING_Y + ((List<ClientTooltipComponent>) ctx.getComponents()).get(0).getHeight() + 4 + 10;
-            int x = (int) ((int) pos.x + size.x * 0.1f);
-            int width = (int) (size.x - size.x * 0.2f);
-
-            float fade = 0.025f;
-
-            ctx.push(() -> {
-                ctx.translate(0, 0, depth.getZ());
-                // Cuadratic curve that derives color per pixel
-                for (int i = 0; i < width; i++) {
-                    float center = width / 2.0f;
-                    float distance = Math.abs(i - center) / center;
-
-                    int alpha;
-                    if (distance <= fade) {
-                        alpha = 255;
-                    } else {
-                        float z = (distance - fade) / (1.0f - fade);
-                        alpha = (int) (255 * (1.0f - z * z));
-                    }
-
-                    alpha = Math.max(0, Math.min(255, alpha));
-
-                    ctx.graphics().fill(x + i, y, x + i + 1, y + 1, (alpha << 24) | 0x00EFEFEF);
-                }
-            });
-
+        if (ctx.getComponents().size() <= 1 || size.x <= 4) {
+            return;
         }
 
+        int y = (int) pos.y + 4 + TooltipRenderer.PADDING_Y + ((List<ClientTooltipComponent>) ctx.getComponents()).get(0).getHeight() + 4 + 10;
+
+        int x = (int) ((int) pos.x + size.x * 0.1f);
+        int width = (int) (size.x - size.x * 0.2f);
+        if (width <= 1) return;
+
+        int segments = clamp(width / 12);
+
+        ctx.push(() -> {
+            ctx.translate(0, 0, depth.getZ());
+
+            PoseStack pose = ctx.graphics().pose();
+            Matrix4f matrix = pose.last().pose();
+            Tesselator tesselator = Tesselator.getInstance();
+            BufferBuilder buf = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+
+            int segmentLength = Math.max(1, width / segments);
+            int drawn = 0;
+            int px = x;
+            float center = width / 2.0f;
+
+            while (drawn < width) {
+                int run = Math.min(segmentLength, width - drawn);
+
+                int leftAlpha = alphaFromDistance(Math.abs((drawn) - center) / center, 0.025f);
+                int rightAlpha = alphaFromDistance(Math.abs((drawn + run - 1) - center) / center, 0.025f);
+
+                int lineColor = Util.getDividerLineColor(ctx);
+
+                int leftColor = (leftAlpha << 24) | (lineColor & 0x00FFFFFF);
+                int rightColor = (rightAlpha << 24) | (lineColor & 0x00FFFFFF);
+
+                int alphaLeft = (leftColor >>> 24) & 0xFF;
+                int redLeft = (leftColor >>> 16) & 0xFF;
+                int greenLeft = (leftColor >>> 8) & 0xFF;
+                int blueLeft = (leftColor) & 0xFF;
+
+                int alphaRight = (rightColor >>> 24) & 0xFF;
+                int redRight = (rightColor >>> 16) & 0xFF;
+                int greenRight = (rightColor >>> 8) & 0xFF;
+                int blueRight = (rightColor) & 0xFF;
+
+                // bottom left
+                buf.addVertex(matrix, px, y + 1, 0).setColor(redLeft, greenLeft, blueLeft, alphaLeft);
+                // bottom right
+                buf.addVertex(matrix, px + run, y + 1, 0).setColor(redRight, greenRight, blueRight, alphaRight);
+                // top right
+                buf.addVertex(matrix, px + run, y, 0).setColor(redRight, greenRight, blueRight, alphaRight);
+                // top left
+                buf.addVertex(matrix, px, y, 0).setColor(redLeft, greenLeft, blueLeft, alphaLeft);
+
+                px += run;
+                drawn += run;
+            }
+
+            try (MeshData data = buf.buildOrThrow()) {
+                BufferUploader.drawWithShader(data);
+            }
+        });
+
+    }
+
+    private static int alphaFromDistance(float distanceNorm, float fade) {
+        if (distanceNorm <= fade) {
+            return 255;
+        }
+        else {
+            float z = (distanceNorm - fade) / (1.0f - fade);
+            return Math.max(0, Math.min(255, (int) (255 * (1.0f - z * z))));
+        }
+
+    }
+
+    private static int clamp(int value) {
+        return Math.max(MIN_SEGMENTS, Math.min(MAX_SEGMENTS, value));
     }
 
 }

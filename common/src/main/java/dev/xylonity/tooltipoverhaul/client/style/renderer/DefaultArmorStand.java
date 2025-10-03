@@ -22,6 +22,7 @@ import java.awt.*;
 public class DefaultArmorStand implements ITooltipArmorStand {
 
     public static @Nullable ArmorStand stand;
+    private static float SCALE = TooltipsConfig.SECOND_PANEL_RENDERER_SIZE;
 
     @Override
     public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
@@ -35,16 +36,27 @@ public class DefaultArmorStand implements ITooltipArmorStand {
             stand.setNoBasePlate(false);
         }
 
+        if (ctx.data().isPresent()) {
+            SCALE = ctx.data().get().getSecondPanelRendererSize();
+        }
+
+        float speed = 8000 / TooltipsConfig.SECOND_PANEL_RENDERER_SPEED;
+        if (ctx.data().isPresent()) {
+            speed = 8000 / ctx.data().get().getSecondPanelRendererSpeed();
+        }
+
+        float finalSpeed = speed;
+        float scale = (float) (30 * (SCALE / 2.75));
         ctx.push(() -> {
             ctx.translate(pos.x, pos.y, depth.getZ());
-            ctx.scale(-30, -30, 30);
+            ctx.scale(-scale, -scale, scale);
 
             // Default isometric rotation
             ctx.multiply(Axis.XP, 30);
             ctx.multiply(Axis.YP, -45);
 
             // Continuous horizontal rotation (yaw)
-            ctx.multiply(Axis.YP, Util.calcRotY(8000 / TooltipsConfig.ARMOR_PREVIEW_ROTATING_SPEED));
+            ctx.multiply(Axis.YP, Util.calcRotY(finalSpeed));
 
             Lighting.setupForEntityInInventory();
             EntityRenderDispatcher renderer = Minecraft.getInstance().getEntityRenderDispatcher();

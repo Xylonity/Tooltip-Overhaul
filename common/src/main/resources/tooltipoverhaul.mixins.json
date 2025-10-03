@@ -7,10 +7,13 @@
   "mixins": [],
   "client": [
     "AbstractContainerScreenMixin",
+    "BypassHoverGuiCullingMixin",
+    "ItemRendererCacheMixin",
     "ClientTextTooltipAccessor",
     "GuiGraphicsItemMixin",
     "GuiGraphicsMixin",
-    "MouseHandlerMixin"
+    "MouseHandlerMixin",
+    "ScreenRecorderMixin"
   ],
   "server": [],
   "injectors": {

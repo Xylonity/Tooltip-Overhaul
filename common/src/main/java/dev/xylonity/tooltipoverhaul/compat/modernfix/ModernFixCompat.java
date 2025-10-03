@@ -14,18 +14,38 @@ import java.util.Properties;
 
 /**
  * The config entry under the name 'mixin.perf.faster_item_rendering', if set to true, certain unseen faces are culled,
- * so when the rendered stack starts rotating, some faces are seen invisible. I will keep using GUI context rendering
- * (because static rendering breaks lighting when using fixed ctxs), so I prefer not to enable this by default,
- * and only use it when the config option is explicitly present
+ * so when the rendered stack starts rotating, some faces are seen invisible
  *
- * This also includes compat with Flerovium (Forge only) if 'itemBackFaceCulling' is set to true
+ * This should also fix Flerovium (Forge only) if 'itemBackFaceCulling' is set to true
  */
-public class ModernFixCompat {
+public final class ModernFixCompat {
 
-    public static final boolean STATIC_RENDERING_ENABLED;
+    private static final ThreadLocal<Integer> DEPTH = ThreadLocal.withInitial(() -> 0);
+
+    public static final boolean SHOULD_RETURN_ORIGINAL_RENDER;
 
     static {
-        STATIC_RENDERING_ENABLED = isModernFixEntryEnabled();
+        SHOULD_RETURN_ORIGINAL_RENDER = isModernFixEntryEnabled();
+    }
+
+    public static void push() {
+        DEPTH.set(DEPTH.get() + 1);
+    }
+
+    public static void pop() {
+        int depth = DEPTH.get();
+
+        if (depth <= 1) {
+            DEPTH.remove();
+        }
+        else {
+            DEPTH.set(depth - 1);
+        }
+
+    }
+
+    public static boolean isEnabled() {
+        return DEPTH.get() > 0;
     }
 
     private static boolean isModernFixEntryEnabled() {
@@ -58,7 +78,9 @@ public class ModernFixCompat {
             if (!TooltipOverhaul.PLATFORM.isModLoaded("modernfix")) return false;
 
             Path path = TooltipOverhaul.PLATFORM.resolveConfigFile("modernfix-mixins.properties");
-            if (!Files.exists(path)) return false;
+            if (!Files.exists(path)) {
+                return false;
+            }
 
             Properties properties = new Properties();
             try (InputStream in = Files.newInputStream(path)) {

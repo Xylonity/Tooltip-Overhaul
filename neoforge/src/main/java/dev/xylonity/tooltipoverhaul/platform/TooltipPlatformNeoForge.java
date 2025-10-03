@@ -5,7 +5,7 @@ import net.neoforged.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
 
-public class TooltipPlatformNeo implements TooltipPlatform {
+public class TooltipPlatformNeoForge implements TooltipPlatform {
 
     @Override
     public boolean isModLoaded(String modid) {
@@ -15,6 +15,11 @@ public class TooltipPlatformNeo implements TooltipPlatform {
     @Override
     public Path resolveConfigFile(String config) {
         return FMLPaths.CONFIGDIR.get().resolve(config);
+    }
+
+    @Override
+    public Path getConfigPath() {
+        return FMLPaths.CONFIGDIR.get();
     }
 
 }

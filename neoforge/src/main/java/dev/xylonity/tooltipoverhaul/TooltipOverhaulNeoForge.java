@@ -14,9 +14,9 @@ import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
 @Mod(TooltipOverhaul.MOD_ID)
-public class TooltipOverhaulNeo {
+public class TooltipOverhaulNeoForge {
 
-    public TooltipOverhaulNeo(IEventBus eventBus) {
+    public TooltipOverhaulNeoForge(IEventBus eventBus) {
         if (FMLLoader.getDist().isClient()) {
             ClientEntrypoint.init(eventBus);
         } else {

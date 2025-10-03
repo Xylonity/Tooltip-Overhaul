@@ -6,7 +6,10 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.*;
 import dev.xylonity.tooltipoverhaul.client.style.Styles;
 import dev.xylonity.tooltipoverhaul.client.style.TooltipStyle;
+import dev.xylonity.tooltipoverhaul.compat.apotheosis.ApotheosisHook;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -14,7 +17,10 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,14 +32,14 @@ import java.util.Optional;
 /**
  * Core renderer bridge. To clarify, the tooltips are built using different layers which serve as an abstraction call to the
  * actual rendering methods, which actually render the content. These layers do computee the general settings of where
- * the rendering should be casted on, while the renderers should just care about rendering the component
+ * the rendering should be cast on, while the renderers should just care about rendering the component
  */
 @SuppressWarnings("unchecked")
 public final class TooltipRenderer {
 
     // Default extra padding for the main tooltip (components aren't aligned automatically)
-    public static final int PADDING_X = 6;
-    public static final int PADDING_Y = 4;
+    public static int PADDING_X = TooltipsConfig.MAIN_PANEL_PADDING_X;
+    public static int PADDING_Y = TooltipsConfig.MAIN_PANEL_PADDING_Y;
 
     // Main chrono for animations and such
     public static float ELAPSED;
@@ -44,9 +50,11 @@ public final class TooltipRenderer {
     private static long startMs;
 
     // Main tooltip (and second panel) layers
-    private static final List<ITooltipLayer> LAYERS = new ArrayList<>();
+    private static final List<ITooltipLayer> LAYERS_MAIN = new ArrayList<>();
     // Empty stack tooltip layers
     private static final List<ITooltipLayer> LAYERS_EMPTY = new ArrayList<>();
+    // Second panel layers
+    private static final List<ITooltipLayer> LAYERS_SECOND = new ArrayList<>();
 
     // Scrolling predicates
     public static int LAST_HEADER_ABS;
@@ -54,20 +62,22 @@ public final class TooltipRenderer {
 
     static {
         // Main panel
-        LAYERS.add(new BackgroundLayer());
-        LAYERS.add(new PreviewBackgroundLayer());
-        LAYERS.add(new IconLayer());
-        LAYERS.add(new TextLayer());
-        LAYERS.add(new DividerLineLayer());
-        LAYERS.add(new InnerFrameLayer());
-        LAYERS.add(new EffectLayer());
-        LAYERS.add(new OverlayLayer());
+        LAYERS_MAIN.add(new BackgroundLayer());
+        LAYERS_MAIN.add(new IconBackgroundLayer());
+        LAYERS_MAIN.add(new IconLayer());
+        LAYERS_MAIN.add(new TextLayer());
+        LAYERS_MAIN.add(new DividerLineLayer());
+        LAYERS_MAIN.add(new InnerFrameLayer());
+        LAYERS_MAIN.add(new EffectLayer());
+        LAYERS_MAIN.add(new OverlayLayer());
+    }
 
+    static {
         // Second panel
-        LAYERS.add(new SecondBackgroundLayer());
-        LAYERS.add(new SecondInnerFrameLayer());
-        LAYERS.add(new ArmorStandLayer());
-        LAYERS.add(new RotatingItemLayer());
+        LAYERS_SECOND.add(new SecondBackgroundLayer());
+        LAYERS_SECOND.add(new SecondInnerFrameLayer());
+        LAYERS_SECOND.add(new ArmorStandLayer());
+        LAYERS_SECOND.add(new RotatingItemLayer());
     }
 
     static {
@@ -83,6 +93,12 @@ public final class TooltipRenderer {
      * @return true if the custom tooltip should be shown, false if not
      */
     public static boolean render(TooltipContext ctx) {
+        if (ApotheosisHook.isActive()) return false;
+
+        // Reassign padding
+        PADDING_X = Util.getMainPanelPadding(ctx, TextAxis.X);
+        PADDING_Y = Util.getMainPanelPadding(ctx, TextAxis.Y);
+
         // Passes if there is no text present
         List<?> raw = ctx.getComponents();
         if (raw.isEmpty()) return false;
@@ -111,12 +127,33 @@ public final class TooltipRenderer {
         Component rating = hasIcon ? computeRating(customFrame, ctx) : Component.empty();
 
         // Approximation of the tooltip size (knowing there could be or not an icon)
-        Point size = calculateSize(font, components, rating, hasIcon);
+        Point size = calculateSize(font, components, rating, hasIcon, ctx);
+
+        int margin = 4;
+
+        // margin right
+        int xRight = ctx.mouseX() + 12;
+        // margin left
+        int xLeft  = ctx.mouseX() - 16 - size.x;
+
+        // Start position of the tooltip
+        int x;
+        if (xRight + size.x <= ctx.width() - margin) {
+            // Fits on the right
+            x = xRight;
+        }
+        else if (xLeft >= margin) {
+            // Flips to the left
+            x = xLeft;
+        }
+        else {
+            // Clamps to screen (if it doesn't fit on either side)
+            x = Math.max(margin, ctx.width() - size.x - margin);
+        }
 
         int height = Math.min(size.y, ctx.height() - 8);
 
-        // Start position of the tooltip
-        Vec2 pos = new Vec2(Math.min(ctx.mouseX() + 12, ctx.width() - size.x - 4), Math.max(4, Math.min(ctx.mouseY() - 12, ctx.height() - height - 4)));
+        Vec2 pos = new Vec2(x, Math.max(margin, Math.min(ctx.mouseY() - 12, ctx.height() - height - margin)));
 
         LAST_POS_YI = Math.round(pos.y);
 
@@ -126,9 +163,15 @@ public final class TooltipRenderer {
                 content += components.get(i).getHeight();
             }
 
-            TooltipScrollState.begin(content, Math.max(0, height - LAST_HEADER_ABS - (PADDING_Y + 3) - 7));
-            TooltipScrollState.tick();
-        } else {
+            if (Util.isScrollingDisabled(ctx)) {
+                TooltipScrollState.reset();
+            }
+            else {
+                TooltipScrollState.begin(content, Math.max(0, height - LAST_HEADER_ABS - (PADDING_Y + 3) - 7));
+                TooltipScrollState.tick();
+            }
+        }
+        else {
             TooltipScrollState.reset();
         }
 
@@ -147,8 +190,20 @@ public final class TooltipRenderer {
         }
 
         // Renders the main tooltip (and the second panel if specified inside the render layers)
-        for (ITooltipLayer layer : LAYERS) {
+        for (ITooltipLayer layer : LAYERS_MAIN) {
             layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
+        }
+
+        // Renders the second panel
+        if (
+            (ctx.data().isPresent() && ctx.data().get().shouldShowSecondPanel()) ||
+            (ctx.stack().getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER) ||
+            (ctx.stack().getItem() instanceof ArmorItem && TooltipsConfig.ARMOR_ITEMS_RENDERER)
+        ) {
+            for (ITooltipLayer layer : LAYERS_SECOND) {
+                layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
+            }
+
         }
 
         ctx.flush();
@@ -162,47 +217,45 @@ public final class TooltipRenderer {
      * stack's rarity
      */
     private static Component computeRating(Optional<CustomFrameData> customFrame, TooltipContext ctx) {
+        final Rarity r = ctx.stack().getRarity();
+        // Computes the default color per rarity
+        // Defaults to a simulated legendary rarity
+        ChatFormatting color = ChatFormatting.GOLD;
+        if (r == Rarity.COMMON) color = ChatFormatting.GRAY;
+        if (r == Rarity.UNCOMMON) color = ChatFormatting.YELLOW;
+        if (r == Rarity.RARE) color = ChatFormatting.BLUE;
+        if (r == Rarity.EPIC) color = ChatFormatting.DARK_PURPLE;
+
+        // If the curent stack is declared in a custom frame format
         if (customFrame.isPresent()) {
             CustomFrameData data = customFrame.get();
 
-            String raw = String.valueOf(data.getItemRating(ctx.stack()));
-            MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
+            // If the stack has a custom rating
+            if (data.hasCustomItemRating()) {
 
-            // If the frame doesn't provide a color, uses rarity color by default
-            if (data.hasCustomColorItemRating()) {
-                return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(ctx.stack())));
-            } else {
-                ChatFormatting color = switch (ctx.stack().getRarity()) {
-                    case COMMON -> ChatFormatting.GRAY;
-                    case UNCOMMON -> ChatFormatting.YELLOW;
-                    case RARE -> ChatFormatting.BLUE;
-                    case EPIC -> ChatFormatting.DARK_PURPLE;
-                    // Defaults to a simulated legendary rarity
-                    default -> ChatFormatting.GOLD;
-                };
-                return base.withStyle(color);
+                // Computes the rating, either as a translatable key or a literal component
+                String raw = String.valueOf(data.getItemRating(ctx.stack()));
+                MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
+
+                if (data.hasCustomColorItemRating()) {
+                    return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(ctx.stack())));
+                }
+                // If the frame doesn't provide a color, uses rarity color by default
+                else {
+                    return base.withStyle(color);
+                }
+
             }
 
         }
 
-        // If there is no custom frame present, defaults to the rarity
-        ChatFormatting color = switch (ctx.stack().getRarity()) {
-            case COMMON -> ChatFormatting.GRAY;
-            case UNCOMMON -> ChatFormatting.YELLOW;
-            case RARE -> ChatFormatting.BLUE;
-            case EPIC -> ChatFormatting.DARK_PURPLE;
-            // Defaults to a simulated legendary rarity
-            default -> ChatFormatting.GOLD;
-        };
-
-        String s = ctx.stack().getRarity().name();
-        return Component.literal(s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase()).withStyle(color);
+        return Util.getDefaultRarity(ctx.stack()).copy().withStyle(color);
     }
 
     /**
      * Computes the main tooltip size. Most of the proportions (in general) are hardcoded
      */
-    private static Point calculateSize(Font font, List<ClientTooltipComponent> components, Component rarity, boolean hasIcon) {
+    private static Point calculateSize(Font font, List<ClientTooltipComponent> components, Component rarity, boolean hasIcon, TooltipContext ctx) {
         // Is there an icon (stack) present
         int iconOffset = hasIcon ? 26 : 0;
         int width = PADDING_X * 2 + iconOffset + components.get(0).getWidth(font);
@@ -212,7 +265,7 @@ public final class TooltipRenderer {
         }
 
         if (hasIcon) {
-            width = Math.max(width, PADDING_X * 2 + iconOffset + font.width(rarity));
+            width = Math.max(width, PADDING_X * 2 + iconOffset + (Util.shouldShowRating(ctx.stack()) ? font.width(rarity) : 0));
         }
 
         int y0 = PADDING_Y + 3;
@@ -249,6 +302,10 @@ public final class TooltipRenderer {
         int height = (PADDING_Y + (y - y0)) + PADDING_Y + 3;
         int minHeight = topPadding + 18 + (PADDING_Y + 3);
         if (hasIcon && height < minHeight) height = minHeight;
+
+        if (Util.shouldDisableDividerLine(ctx) && components.size() > 1) {
+            height -= 6;
+        }
 
         return new Point(width, height);
     }

@@ -4,11 +4,11 @@
       "texture": "tooltipoverhaul:textures/overlay/amethyst_frame.png",
       "items": [
         "minecraft:dragon_egg",
-        "minecraft:enchanted_golden_apple",
-        "minecraft:mace"
+        "minecraft:enchanted_golden_apple"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static",
+      "borderType": "static",
+      "gradientColors": ["#C551C3", "#C551C3", "#C551C3"],
       "specialEffect": "metal_shining"
     },
     {
@@ -36,7 +36,7 @@
         "minecraft:music_disc_pigstep"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static"
+      "borderType": "auto_gradient"
     },
     {
       "texture": "tooltipoverhaul:textures/overlay/amber_frame.png",
@@ -59,7 +59,7 @@
         "minecraft:skull_banner_pattern"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static"
+      "borderType": "auto_gradient"
     },
     {
       "texture": "tooltipoverhaul:textures/overlay/silver_frame.png",
@@ -104,7 +104,32 @@
         "minecraft:netherite_scrap"
       ],
       "gradientType": "custom",
-      "borderType": "auto_static"
+      "borderType": "gradient",
+      "gradientColors": ["#A9A9A9", "#999999", "#8F8F8F"]
+    },
+    {
+      "items": [
+        "celestisynth:frostbound",
+        "celestisynth:keres",
+        "celestisynth:crescentia",
+        "celestisynth:breezebreaker",
+        "celestisynth:poltergeist",
+        "celestisynth:aquaflora",
+        "celestisynth:rainfall_serenity"
+      ],
+      "disableScrolling": true
+    },
+    {
+      "texture": "tooltipoverhaul:textures/overlay/cataclysm_frame.png",
+      "items": [
+        "cataclysm:the_incinerator",
+        "cataclysm:ceraunus",
+        "cataclysm:soul_render"
+      ],
+      "gradientType": "custom",
+      "borderType": "static",
+      "gradientColors": ["#3D3A5E", "#3D3A5E", "#3D3A5E"],
+      "specialEffect": "metal_shining"
     }
   ]
 }

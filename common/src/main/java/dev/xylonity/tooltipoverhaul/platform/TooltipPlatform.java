@@ -5,4 +5,5 @@ import java.nio.file.Path;
 public interface TooltipPlatform {
     boolean isModLoaded(String modid);
     Path resolveConfigFile(String configFileName);
+    Path getConfigPath();
 }

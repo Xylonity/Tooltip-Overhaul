@@ -16,4 +16,9 @@ public class TooltipPlatformFabric implements TooltipPlatform {
         return FabricLoader.getInstance().getConfigDir().resolve(configFileName);
     }
 
+    @Override
+    public Path getConfigPath() {
+        return FabricLoader.getInstance().getConfigDir();
+    }
+
 }
