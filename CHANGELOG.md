@@ -4,6 +4,8 @@
 - Added a config option to disable the divider line
 - Added a config option to change the default icon background
 - Added 3 new icon backgrounds: void, slot, focus. slot_border is the default one
+- Now the match_inner_frame_color config option matches the color even if the stack has a custom frame definition
+- Added the cataclysm frame to some cataclysm items
 
 # 1.1.2
 - Now the tooltipoverhaul.toml config file will be inside config/tooltipoverhaul/tooltipoverhaul.toml instead of config/tooltipoverhaul.toml

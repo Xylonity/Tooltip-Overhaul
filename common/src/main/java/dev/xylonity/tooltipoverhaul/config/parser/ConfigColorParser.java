@@ -15,7 +15,7 @@ public class ConfigColorParser {
 
     public static int parseColor(String key) {
         if (key.startsWith("#")) {
-            return parseHex(key);
+            return parseHex(key.substring(1));
         }
 
         if (key.startsWith("0x") || key.startsWith("0X")) {

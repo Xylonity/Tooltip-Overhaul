@@ -72,25 +72,18 @@ public class Util {
     }
 
     public static int getDividerLineColor(TooltipContext ctx) {
-        if (ctx.data().isPresent()) {
-            return parseDividerLineColor(ctx.data().get().getDividerLineColor(), ctx.stack());
-        }
-
-        return parseDividerLineColor(TooltipsConfig.DIVIDER_LINE_COLOR, ctx.stack());
+        return parseDividerLineColor(ctx.data().map(CustomFrameData::getDividerLineColor).orElse(TooltipsConfig.DIVIDER_LINE_COLOR), ctx);
     }
 
-    private static int parseDividerLineColor(String matcher, ItemStack stack) {
+    private static int parseDividerLineColor(String matcher, TooltipContext ctx) {
+        ItemStack stack = ctx.stack();
         switch (matcher) {
             case "match_inner_frame_color" -> {
-                final Rarity r = stack.getRarity();
-                // Computes the default color per rarity
-                // Defaults to a simulated legendary rarity
-                int palette = Palette.LEGENDARY[0];
-                if (r == Rarity.COMMON) palette = Palette.COMMON[0];
-                if (r == Rarity.UNCOMMON) palette = Palette.UNCOMMON[0];
-                if (r == Rarity.RARE) palette = Palette.RARE[0];
-                if (r == Rarity.EPIC) palette = Palette.EPIC[0];
-                return palette;
+                if (ctx.data().isPresent()) {
+                    return ConfigColorParser.parseColor(ctx.data().get().getGradientColors().get(0));
+                }
+
+                return getColorPerRarity(stack);
             }
             case "match_item_name_color" -> {
                 TextColor color = stack.getHoverName().getStyle().getColor();
@@ -107,9 +100,22 @@ public class Util {
                     return ConfigColorParser.parseColor(matcher);
                 }
             }
+
         }
 
         return 0xFFFFFFFF;
+    }
+
+    private static int getColorPerRarity(ItemStack stack) {
+        final Rarity r = stack.getRarity();
+        // Computes the default color per rarity
+        // Defaults to a simulated legendary rarity
+        int palette = Palette.LEGENDARY[0];
+        if (r == Rarity.COMMON) palette = Palette.COMMON[0];
+        if (r == Rarity.UNCOMMON) palette = Palette.UNCOMMON[0];
+        if (r == Rarity.RARE) palette = Palette.RARE[0];
+        if (r == Rarity.EPIC) palette = Palette.EPIC[0];
+        return palette;
     }
 
     public static int getExtraTextPosition(TooltipContext ctx, TextType type, TextAxis axis) {
