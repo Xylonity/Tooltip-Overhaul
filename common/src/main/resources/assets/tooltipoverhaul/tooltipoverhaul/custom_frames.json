@@ -7,7 +7,8 @@
         "minecraft:enchanted_golden_apple"
       ],
       "gradientType": "custom",
-      "borderType": "auto_gradient",
+      "borderType": "static",
+      "gradientColors": ["#C551C3", "#C551C3", "#C551C3"],
       "specialEffect": "metal_shining"
     },
     {
@@ -103,7 +104,8 @@
         "minecraft:netherite_scrap"
       ],
       "gradientType": "custom",
-      "borderType": "auto_gradient"
+      "borderType": "gradient",
+      "gradientColors": ["#A9A9A9", "#999999", "#8F8F8F"]
     },
     {
       "items": [
@@ -116,6 +118,18 @@
         "celestisynth:rainfall_serenity"
       ],
       "disableScrolling": true
+    },
+    {
+      "texture": "tooltipoverhaul:textures/overlay/cataclysm_frame.png",
+      "items": [
+        "cataclysm:the_incinerator",
+        "cataclysm:ceraunus",
+        "cataclysm:soul_render"
+      ],
+      "gradientType": "custom",
+      "borderType": "static",
+      "gradientColors": ["#3D3A5E", "#3D3A5E", "#3D3A5E"],
+      "specialEffect": "metal_shining"
     }
   ]
 }
