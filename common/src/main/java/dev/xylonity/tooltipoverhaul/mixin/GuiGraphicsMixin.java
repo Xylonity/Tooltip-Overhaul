@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,12 +27,12 @@ public class GuiGraphicsMixin {
      * shouldn't exist anyways)
      */
     @Inject(method = "renderTooltipInternal", at = @At(value = "HEAD"), cancellable = true)
-    private void enhancedtooltips$coreRenderer(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
+    private void enhancedtooltips$coreRenderer(Font font, List<ClientTooltipComponent> tooltipLines, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, ResourceLocation sprite, CallbackInfo ci) {
         int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
         ItemStack stack = ((ITooltipOverhaulItemAware) this).tooltipsOverhaul$hoveredItem();
-        List<ClientTooltipComponent> text = TooltipWrapper.wrap(font, components, sw, stack);
+        List<ClientTooltipComponent> text = TooltipWrapper.wrap(font, tooltipLines, sw, stack);
 
         TooltipContext ctx = TooltipContext.of((GuiGraphics) (Object) this, mouseX, mouseY, sw, sh, text, stack);
         if (TooltipRenderer.render(ctx)) {

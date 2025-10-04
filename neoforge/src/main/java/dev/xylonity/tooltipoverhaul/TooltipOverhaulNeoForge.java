@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -11,7 +12,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
 
 @Mod(TooltipOverhaul.MOD_ID)
 public class TooltipOverhaulNeoForge {
@@ -38,8 +39,8 @@ public class TooltipOverhaulNeoForge {
             event.enqueueWork(() -> CustomFrameManager.initialize());
         }
 
-        private static void onRegisterClientReloads(final RegisterClientReloadListenersEvent event) {
-            event.registerReloadListener(new SimplePreparableReloadListener<Void>() {
+        private static void onRegisterClientReloads(final AddClientReloadListenersEvent event) {
+            event.addListener(ResourceLocation.fromNamespaceAndPath(TooltipOverhaul.MOD_ID, "custom_frames"), new SimplePreparableReloadListener<Void>() {
                 @Override
                 protected Void prepare(ResourceManager rm, ProfilerFiller profiler) {
                     return null;

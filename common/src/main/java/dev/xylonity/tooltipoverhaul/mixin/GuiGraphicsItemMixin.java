@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Final;
@@ -38,7 +39,7 @@ public class GuiGraphicsItemMixin implements ITooltipOverhaulItemAware {
     private ItemStack tooltipsOverhaul$currentItemStack = ItemStack.EMPTY;
 
     @Inject(method = "renderTooltipInternal", at = @At("HEAD"))
-    private void tooltipsOverhaul$captureHovered(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner positioner, CallbackInfo ci) {
+    private void tooltipsOverhaul$captureHovered(Font font, List<ClientTooltipComponent> tooltipLines, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, ResourceLocation sprite, CallbackInfo ci) {
         tooltipsOverhaul$currentItemStack = ItemStack.EMPTY;
 
         Screen screen = minecraft.screen;

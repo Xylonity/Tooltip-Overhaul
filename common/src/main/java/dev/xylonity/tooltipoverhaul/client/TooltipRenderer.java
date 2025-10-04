@@ -14,13 +14,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorStandItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
@@ -160,7 +160,7 @@ public final class TooltipRenderer {
         if (size.y > height) {
             int content = 0;
             for (int i = 1; i < components.size(); i++) {
-                content += components.get(i).getHeight();
+                content += components.get(i).getHeight(font);
             }
 
             if (Util.isScrollingDisabled(ctx)) {
@@ -197,8 +197,8 @@ public final class TooltipRenderer {
         // Renders the second panel
         if (
             (ctx.data().isPresent() && ctx.data().get().shouldShowSecondPanel()) ||
-            (ctx.stack().getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER) ||
-            (ctx.stack().getItem() instanceof ArmorItem && TooltipsConfig.ARMOR_ITEMS_RENDERER)
+            (ctx.stack().getItem().components().has(DataComponents.WEAPON) && TooltipsConfig.TIERED_ITEMS_RENDERER) ||
+            (ctx.stack().getItem().components().has(DataComponents.EQUIPPABLE) && TooltipsConfig.ARMOR_ITEMS_RENDERER)
         ) {
             for (ITooltipLayer layer : LAYERS_SECOND) {
                 layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
@@ -277,7 +277,7 @@ public final class TooltipRenderer {
                 y += 12;
             }
 
-            y += components.get(i).getHeight();
+            y += components.get(i).getHeight(font);
 
             if (hasIcon && i == 0 && components.size() > 1) {
                 y += 6;
@@ -285,7 +285,7 @@ public final class TooltipRenderer {
         }
 
         int topPadding = PADDING_Y + 3;
-        int yAfterTitle = topPadding + components.get(0).getHeight();
+        int yAfterTitle = topPadding + components.get(0).getHeight(font);
 
         if (hasIcon && components.size() > 1) {
             yAfterTitle += 6;

@@ -7,9 +7,9 @@
   "mixins": [],
   "client": [
     "AbstractContainerScreenMixin",
-    "BypassHoverGuiCullingMixin",
-    "ItemRendererCacheMixin",
     "ClientTextTooltipAccessor",
+    "EntityRenderDispatcherAccessor",
+    "GuiGraphicsAccessor",
     "GuiGraphicsItemMixin",
     "GuiGraphicsMixin",
     "MouseHandlerMixin",

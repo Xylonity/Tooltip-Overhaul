@@ -29,7 +29,7 @@ neoForge {
             client()
         }
         data {
-            data()
+            clientData()
         }
         server {
             server()
@@ -42,19 +42,7 @@ neoForge {
     }
 }
 
-dependencies {
-    implementation "curse.maven:apotheosis-313970:6926309"
-    implementation "curse.maven:apothic-attributes-898963:6751650"
-    implementation "curse.maven:apothic-spawners-986583:6751589"
-    implementation "curse.maven:apothic-enchanting-1063926:6926290"
-    implementation "curse.maven:patchouli-306770:6842247"
-    implementation "curse.maven:placebo-283644:6926281"
-
-    implementation "curse.maven:lendercataclysm-551586:6906997"
-    implementation "curse.maven:curios-309927:6529130"
-    implementation "curse.maven:lionfish-api-1001614:6168249"
-}
-
+sourceSets.main.resources { srcDir 'src/generated/resources' }
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 def extractChangelogForVersion = { File file, String version ->
@@ -113,8 +101,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
     mainFile.addEnvironment("Client")
     mainFile.addModLoader("NeoForge")
-    mainFile.addGameVersion("1.21")
-    mainFile.addGameVersion("1.21.1")
+    mainFile.addGameVersion("1.21.5")
 
     mainFile.releaseType = "release"
 
@@ -128,7 +115,7 @@ modrinth {
     versionName = "[NEOFORGE] Tooltip Overhaul " + project.property('version').toString() + "-" + minecraft_version
 
     loaders = ["neoforge"]
-    gameVersions = ["1.21", "1.21.1"]
+    gameVersions = ["1.21.5"]
 
     uploadFile = jar
     versionNumber = project.property('version').toString()

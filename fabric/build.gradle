@@ -15,6 +15,8 @@ dependencies {
     }
 
     shadow("com.electronwill.night-config:toml:3.6.6")
+    modCompileOnlyApi "mezz.jei:jei-${minecraft_version}-fabric-api:21.4.0.27"
+    modRuntimeOnly "mezz.jei:jei-${minecraft_version}-fabric:21.4.0.27"
 
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
@@ -129,8 +131,7 @@ tasks.register('publishCurseForge', TaskPublishCurseForge) {
 
     mainFile.addEnvironment("Client")
     mainFile.addModLoader("Fabric")
-    mainFile.addGameVersion("1.21")
-    mainFile.addGameVersion("1.21.1")
+    mainFile.addGameVersion("1.21.5")
 
     mainFile.releaseType = "release"
 
@@ -144,7 +145,7 @@ modrinth {
     versionName = "[FABRIC] Tooltip Overhaul " + project.property('version').toString() + "-" + minecraft_version
 
     loaders = ["fabric"]
-    gameVersions = ["1.21", "1.21.1"]
+    gameVersions = ["1.21.5"]
 
     uploadFile = remapJar
     versionNumber = project.property('version').toString()

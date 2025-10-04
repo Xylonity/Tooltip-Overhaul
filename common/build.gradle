@@ -20,11 +20,11 @@ dependencies {
     compileOnly group: 'org.spongepowered', name: 'mixin', version: '0.8.5'
     compileOnly group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
 
-    compileOnlyApi "mezz.jei:jei-${minecraft_version}-common-api:19.21.2.313"
-    implementation "mezz.jei:jei-${minecraft_version}-common:19.21.2.313"
+    compileOnlyApi "mezz.jei:jei-${minecraft_version}-common-api:21.4.0.27"
+    implementation "mezz.jei:jei-${minecraft_version}-common:21.4.0.27"
 
-    compileOnlyApi "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1:api"
-    implementation "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1"
+    //compileOnlyApi "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1:api"
+    //implementation "dev.emi:emi-xplat-mojmap:1.1.22+1.21.1"
 
     annotationProcessor group: 'io.github.llamalad7', name: 'mixinextras-common', version: '0.3.5'
 }

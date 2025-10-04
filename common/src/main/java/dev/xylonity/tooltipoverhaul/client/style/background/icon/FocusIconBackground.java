@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.style.background.icon;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
@@ -16,8 +17,8 @@ public class FocusIconBackground implements ITooltipPreviewBackground {
         int x1 = x0 + 22;
         int y1 = y0 + 22;
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
+        GlStateManager._enableBlend();
+        GlStateManager._blendFuncSeparate(770, 1, 1, 771);
 
         ctx.graphics().fill(x0, y0, x1, y1, depth.getZ(), 0x8018181C);
 
@@ -36,7 +37,7 @@ public class FocusIconBackground implements ITooltipPreviewBackground {
         ctx.graphics().fill(x1 - 5, y1, x1 + 1, y1 + 1, depth.getZ(), col);
         ctx.graphics().fill(x1 + 1, y1 - 5, x1, y1, depth.getZ(), col);
 
-        RenderSystem.disableBlend();
+        GlStateManager._disableBlend();
     }
 
 

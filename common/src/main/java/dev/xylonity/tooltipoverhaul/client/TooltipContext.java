@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.mixin.GuiGraphicsAccessor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -88,7 +89,7 @@ public class TooltipContext {
     }
 
     public MultiBufferSource buffer() {
-        return graphics.bufferSource();
+        return ((GuiGraphicsAccessor) graphics).tooltipoverhaul$bufferSource();
     }
 
     public void push(Runnable r) {

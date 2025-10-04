@@ -6,13 +6,14 @@ import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipArmorStand;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.mixin.EntityRenderDispatcherAccessor;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
@@ -61,21 +62,21 @@ public class DefaultArmorStand implements ITooltipArmorStand {
             Lighting.setupForEntityInInventory();
             EntityRenderDispatcher renderer = Minecraft.getInstance().getEntityRenderDispatcher();
             renderer.setRenderShadow(false);
-            renderer.render(stand, 0, 0, 0, 0, 1, ctx.pose(), ctx.buffer(), 0xF000F0);
+            ((EntityRenderDispatcherAccessor) renderer).tooltipoverhaul$render(stand, 0, 0, 0, 0, ctx.pose(), ctx.buffer(), 0xF000F0);
             renderer.setRenderShadow(true);
         });
 
     }
 
     private static void equipArmor(ItemStack stack) {
-        if (!(stack.getItem() instanceof ArmorItem ar)) return;
+        if (!(stack.getItem().components().has(DataComponents.EQUIPPABLE))) return;
         if (stand == null) return;
 
         for (EquipmentSlot s : EquipmentSlot.values()) {
             stand.setItemSlot(s, ItemStack.EMPTY);
         }
 
-        stand.setItemSlot(ar.getEquipmentSlot(), stack.copy());
+        stand.setItemSlot(stack.getItem().components().get(DataComponents.EQUIPPABLE).slot(), stack.copy());
     }
 
 }

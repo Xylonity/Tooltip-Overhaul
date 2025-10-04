@@ -1,12 +1,13 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
@@ -47,21 +48,13 @@ public class CinderEffect implements ITooltipEffect {
 
             ctx.translate(0, 0, depth.getZ());
 
-            RenderSystem.enableBlend();
-
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE
-            );
+            GlStateManager._enableBlend();
+            GlStateManager._blendFuncSeparate(770, 1, 770, 1);
 
             cinders.removeIf(c -> !c.render(ctx, 1f/60f, now));
 
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-
-            RenderSystem.disableBlend();
+            GlStateManager._blendFuncSeparate(770, 771, 770, 771);
+            GlStateManager._disableBlend();
 
             ctx.graphics().disableScissor();
         });
@@ -166,8 +159,6 @@ public class CinderEffect implements ITooltipEffect {
         float hex = nx * tEnd * 0.5f;
         float hey = ny * tEnd * 0.5f;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
         BufferBuilder buf = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         buf.addVertex(pose, x1 - hsx, y1 - hsy, 0).setColor(r, g, b, a);
         buf.addVertex(pose, x1 + hsx, y1 + hsy, 0).setColor(r, g, b, a);
@@ -175,7 +166,7 @@ public class CinderEffect implements ITooltipEffect {
         buf.addVertex(pose, x2 + hex, y2 + hey, 0).setColor(r, g, b, a);
 
         try (MeshData data = buf.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
+            RenderType.dragonRays().draw(data);
         }
     }
 
