@@ -7,6 +7,9 @@ import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipFrame;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
@@ -121,9 +124,9 @@ public class GlintInnerOverlay implements ITooltipFrame {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buf = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        //RenderSystem.enableBlend();
+        //RenderSystem.defaultBlendFunc();
+        //RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         buf.addVertex(matrix, x1, y2, 0).setColor(redLeft, greenLeft, blueLeft, alphaLeft); // bl
         buf.addVertex(matrix, x2, y2, 0).setColor(redRight, greenRight, blueRight, alphaRight); // br
@@ -131,7 +134,7 @@ public class GlintInnerOverlay implements ITooltipFrame {
         buf.addVertex(matrix, x1, y1, 0).setColor(redLeft, greenLeft, blueLeft, alphaLeft); // tl
 
         try (MeshData data = buf.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
+            RenderType.gui().draw(data);
         }
     }
 
@@ -150,9 +153,9 @@ public class GlintInnerOverlay implements ITooltipFrame {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buf = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        //RenderSystem.enableBlend();
+        //RenderSystem.defaultBlendFunc();
+        //RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         buf.addVertex(matrix, x1, y2, 0).setColor(redBottom, greenBottom, blueBottom, alphaBottom); // bl
         buf.addVertex(matrix, x2, y2, 0).setColor(redBottom, greenBottom, blueBottom, alphaBottom); // br
@@ -160,7 +163,7 @@ public class GlintInnerOverlay implements ITooltipFrame {
         buf.addVertex(matrix, x1, y1, 0).setColor(redTop, greenTop, blueTop, alphaTop); // tl
 
         try (MeshData data = buf.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
+            RenderType.gui().draw(data);
         }
     }
 

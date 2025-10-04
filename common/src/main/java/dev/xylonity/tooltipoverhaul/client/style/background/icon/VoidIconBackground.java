@@ -6,6 +6,7 @@ import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipPreviewBackground;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec2;
 
@@ -26,7 +27,7 @@ public class VoidIconBackground implements ITooltipPreviewBackground {
         int currentFrame = (int) ((TooltipRenderer.ELAPSED / 0.2f) % frames);
 
         int dim = 64;
-        ctx.graphics().blit(PREVIEW, -32, -32, 0, currentFrame * dim, dim, dim, dim, frames * dim);
+        ctx.graphics().blit(RenderType::guiTextured, PREVIEW, -32, -32, 0, currentFrame * dim, dim, dim, dim, frames * dim);
     }
 
 }

@@ -5,6 +5,7 @@ import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipText;
+import dev.xylonity.tooltipoverhaul.mixin.GuiGraphicsAccessor;
 import dev.xylonity.tooltipoverhaul.util.TextAxis;
 import dev.xylonity.tooltipoverhaul.util.TextType;
 import dev.xylonity.tooltipoverhaul.util.Util;
@@ -63,9 +64,9 @@ public class DefaultText implements ITooltipText {
                         x += TooltipRenderer.PADDING_X + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.X);
                     }
 
-                    component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
+                    component.renderText(font, x, y, ctx.pose().last().pose(), ((GuiGraphicsAccessor) ctx.graphics()).tooltipoverhaul$bufferSource());
 
-                    y += component.getHeight();
+                    y += component.getHeight(font);
 
                     if (hasStack && i == 0 && ctx.getComponents().size() > 1) {
                         y += 6;
@@ -81,9 +82,9 @@ public class DefaultText implements ITooltipText {
                     }
 
                     int x = (int) pos.x + (i == 0 ? firstLineOffset : TooltipRenderer.PADDING_X);
-                    component.renderImage(font, x, y, ctx.graphics());
+                    component.renderImage(font, x, y, component.getWidth(font), component.getHeight(font), ctx.graphics());
 
-                    y += component.getHeight();
+                    y += component.getHeight(font);
 
                     if (hasStack && i == 0 && ctx.getComponents().size() > 1) {
                         y += 6;
@@ -97,7 +98,7 @@ public class DefaultText implements ITooltipText {
             if (!ctx.getComponents().isEmpty()) {
                 ClientTooltipComponent title = (ClientTooltipComponent) ctx.getComponents().get(0);
                 int xTitle = (int) pos.x + firstLineOffset;
-                title.renderText(font, xTitle, yTitle, ctx.pose().last().pose(), ctx.graphics().bufferSource());
+                title.renderText(font, xTitle, yTitle, ctx.pose().last().pose(), ((GuiGraphicsAccessor) ctx.graphics()).tooltipoverhaul$bufferSource());
                 // Hotfix for invisible tooltip stack title name on certain scrollable items (so the title isn't affected by the scissor)
                 ctx.flush();
             }
@@ -114,9 +115,9 @@ public class DefaultText implements ITooltipText {
             for (int i = 1; i < ctx.getComponents().size(); i++) {
                 ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
                 int x = (int) pos.x + TooltipRenderer.PADDING_X;
-                int h = component.getHeight();
+                int h = component.getHeight(font);
                 if (y + h >= toTop && y <= toBottom) {
-                    component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
+                    component.renderText(font, x, y, ctx.pose().last().pose(), ((GuiGraphicsAccessor) ctx.graphics()).tooltipoverhaul$bufferSource());
                 }
 
                 y += h;
@@ -128,9 +129,9 @@ public class DefaultText implements ITooltipText {
                 ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
 
                 int x = (int) pos.x + TooltipRenderer.PADDING_X;
-                int h = component.getHeight();
+                int h = component.getHeight(font);
                 if (y + h >= toTop && y <= toBottom) {
-                    component.renderImage(font, x, y, ctx.graphics());
+                    component.renderImage(font, x, y, component.getWidth(font), component.getHeight(font), ctx.graphics());
                 }
                 y += h;
             }

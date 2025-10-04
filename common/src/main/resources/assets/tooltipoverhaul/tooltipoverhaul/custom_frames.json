@@ -59,7 +59,8 @@
         "minecraft:skull_banner_pattern"
       ],
       "gradientType": "custom",
-      "borderType": "auto_gradient"
+      "borderType": "static",
+      "gradientColors": ["#DEB242", "#DEB242", "#DEB242"]
     },
     {
       "texture": "tooltipoverhaul:textures/overlay/silver_frame.png",

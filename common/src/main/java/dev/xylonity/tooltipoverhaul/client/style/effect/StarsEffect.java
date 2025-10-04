@@ -1,13 +1,13 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.entity.Pose;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
@@ -66,24 +66,15 @@ public class StarsEffect implements ITooltipEffect {
             ctx.graphics().enableScissor(x - 3, y - 3, x + w + 3, y + h + 3);
             ctx.translate(0, 0, depth.getZ());
 
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            GlStateManager._enableBlend();
+            GlStateManager._blendFuncSeparate(770, 1, 1, 771);
 
             Matrix4f pose = ctx.pose().last().pose();
             stars.removeIf(s -> !s.updateAndRender(pose, now));
 
             // reset
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.disableBlend();
+            GlStateManager._blendFuncSeparate(770, 771, 770, 771);
+            GlStateManager._disableBlend();
 
             ctx.graphics().disableScissor();
         });
@@ -115,8 +106,6 @@ public class StarsEffect implements ITooltipEffect {
         float x = -dy / len;
         float y = dx / len;
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
         Tesselator tess = Tesselator.getInstance();
         BufferBuilder buf = tess.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         buf.addVertex(pose, x1 - (x * tStart * 0.5f), y1 - (y * tStart * 0.5f), 0).setColor(r, g, b, a);
@@ -125,7 +114,7 @@ public class StarsEffect implements ITooltipEffect {
         buf.addVertex(pose, x2 + (x * tEnd * 0.5f), y2 + (y * tEnd * 0.5f), 0).setColor(r, g, b, a);
 
         try (MeshData data = buf.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
+            RenderType.dragonRays().draw(data);
         }
     }
 

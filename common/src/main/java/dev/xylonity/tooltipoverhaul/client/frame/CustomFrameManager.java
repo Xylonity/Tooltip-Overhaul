@@ -1,11 +1,14 @@
 package dev.xylonity.tooltipoverhaul.client.frame;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -97,7 +100,7 @@ public class CustomFrameManager {
         String textureLocation = ctx.data().map(CustomFrameData::getTexture).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
         if (textureLocation == null || textureLocation.isEmpty() || textureLocation.isBlank()) return;
 
-        ResourceLocation texture = ResourceLocation.tryParse(textureLocation);
+        ResourceLocation texture = ResourceLocation.parse(textureLocation);
 
         // Computes the exact texture dimensions, thus automatically handling animated frames. The textures have a fixed
         // dimension of 132x132n, as n being the number of frames. Albeit this doesn't require much computation, meta info
@@ -119,28 +122,28 @@ public class CustomFrameManager {
             ctx.translate(0, 0, LayerDepth.BACKGROUND_OVERLAY.getZ());
 
             // TOP LEFT
-            ctx.graphics().blit(texture, x - 22 - 4 + 1, y - 22 - 4 + 1, 0, vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, x - 22 - 4 + 1, y - 22 - 4 + 1, 0, vFrameOffset, 44, 44, texW, texH);
 
             // TOP RIGHT
-            ctx.graphics().blit(texture, x + width - 20 + 1, y - 22 - 4 + 1, 88, vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, x + width - 20 + 1, y - 22 - 4 + 1, 88, vFrameOffset, 44, 44, texW, texH);
 
             // BOTTOM LEFT
-            ctx.graphics().blit(texture, x - 22 - 4 + 1, y + height - 20 + 1, 0, 88 + vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, x - 22 - 4 + 1, y + height - 20 + 1, 0, 88 + vFrameOffset, 44, 44, texW, texH);
 
             // BOTTOM RIGHT
-            ctx.graphics().blit(texture, x + width - 20 + 1, y + height - 20 + 1, 88, 88 + vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, x + width - 20 + 1, y + height - 20 + 1, 88, 88 + vFrameOffset, 44, 44, texW, texH);
 
             // LEFT
-            ctx.graphics().blit(texture, x - 22 - 4 + 1, (y - 22 - 4 + 1) + 3 + height / 2, 0, 44 + vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, x - 22 - 4 + 1, (y - 22 - 4 + 1) + 3 + height / 2, 0, 44 + vFrameOffset, 44, 44, texW, texH);
 
             // RIGHT
-            ctx.graphics().blit(texture, x + width - 20 + 1, (y - 22 - 4 + 1) + 3 + height / 2, 88, 44 + vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, x + width - 20 + 1, (y - 22 - 4 + 1) + 3 + height / 2, 88, 44 + vFrameOffset, 44, 44, texW, texH);
 
             // TOP
-            ctx.graphics().blit(texture, (x - 22 - 4 + 1) + 4 + width / 2, y - 22 - 4 + 1, 44, vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, (x - 22 - 4 + 1) + 4 + width / 2, y - 22 - 4 + 1, 44, vFrameOffset, 44, 44, texW, texH);
 
             // BOTTOM
-            ctx.graphics().blit(texture, (x - 22 - 4 + 1) + 4 + width / 2, y + height - 20 + 1, 44, 88 + vFrameOffset, 44, 44, texW, texH);
+            ctx.graphics().blit(RenderType::guiTextured, texture, (x - 22 - 4 + 1) + 4 + width / 2, y + height - 20 + 1, 44, 88 + vFrameOffset, 44, 44, texW, texH);
         });
 
     }
@@ -184,7 +187,7 @@ public class CustomFrameManager {
         int marginY = 8;
         for (int y = y0 + marginY; y < y1 - marginY; y += SAMPLEX) {
             for (int x = x0 + marginX; x < x1 - marginX; x += SAMPLEX) {
-                int abgr = img.getPixelRGBA(x, y);
+                int abgr = img.getPixel(x, y);
 
                 // Minecraft NativeImage uses abgr format
                 int a = (abgr >> 24) & 0xFF;
@@ -331,7 +334,7 @@ public class CustomFrameManager {
             bottomColor = midColor;
         }
 
-        return new int[]{topColor, midColor, bottomColor};
+        return new int[]{invertRGB(topColor), invertRGB(midColor), invertRGB(bottomColor)};
     }
 
     /**
@@ -365,6 +368,13 @@ public class CustomFrameManager {
 
     private static int clamp(int value) {
         return Math.max(0, Math.min(255, value));
+    }
+
+    private static int invertRGB(int c) {
+        int r = 255 - ((c >> 16) & 0xFF);
+        int g = 255 - ((c >> 8) & 0xFF);
+        int b = 255 - (c & 0xFF);
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
     private record TextureInfo(int width, int height, int frames) { ;; }

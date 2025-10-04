@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.style.divider;
 
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
@@ -7,8 +8,10 @@ import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipDividerLine;
 import dev.xylonity.tooltipoverhaul.util.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
@@ -27,7 +30,7 @@ public class DefaultDividerLine implements ITooltipDividerLine {
             return;
         }
 
-        int y = (int) pos.y + 4 + TooltipRenderer.PADDING_Y + ((List<ClientTooltipComponent>) ctx.getComponents()).get(0).getHeight() + 4 + 10;
+        int y = (int) pos.y + 4 + TooltipRenderer.PADDING_Y + ((List<ClientTooltipComponent>) ctx.getComponents()).get(0).getHeight(Minecraft.getInstance().font) + 4 + 10;
 
         int x = (int) ((int) pos.x + size.x * 0.1f);
         int width = (int) (size.x - size.x * 0.2f);
@@ -43,9 +46,8 @@ public class DefaultDividerLine implements ITooltipDividerLine {
             Tesselator tesselator = Tesselator.getInstance();
             BufferBuilder buf = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            GlStateManager._enableBlend();
+            GlStateManager._blendFuncSeparate(770, 771, 1, 0);
 
             int segmentLength = Math.max(1, width / segments);
             int drawn = 0;
@@ -87,7 +89,7 @@ public class DefaultDividerLine implements ITooltipDividerLine {
             }
 
             try (MeshData data = buf.buildOrThrow()) {
-                BufferUploader.drawWithShader(data);
+                RenderType.gui().draw(data);
             }
         });
 

@@ -1,12 +1,13 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
@@ -66,21 +67,13 @@ public class RipplesEffect implements ITooltipEffect {
                 lastSpawn = now;
             }
 
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
+            GlStateManager._enableBlend();
+            GlStateManager._blendFuncSeparate(770, 1, 1, 771);
 
             ripples.removeIf(r -> !r.updateAndRender(ctx, now));
 
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.disableBlend();
+            GlStateManager._blendFuncSeparate(770, 771, 770, 771);
+            GlStateManager._disableBlend();
 
             ctx.graphics().disableScissor();
         });
@@ -171,42 +164,69 @@ public class RipplesEffect implements ITooltipEffect {
 
             Tesselator tesselator = Tesselator.getInstance();
 
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-            int segments = Math.max(16, RING_SEGMENTS);
+            int segments = Math.max(RING_SEGMENTS, (int) (outerR * 2f));
             float midR = innerR + (outerR - innerR) * 0.5f;
 
-            // inner -> mid
-            BufferBuilder buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-            for (int i = 0; i <= segments; i++) {
-                float theta = (float) (2 * Math.PI * (i / (float) segments));
-                float w = theta + tweaking * (float) Math.sin(theta * 3.0f);
-                float func1 = (float) Math.sin(w);
-                float func2 = (float) Math.cos(w);
+            BufferBuilder buf = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            int alphaByte = Math.round(alphaNorm * 255f);
+            for (int i = 0; i < segments; i++) {
 
-                buf.addVertex(ctx.pose().last().pose(), cx + func2 * midR, cy + func1 * midR, 0).setColor(r, g, b, (int) (alphaNorm * 255f));
-                buf.addVertex(ctx.pose().last().pose(), cx + func2 * innerR, cy + func1 * innerR, 0).setColor(r, g, b, 0);
+                float th0 = (float) (2 * Math.PI * i / (float) segments);
+                float th1 = (float) (2 * Math.PI * (i + 1) / (float) segments);
+                float w0 = th0 + tweaking * (float) Math.sin(th0 * 3.0f);
+                float w1 = th1 + tweaking * (float) Math.sin(th1 * 3.0f);
+
+                float mx0 = cx + (float) Math.cos(w0) * midR;
+                float my0 = cy + (float) Math.sin(w0) * midR;
+                float ix0 = cx + (float) Math.cos(w0) * innerR;
+                float iy0 = cy + (float) Math.sin(w0) * innerR;
+                float mx1 = cx + (float) Math.cos(w1) * midR;
+                float my1 = cy + (float) Math.sin(w1) * midR;
+                float ix1 = cx + (float) Math.cos(w1) * innerR;
+                float iy1 = cy + (float) Math.sin(w1) * innerR;
+
+                buf.addVertex(ctx.pose().last().pose(), mx0, my0, 0).setColor(r, g, b, alphaByte);
+                buf.addVertex(ctx.pose().last().pose(), ix0, iy0, 0).setColor(r, g, b, 0);
+                buf.addVertex(ctx.pose().last().pose(), ix1, iy1, 0).setColor(r, g, b, 0);
+
+                buf.addVertex(ctx.pose().last().pose(), mx0, my0, 0).setColor(r, g, b, alphaByte);
+                buf.addVertex(ctx.pose().last().pose(), ix1, iy1, 0).setColor(r, g, b, 0);
+                buf.addVertex(ctx.pose().last().pose(), mx1, my1, 0).setColor(r, g, b, alphaByte);
             }
-
             try (MeshData data = buf.buildOrThrow()) {
-                BufferUploader.drawWithShader(data);
+                RenderType.dragonRays().draw(data);
             }
 
             // mid -> out
-            buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-            for (int i = 0; i <= segments; i++) {
-                float theta = (float) (2 * Math.PI * (i / (float) segments));
-                float w = theta + tweaking * (float) Math.sin(theta * 3.0f);
-                float func1 = (float) Math.sin(w);
-                float func2 = (float) Math.cos(w);
+            buf = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+            for (int i = 0; i < segments; i++) {
+                float th0 = (float) (2 * Math.PI * i / (float) segments);
+                float th1 = (float) (2 * Math.PI * (i + 1) / (float) segments);
+                float w0 = th0 + tweaking * (float) Math.sin(th0 * 3.0f);
+                float w1 = th1 + tweaking * (float) Math.sin(th1 * 3.0f);
 
-                buf.addVertex(ctx.pose().last().pose(), cx + func2 * outerR, cy + func1 * outerR, 0).setColor(r, g, b, 0);
-                buf.addVertex(ctx.pose().last().pose(), cx + func2 * midR, cy + func1 * midR, 0).setColor(r, g, b, (int) (alphaNorm * 255f));
+                float ox0 = cx + (float) Math.cos(w0) * outerR;
+                float oy0 = cy + (float) Math.sin(w0) * outerR;
+                float mx0 = cx + (float) Math.cos(w0) * midR;
+                float my0 = cy + (float) Math.sin(w0) * midR;
+                float ox1 = cx + (float) Math.cos(w1) * outerR;
+                float oy1 = cy + (float) Math.sin(w1) * outerR;
+                float mx1 = cx + (float) Math.cos(w1) * midR;
+                float my1 = cy + (float) Math.sin(w1) * midR;
+
+                buf.addVertex(ctx.pose().last().pose(), ox0, oy0, 0).setColor(r, g, b, 0);
+                buf.addVertex(ctx.pose().last().pose(), mx0, my0, 0).setColor(r, g, b, alphaByte);
+                buf.addVertex(ctx.pose().last().pose(), mx1, my1, 0).setColor(r, g, b, alphaByte);
+
+                buf.addVertex(ctx.pose().last().pose(), ox0, oy0, 0).setColor(r, g, b, 0);
+                buf.addVertex(ctx.pose().last().pose(), mx1, my1, 0).setColor(r, g, b, alphaByte);
+                buf.addVertex(ctx.pose().last().pose(), ox1, oy1, 0).setColor(r, g, b, 0);
             }
 
             try (MeshData data = buf.buildOrThrow()) {
-                BufferUploader.drawWithShader(data);
+                RenderType.dragonRays().draw(data);
             }
+
         }
 
         private static float clamp01(float v) {
