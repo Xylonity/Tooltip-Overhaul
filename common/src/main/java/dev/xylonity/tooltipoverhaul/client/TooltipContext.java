@@ -4,15 +4,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
-import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +29,9 @@ public class TooltipContext {
 
     private @Nullable TooltipContext otherTooltipContext;
     private boolean isMainTooltip;
+
+    // For location purposes (of the second tooltip)
+    private boolean halfWrapped = false;
 
     private final @Nullable CustomFrameData data;
 
@@ -57,11 +57,11 @@ public class TooltipContext {
     }
 
     public boolean isMainTooltip() {
-        return isMainTooltip;
+        return this.isMainTooltip;
     }
 
     public @Nullable TooltipContext getOtherTooltipContext() {
-        return otherTooltipContext;
+        return this.otherTooltipContext;
     }
 
     public Optional<CustomFrameData> data() {
@@ -136,6 +136,14 @@ public class TooltipContext {
 
     public void flush() {
         graphics.flush();
+    }
+
+    public void setHalfWrapped(boolean halfWrapped) {
+        this.halfWrapped = halfWrapped;
+    }
+
+    public boolean isHalfWrapped() {
+        return halfWrapped;
     }
 
 }

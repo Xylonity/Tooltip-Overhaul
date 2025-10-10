@@ -126,6 +126,10 @@ dependencies {
     modImplementation ("curse.maven:alexs-caves-924854:5848216")
     modImplementation ("curse.maven:citadel-331936:6702068")
 
+    modImplementation ("curse.maven:clean-tooltips-855017:4703388")
+    modImplementation ("curse.maven:enchantment-descriptions-250419:5855251")
+    modImplementation ("curse.maven:bookshelf-228525:5423987")
+
     //compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
     //runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")

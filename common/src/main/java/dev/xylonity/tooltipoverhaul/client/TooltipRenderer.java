@@ -49,6 +49,12 @@ public final class TooltipRenderer {
     private static ItemStack lastStack = ItemStack.EMPTY;
     private static long startMs;
 
+    // Caches the stack again to prevent the style from the hovered stack to inherit values from the comparation tooltip
+    private static ItemStack styleStack = ItemStack.EMPTY;
+
+    // Shared clock to prevent stutter when rendering two diff icons
+    private static boolean COMPARISON_PAIR_ACTIVE = false;
+
     // Main tooltip (and second panel) layers
     private static final List<ITooltipLayer> LAYERS_MAIN = new ArrayList<>();
     // Empty stack tooltip layers
@@ -59,6 +65,9 @@ public final class TooltipRenderer {
     // Scrolling predicates
     public static int LAST_HEADER_ABS;
     public static int LAST_POS_YI;
+
+    private static Rectangle LAST_MAIN_RECT = null;
+    private static int LAST_SHARED_Y = -1;
 
     static {
         // Main panel
@@ -117,8 +126,12 @@ public final class TooltipRenderer {
             if (customFrame.get().shouldDisableTooltip()) return false;
         }
 
+        if (ctx.isMainTooltip() && ctx.getOtherTooltipContext() != null) {
+            COMPARISON_PAIR_ACTIVE = true;
+        }
+
         // Updates the current tooltip style based on the stack rarity (or the customFrameData if present)
-        updateStyle(hasIcon ? ctx.stack() : ItemStack.EMPTY, customFrame.orElse(null));
+        updateStyle(ctx, customFrame.orElse(null));
         // Passes the rendering context if there is any error computing the style
         if (hasIcon && style == null) return false;
 
@@ -130,30 +143,119 @@ public final class TooltipRenderer {
         Point size = calculateSize(font, components, rating, hasIcon, ctx);
 
         int margin = 4;
+        int spacing = 16;
+        int half = ctx.width() / 2;
 
         // margin right
         int xRight = ctx.mouseX() + 12;
         // margin left
-        int xLeft  = ctx.mouseX() - 16 - size.x;
+        int xLeft = ctx.mouseX() - 16 - size.x;
 
-        // Start position of the tooltip
-        int x;
-        if (xRight + size.x <= ctx.width() - margin) {
-            // Fits on the right
-            x = xRight;
-        }
-        else if (xLeft >= margin) {
-            // Flips to the left
-            x = xLeft;
-        }
-        else {
-            // Clamps to screen (if it doesn't fit on either side)
-            x = Math.max(margin, ctx.width() - size.x - margin);
-        }
+        boolean comparisonActive = ctx.getOtherTooltipContext() != null;
 
         int height = Math.min(size.y, ctx.height() - 8);
 
-        Vec2 pos = new Vec2(x, Math.max(margin, Math.min(ctx.mouseY() - 12, ctx.height() - height - margin)));
+        int sharedY = -1;
+        if (comparisonActive) {
+            TooltipContext other = ctx.getOtherTooltipContext();
+            int maxHeight = Math.max(height, Math.min(calculateSize(font, (List<ClientTooltipComponent>) other.getComponents(), Component.empty(), !other.stack().isEmpty(), other).y, other.height() - 8));
+            sharedY = Math.max(margin, Math.min(ctx.mouseY() - 12, ctx.height() - maxHeight - margin));
+        }
+
+        boolean thisHalf = ctx.isHalfWrapped();
+        boolean mainHalf = comparisonActive && (ctx.isMainTooltip() ? ctx.isHalfWrapped() : ctx.getOtherTooltipContext().isHalfWrapped());
+
+        // Hardly moves the second tooltip to the left (so it doesn't overlap with the main tooltip in case it's too large)
+        int x;
+        if (ctx.isMainTooltip()) {
+            // Main tooltip positioning
+            if (thisHalf) {
+                // If half-wrapped, constrains to the right half of the screen
+                int minX = half + margin;
+                int possibleX = xRight;
+                if (possibleX < minX) {
+                    possibleX = minX;
+                }
+
+                x = Math.max(minX, Math.min(possibleX, ctx.width() - margin - size.x));
+            }
+            else {
+                // Normal positioning (right -> left -> clamps)
+                if (xRight + size.x <= ctx.width() - margin) {
+                    x = xRight;
+                }
+                else if (xLeft >= margin) {
+                    x = xLeft;
+                }
+                else {
+                    x = Math.max(margin, ctx.width() - size.x - margin);
+                }
+
+            }
+
+            // Adjusts the main tooltip position if it'd overlap with the secondary tooltip
+            if (comparisonActive) {
+                TooltipContext secondaryCtx = ctx.getOtherTooltipContext();
+
+                int secondaryCtxWidth = calculateSize(font, (List<ClientTooltipComponent>) secondaryCtx.getComponents(), Component.empty(), !secondaryCtx.stack().isEmpty(), secondaryCtx).x;
+
+                // Ensures minimum space for the secondary tooltip
+                if (!(thisHalf && secondaryCtx.isHalfWrapped())) {
+                    if ((x - spacing - secondaryCtxWidth) < margin) {
+                        // Moves the main tooltip to make room
+                        int newMainX = margin + secondaryCtxWidth + spacing;
+                        if (thisHalf) {
+                            newMainX = Math.max(newMainX, half + margin);
+                        }
+
+                        newMainX = Math.min(newMainX, ctx.width() - margin - size.x);
+                        x = newMainX;
+                    }
+                }
+            }
+        }
+        else if (comparisonActive && LAST_MAIN_RECT != null) {
+            // Secondary tooltip positioning
+            if (thisHalf && mainHalf) {
+                int desiredLeft = LAST_MAIN_RECT.x - spacing - size.x;
+                int maxLeftX = (half - margin) - size.x;
+                x = Math.max(margin, Math.min(desiredLeft, maxLeftX));
+            }
+            else {
+                // Position to the left of the main tooltip
+                x = Math.max(LAST_MAIN_RECT.x - spacing - size.x, margin);
+            }
+
+        }
+        else {
+            if (xRight + size.x <= ctx.width() - margin) {
+                x = xRight;
+            }
+            else if (xLeft >= margin) {
+                x = xLeft;
+            }
+            else {
+                x = Math.max(margin, ctx.width() - size.x - margin);
+            }
+
+        }
+
+        Vec2 pos;
+        if (comparisonActive) {
+            if (ctx.isMainTooltip()) {
+                LAST_SHARED_Y = sharedY;
+                pos = new Vec2(x, LAST_SHARED_Y);
+            }
+            else {
+                pos = new Vec2(x, (LAST_SHARED_Y >= 0) ? LAST_SHARED_Y : Math.max(margin, Math.min(ctx.mouseY() - 12, ctx.height() - Math.min(size.y, ctx.height() - 8) - margin)));
+            }
+        }
+        else {
+            // Clamps to screen (if it doesn't fit on either side)
+            int y = Math.max(margin, Math.min(ctx.mouseY() - 12, ctx.height() - height - margin));
+            pos = new Vec2(x, y);
+            LAST_SHARED_Y = -1;
+        }
 
         LAST_POS_YI = Math.round(pos.y);
 
@@ -196,17 +298,27 @@ public final class TooltipRenderer {
 
         // Renders the second panel
         if (
-            (ctx.data().isPresent() && ctx.data().get().shouldShowSecondPanel()) ||
+            (ctx.isMainTooltip()) && ctx.getOtherTooltipContext() == null &&
+            ((ctx.data().isPresent() && ctx.data().get().shouldShowSecondPanel()) ||
             (ctx.stack().getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER) ||
-            (ctx.stack().getItem() instanceof ArmorItem && TooltipsConfig.ARMOR_ITEMS_RENDERER)
+            (ctx.stack().getItem() instanceof ArmorItem && TooltipsConfig.ARMOR_ITEMS_RENDERER))
         ) {
             for (ITooltipLayer layer : LAYERS_SECOND) {
                 layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
             }
-
         }
 
         ctx.flush();
+
+        if (ctx.isMainTooltip()) {
+            LAST_MAIN_RECT = new Rectangle(Math.round(pos.x), Math.round(pos.y), ttSize.x, ttSize.y);
+        }
+        else {
+            if (COMPARISON_PAIR_ACTIVE) {
+                COMPARISON_PAIR_ACTIVE = false;
+            }
+
+        }
 
         TooltipScrollState.resetIfInactive();
         return true;
@@ -282,6 +394,7 @@ public final class TooltipRenderer {
             if (hasIcon && i == 0 && components.size() > 1) {
                 y += 6;
             }
+
         }
 
         int topPadding = PADDING_Y + 3;
@@ -310,14 +423,24 @@ public final class TooltipRenderer {
         return new Point(width, height);
     }
 
-    private static void updateStyle(ItemStack stack, @Nullable CustomFrameData data) {
+    private static void updateStyle(TooltipContext ctx, @Nullable CustomFrameData data) {
+        ItemStack stack = ctx.stack();
         if (!((stack.isEmpty() && lastStack.isEmpty()) || (!stack.isEmpty() && !lastStack.isEmpty() && ItemStack.isSameItemSameTags(stack, lastStack)))) {
             style = Styles.of(stack, data).orElse(null);
-            // Overrides the previous stack if the user starts hovering over another item
-            lastStack = stack.copy();
-            startMs = System.currentTimeMillis();
+            styleStack = stack.copy();
 
-            TooltipScrollState.reset();
+            if (!(COMPARISON_PAIR_ACTIVE && !ctx.isMainTooltip())) {
+                lastStack = stack.copy();
+                startMs = System.currentTimeMillis();
+                TooltipScrollState.reset();
+            }
+        }
+        else {
+            if (style == null || (styleStack.isEmpty() && !stack.isEmpty()) || (!styleStack.isEmpty() && !ItemStack.isSameItemSameTags(styleStack, stack))) {
+                style = Styles.of(stack, data).orElse(null);
+                styleStack = stack.copy();
+            }
+
         }
 
         ELAPSED = (System.currentTimeMillis() - startMs) / 1000f;

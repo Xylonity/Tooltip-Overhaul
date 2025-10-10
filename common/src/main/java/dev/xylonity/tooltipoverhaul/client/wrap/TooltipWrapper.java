@@ -25,6 +25,17 @@ public final class TooltipWrapper {
      * Core wrapping call
      */
     public static List<ClientTooltipComponent> wrap(Font font, List<ClientTooltipComponent> orig, int screenWidth, ItemStack stack) {
+        return wrapInternal(font, orig, screenWidth, stack, false);
+    }
+
+    /**
+     * Wraps to half of the screen (when comparison is active)
+     */
+    public static List<ClientTooltipComponent> wrapHalf(Font font, List<ClientTooltipComponent> orig, int screenWidth, ItemStack stack) {
+        return wrapInternal(font, orig, screenWidth, stack, true);
+    }
+
+    private static List<ClientTooltipComponent> wrapInternal(Font font, List<ClientTooltipComponent> orig, int screenWidth, ItemStack stack, boolean halfScreen) {
         if (orig == null || orig.isEmpty()) return orig;
 
         boolean hasIcon = !stack.isEmpty();
@@ -32,8 +43,8 @@ public final class TooltipWrapper {
         int basePadding = TooltipRenderer.PADDING_X * 2 + 4;
         int iconPadding = hasIcon ? 26 : 0;
 
-        // Allowed text width (3/4 of the screen width)
-        int maxAllowed = Math.max(60, (int) (screenWidth * 0.75f) - basePadding - iconPadding);
+        // Allowed text width
+        int maxAllowed = Math.max(60, (halfScreen ? (screenWidth / 2) - 8 : (int)(screenWidth * 0.75f)) - basePadding - iconPadding);
 
         // Checks if wrapping is needed
         boolean shouldWrap = false;

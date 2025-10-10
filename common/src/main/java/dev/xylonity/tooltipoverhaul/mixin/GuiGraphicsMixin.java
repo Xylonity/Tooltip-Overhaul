@@ -35,29 +35,48 @@ public class GuiGraphicsMixin {
      * shouldn't exist anyways)
      */
     @Inject(method = "renderTooltipInternal", at = @At(value = "HEAD"), cancellable = true)
-    private void enhancedtooltips$coreRenderer(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
+    private void tooltipoverhaul$coreRenderer(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
         int sw = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         int sh = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
         ItemStack stack = ((ITooltipOverhaulItemAware) this).tooltipsOverhaul$hoveredItem();
-        List<ClientTooltipComponent> text = TooltipWrapper.wrap(font, components, sw, stack);
 
         boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), TooltipOverhaulKeyMappings.COMPARE_TOOLTIP.getDefaultKey().getValue());
 
         // Meant for comparation (thus matching the equipped stack)
         TooltipContext equippedContext = null;
         if (isKeyDown) {
-            equippedContext = tooltipOverhaul$getHoveredContext(font, mouseX, mouseY, stack, sw, sh);
+            equippedContext = tooltipoverhaul$getHoveredContext(font, mouseX, mouseY, stack, sw, sh);
+        }
+
+        boolean comparisonActive = equippedContext != null;
+
+        // Prevents double wrapping by error
+        List<ClientTooltipComponent> mainText;
+        boolean isAtMainHalf = false;
+        if (comparisonActive) {
+            List<ClientTooltipComponent> rebuilt = tooltipoverhaul$getTooltipFromStack(stack);
+            if (tooltipoverhaul$estimateFullWidth(font, rebuilt, !stack.isEmpty()) > ((sw / 2) - 4)) {
+                mainText = TooltipWrapper.wrapHalf(font, rebuilt, sw, stack);
+                isAtMainHalf = true;
+            }
+            else {
+                mainText = TooltipWrapper.wrap(font, rebuilt, sw, stack);
+            }
+        }
+        else {
+            mainText = TooltipWrapper.wrap(font, components, sw, stack);
         }
 
         // Main context to render
-        TooltipContext mainContext = TooltipContext.of((GuiGraphics) (Object) this, mouseX, mouseY, sw, sh, text, stack, equippedContext, true);
+        TooltipContext mainContext = TooltipContext.of((GuiGraphics) (Object) this, mouseX, mouseY, sw, sh, mainText, stack, equippedContext, true);
+        mainContext.setHalfWrapped(isAtMainHalf);
         if (equippedContext != null) {
             equippedContext.setOtherTooltipContext(mainContext);
         }
 
         if (TooltipRenderer.render(mainContext)) {
-            if (isKeyDown && equippedContext != null) {
+            if (comparisonActive) {
                 TooltipRenderer.render(equippedContext);
             }
 
@@ -67,41 +86,67 @@ public class GuiGraphicsMixin {
     }
 
     @Unique
-    private TooltipContext tooltipOverhaul$getHoveredContext(Font font, int mouseX, int mouseY, ItemStack stack, int sw, int sh) {
+    private TooltipContext tooltipoverhaul$getHoveredContext(Font font, int mouseX, int mouseY, ItemStack stack, int sw, int sh) {
         ItemStack toCompare = ItemStack.EMPTY;
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        if (stack.isEmpty() || player == null) return null;
+
         if (stack.getItem() instanceof Equipable e) {
-            if (player != null) {
-                ItemStack armor = player.getInventory().getArmor(e.getEquipmentSlot().getIndex());
-                if (!armor.isEmpty()) {
-                    toCompare = armor;
-                }
-
-                if (!toCompare.isEmpty()) {
-                    List<ClientTooltipComponent> compareComponents = new ArrayList<>();
-                    TooltipFlag flag = mc.options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL;
-
-                    List<Component> lines = toCompare.getTooltipLines(player, flag);
-                    for (Component line : lines) {
-                        compareComponents.add(ClientTooltipComponent.create(line.getVisualOrderText()));
-                    }
-
-                    toCompare.getTooltipImage().ifPresent(tc -> {
-                        if (tc instanceof BundleTooltip bundle) {
-                            int idx = lines.size() > 1 ? 1 : compareComponents.size();
-                            compareComponents.add(idx, ClientTooltipComponent.create(bundle));
-                        }
-
-                    });
-
-                    return TooltipContext.of((GuiGraphics) (Object) this, mouseX, mouseY, sw, sh, TooltipWrapper.wrap(font, compareComponents, sw, toCompare), toCompare, null, false);
-                }
+            ItemStack armor = player.getInventory().getArmor(e.getEquipmentSlot().getIndex());
+            if (!armor.isEmpty()) {
+                toCompare = armor;
             }
 
         }
 
-        return null;
+        if (toCompare.isEmpty() || ItemStack.isSameItemSameTags(toCompare, stack)) return null;
+
+        List<ClientTooltipComponent> compareComponents = tooltipoverhaul$getTooltipFromStack(toCompare);
+
+        boolean needsHalf = tooltipoverhaul$estimateFullWidth(font, compareComponents, true) > ((sw / 2) - 4);
+        List<ClientTooltipComponent> wrapped = needsHalf ? TooltipWrapper.wrapHalf(font, compareComponents, sw, toCompare) : TooltipWrapper.wrap(font, compareComponents, sw, toCompare);
+
+        TooltipContext ctx = TooltipContext.of((GuiGraphics) (Object) this, mouseX, mouseY, sw, sh, wrapped, toCompare, null, false);
+        ctx.setHalfWrapped(needsHalf);
+
+        return ctx;
+    }
+
+    @Unique
+    private List<ClientTooltipComponent> tooltipoverhaul$getTooltipFromStack(ItemStack stack) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        List<ClientTooltipComponent> components = new ArrayList<>();
+        if (player == null || stack.isEmpty()) return components;
+
+        List<Component> lines = stack.getTooltipLines(player, minecraft.options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL);
+        for (Component line : lines) {
+            components.add(ClientTooltipComponent.create(line.getVisualOrderText()));
+        }
+
+        stack.getTooltipImage().ifPresent(component -> {
+            if (component instanceof BundleTooltip bundle) {
+                int idx = lines.size() > 1 ? 1 : components.size();
+                components.add(idx, ClientTooltipComponent.create(bundle));
+            }
+        });
+
+        return components;
+    }
+
+    @Unique
+    private int tooltipoverhaul$estimateFullWidth(Font font, List<ClientTooltipComponent> components, boolean hasIcon) {
+        if (components == null || components.isEmpty()) {
+            return 0;
+        }
+
+        int width = TooltipRenderer.PADDING_X * 2 + (hasIcon ? 26 : 0) + components.get(0).getWidth(font);
+        for (ClientTooltipComponent component : components) {
+            width = Math.max(width, TooltipRenderer.PADDING_X * 2 + component.getWidth(font));
+        }
+
+        return width;
     }
 
 }
