@@ -7,10 +7,9 @@ import org.lwjgl.glfw.GLFW;
 public class TooltipOverhaulKeyMappings {
 
     public static final KeyMapping COMPARE_TOOLTIP = new KeyMapping(
-            "wads",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_LEFT_SHIFT,
-            "dsad"
+            "tooltipoverhaul.binds.compare_bind",
+            InputConstants.KEY_LSHIFT,
+            "tooltipoverhaul.binds.category"
     );
 
 }

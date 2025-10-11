@@ -41,9 +41,9 @@ public class GuiGraphicsMixin {
 
         ItemStack stack = ((ITooltipOverhaulItemAware) this).tooltipsOverhaul$hoveredItem();
 
-        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), TooltipOverhaulKeyMappings.COMPARE_TOOLTIP.getDefaultKey().getValue());
+        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor)TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue());
 
-        // Meant for comparation (thus matching the equipped stack)
+        // Meant for comparison (thus matching the equipped stack)
         TooltipContext equippedContext = null;
         if (isKeyDown) {
             equippedContext = tooltipoverhaul$getHoveredContext(font, mouseX, mouseY, stack, sw, sh);
