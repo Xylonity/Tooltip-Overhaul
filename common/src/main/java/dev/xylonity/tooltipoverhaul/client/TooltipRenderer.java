@@ -384,14 +384,15 @@ public final class TooltipRenderer {
 
     /**
      * Computes the main tooltip size. Most of the proportions (in general) are hardcoded
+     * TODO: Rewrite this whole method and compute modulus positions in a different way
      */
     private static Point calculateSize(Font font, List<ClientTooltipComponent> components, Component rarity, boolean hasIcon, TooltipContext ctx) {
         // Is there an icon (stack) present
-        int iconOffset = hasIcon ? 26 : 0;
+        int iconOffset = hasIcon && !Util.shouldDisableIcon(ctx.stack()) ? 26 : 0;
         int width = PADDING_X * 2 + iconOffset + components.get(0).getWidth(font);
 
-        for (ClientTooltipComponent c : components) {
-            width = Math.max(width, PADDING_X * 2 + c.getWidth(font));
+        for (ClientTooltipComponent component : components) {
+            width = Math.max(width, PADDING_X * 2 + component.getWidth(font));
         }
 
         if (hasIcon) {

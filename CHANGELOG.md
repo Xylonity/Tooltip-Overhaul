@@ -1,6 +1,7 @@
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.
 - Fixed divider line not adapting correctly its color with certain items with a custom frame defined
+- Fixed rating text adapting to the cursor position instead of the global size of the tooltip
 
 # 1.2.0
 - Now the custom_frames.json from tooltipoverhaul is located under config/tooltipoverhaul/custom_frames.json for better customization, without needing to create a texture pack to change the default custom frames. Any other mod/texture pack needs to create a texture pack including the custom_frames.json file under a certain modid, the same way as it has been done before.
