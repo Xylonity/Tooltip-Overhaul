@@ -31,9 +31,11 @@ public class DefaultText implements ITooltipText {
 
             // If there is a stack present adds padding to the left
             if (hasStack && rarity != null && !rarity.getString().isEmpty() && shouldShowRating) {
-                int py = Math.min(ctx.mouseY() - 12, ctx.height() - size.y - 4) + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.Y);
+                int rx = Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font, ctx);
+                int ry = (int) pos.y + TooltipRenderer.PADDING_Y + 13 + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.Y);
+
                 // Rating text
-                ctx.graphics().drawString(font, rarity, Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font, ctx), py + 13 + TooltipRenderer.PADDING_Y, 0xEDDE76, false);
+                ctx.graphics().drawString(font, rarity, rx, ry, 0xEDDE76, false);
             }
 
             if (!TooltipScrollState.isIsActive()) {

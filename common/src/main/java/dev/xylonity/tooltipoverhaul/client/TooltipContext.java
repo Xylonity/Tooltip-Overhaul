@@ -27,9 +27,15 @@ public class TooltipContext {
     private ItemStack stack;
     private float elapsedSeconds = 0f;
 
+    private @Nullable TooltipContext otherTooltipContext;
+    private boolean isMainTooltip;
+
+    // For location purposes (of the second tooltip)
+    private boolean halfWrapped = false;
+
     private final @Nullable CustomFrameData data;
 
-    private TooltipContext(GuiGraphics graphics, int mouseX, int mouseY, int screenW, int screenH, List<ClientTooltipComponent> components, ItemStack stack) {
+    private TooltipContext(GuiGraphics graphics, int mouseX, int mouseY, int screenW, int screenH, List<ClientTooltipComponent> components, ItemStack stack, @Nullable TooltipContext otherTooltipContext, boolean isMainTooltip) {
         this.graphics = graphics;
         this.mouseX = mouseX;
         this.mouseY = mouseY;
@@ -38,10 +44,24 @@ public class TooltipContext {
         this.components = components;
         this.stack = stack;
         this.data = stack.isEmpty() ? null : CustomFrameManager.of(stack).orElse(null);
+        this.otherTooltipContext = otherTooltipContext;
+        this.isMainTooltip = isMainTooltip;
     }
 
-    public static TooltipContext of(GuiGraphics graphics, int mouseX, int mouseY, int screenW, int screenH, List<ClientTooltipComponent> components, ItemStack stack) {
-        return new TooltipContext(graphics, mouseX, mouseY, screenW, screenH, components, stack);
+    public static TooltipContext of(GuiGraphics graphics, int mouseX, int mouseY, int screenW, int screenH, List<ClientTooltipComponent> components, ItemStack stack, @Nullable TooltipContext otherTooltipContext, boolean isMainTooltip) {
+        return new TooltipContext(graphics, mouseX, mouseY, screenW, screenH, components, stack, otherTooltipContext, isMainTooltip);
+    }
+
+    public void setOtherTooltipContext(@Nullable TooltipContext otherTooltipContext) {
+        this.otherTooltipContext = otherTooltipContext;
+    }
+
+    public boolean isMainTooltip() {
+        return this.isMainTooltip;
+    }
+
+    public @Nullable TooltipContext getOtherTooltipContext() {
+        return this.otherTooltipContext;
     }
 
     public Optional<CustomFrameData> data() {
@@ -116,6 +136,14 @@ public class TooltipContext {
 
     public void flush() {
         graphics.flush();
+    }
+
+    public void setHalfWrapped(boolean halfWrapped) {
+        this.halfWrapped = halfWrapped;
+    }
+
+    public boolean isHalfWrapped() {
+        return halfWrapped;
     }
 
 }

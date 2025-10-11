@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul;
 
+import dev.xylonity.tooltipoverhaul.client.event.TooltipOverhaulClientEvents;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
@@ -16,6 +17,8 @@ public class TooltipOverhaulFabric implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+
+        TooltipOverhaulClientEvents.init();
 
         // Loads a simplex wrapper of nightconfig, impl derived from knightlib
         ConfigManager.init(FabricLoader.getInstance().getConfigDir(), TooltipsConfig.class);
