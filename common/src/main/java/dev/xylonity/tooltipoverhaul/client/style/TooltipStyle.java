@@ -6,6 +6,7 @@ import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultArmorStand;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.renderer.DefaultRotatingItem;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
+import dev.xylonity.tooltipoverhaul.client.style.text.EquippedBadgeText;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 
@@ -25,6 +26,7 @@ public class TooltipStyle {
     private final ITooltipPreviewBackground previewBackground;
     private final ITooltipIcon icon;
     private final ITooltipText text;
+    private final ITooltipText equippedBadgeText;
     private final ITooltipDividerLine dividerLine;
     private final ITooltipArmorStand armorStand;
     private final ITooltipRotatingItem rotatingItem;
@@ -36,6 +38,7 @@ public class TooltipStyle {
         this.previewBackground = iconBackground;
         this.icon = new DefaultIcon();
         this.text = new DefaultText();
+        this.equippedBadgeText = new EquippedBadgeText();
         this.dividerLine = dividerLine;
         this.armorStand = new DefaultArmorStand();
         this.rotatingItem = new DefaultRotatingItem();
@@ -55,6 +58,10 @@ public class TooltipStyle {
 
     public void renderText(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size, Component rarity, Font font) {
         text.render(depth, ctx, pos, size, rarity, font);
+    }
+
+    public void renderEquippedBadgeText(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size, Component rarity, Font font) {
+        equippedBadgeText.render(depth, ctx, pos, size, rarity, font);
     }
 
     public void renderDividerLine(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {

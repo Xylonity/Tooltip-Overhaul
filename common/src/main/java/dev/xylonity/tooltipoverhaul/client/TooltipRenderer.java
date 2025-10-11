@@ -61,6 +61,8 @@ public final class TooltipRenderer {
     private static final List<ITooltipLayer> LAYERS_EMPTY = new ArrayList<>();
     // Second panel layers
     private static final List<ITooltipLayer> LAYERS_SECOND = new ArrayList<>();
+    // Equipment comparison
+    private static final List<ITooltipLayer> LAYERS_EQUIPPED_BADGE = new ArrayList<>();
 
     // Scrolling predicates
     public static int LAST_HEADER_ABS;
@@ -94,6 +96,13 @@ public final class TooltipRenderer {
         LAYERS_EMPTY.add(new BackgroundLayer());
         LAYERS_EMPTY.add(new TextLayer());
         LAYERS_EMPTY.add(new InnerFrameLayer());
+    }
+
+    static {
+        // Equipped badge above the comparison tooltip
+        LAYERS_EQUIPPED_BADGE.add(new EquippedBadgeBackgroundLayer());
+        LAYERS_EQUIPPED_BADGE.add(new EquippedBadgeTextLayer());
+        LAYERS_EQUIPPED_BADGE.add(new EquippedBadgeInnerFrameLayer());
     }
 
     /**
@@ -306,6 +315,15 @@ public final class TooltipRenderer {
             for (ITooltipLayer layer : LAYERS_SECOND) {
                 layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
             }
+
+        }
+
+        // Renders the equipped badge qualifier above the compared stack's tooltip
+        if (ctx.getOtherTooltipContext() != null && !ctx.isMainTooltip()) {
+            for (ITooltipLayer layer : LAYERS_EQUIPPED_BADGE) {
+                layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
+            }
+
         }
 
         ctx.flush();
