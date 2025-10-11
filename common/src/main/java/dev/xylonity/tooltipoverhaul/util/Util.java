@@ -79,7 +79,7 @@ public class Util {
         ItemStack stack = ctx.stack();
         switch (matcher) {
             case "match_inner_frame_color" -> {
-                if (ctx.data().isPresent()) {
+                if (ctx.data().isPresent() && ctx.data().get().hasGradientColors()) {
                     return ConfigColorParser.parseColor(ctx.data().get().getGradientColors().get(0));
                 }
 
@@ -146,7 +146,7 @@ public class Util {
             case "middle" -> result = startX + (available - textWidth) / 2;
             case "right" -> result = rightX - textWidth;
             default -> // left
-                result = startX;
+                    result = startX;
         }
 
         if (available <= 0) {

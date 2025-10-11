@@ -78,6 +78,10 @@ public record CustomFrameData(
         return gradientType.orElse(GradientType.COMMON);
     }
 
+    public boolean hasGradientColors() {
+        return gradientColors.isPresent();
+    }
+
     public List<String> getGradientColors() {
         return gradientColors.filter(colors -> colors.size() >= 3).map(colors -> colors.subList(0, 3)).orElse(List.of("#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF"));
     }
