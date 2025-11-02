@@ -5,11 +5,12 @@ package dev.xylonity.tooltipoverhaul.client.layer;
  */
 public enum LayerDepth {
     BACKGROUND(500),
-    BACKGROUND_INNER_FRAME(1000),
-    BACKGROUND_TEXT(1500),
-    BACKGROUND_RENDERS(2000),
-    BACKGROUND_EFFECT(2500),
-    BACKGROUND_OVERLAY(3000);
+    TEXT(1000),
+    ICON_BACKGROUND(1500),
+    RENDERS(2000),
+    EFFECT(2500),
+    INNER_FRAME(3000),
+    OVERLAY(3500);
 
     private final int z;
 

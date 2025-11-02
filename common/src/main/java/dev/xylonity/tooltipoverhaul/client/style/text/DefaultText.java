@@ -1,144 +1,77 @@
 package dev.xylonity.tooltipoverhaul.client.style.text;
 
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
-import dev.xylonity.tooltipoverhaul.client.TooltipScrollState;
-import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipText;
-import dev.xylonity.tooltipoverhaul.util.TextAxis;
-import dev.xylonity.tooltipoverhaul.util.TextType;
-import dev.xylonity.tooltipoverhaul.util.Util;
+import com.mojang.blaze3d.vertex.PoseStack;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.TextLayer;
+import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.Constants;
+import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
+import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
+import java.util.List;
 
-/**
- * Handles the core rendering of both text and images per se
- */
-public class DefaultText implements ITooltipText {
+public class DefaultText implements TextLayer {
 
     @Override
-    public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size, Component rarity, Font font) {
-        ctx.push(() -> {
-            ctx.translate(0, 0, depth.getZ());
+    public void render(TooltipContext context, Vec2 position) {
 
-            boolean hasStack = !ctx.stack().isEmpty();
-            boolean shouldShowRating = Util.shouldShowRating(ctx.stack());
-            int firstLineOffset = TooltipRenderer.PADDING_X + (hasStack ? 26 : 0 ) - (Util.shouldDisableIcon(ctx.stack()) ? 26 : 0);
+        List<ClientTooltipComponent> components = context.getComponents();
 
-            // If there is a stack present adds padding to the left
-            if (hasStack && rarity != null && !rarity.getString().isEmpty() && shouldShowRating) {
-                int rx = Util.getRatingAlignmentX((int) pos.x + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.X), firstLineOffset, size, rarity, font, ctx);
-                int ry = (int) pos.y + TooltipRenderer.PADDING_Y + 13 + Util.getExtraTextPosition(ctx, TextType.RATING, TextAxis.Y);
+        Font font = context.getFont();
+        PoseStack poseStack = context.getPose();
+        GuiGraphics graphics = context.getGraphics();
 
-                // Rating text
-                ctx.graphics().drawString(font, rarity, rx, ry, 0xEDDE76, false);
+        boolean hasIcon = context.hasIcon();
+        boolean isEmptyTooltip = context.isEmptyTooltip();
+        boolean hasRating = RenderUtils.hasRating(context);
+
+        int paddingX = context.getPaddingX();
+        int paddingY = context.getPaddingY();
+
+        int x = (int) (position.x + paddingX);
+        int y = (int) (position.y + paddingY + 1);
+
+        // Rendering the title first (along with the rating text if present)
+        ClientTooltipComponent titleComponent = components.get(0);
+        if (titleComponent != null) {
+            int extraX = 0;
+            int extraY = 0;
+            int titleAlignY = 0;
+            if (hasIcon) {
+                extraX = Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON;
+                extraY = (Constants.ICON_SIZE / 2);
+                titleAlignY = titleComponent.getHeight();
             }
 
-            if (!TooltipScrollState.isIsActive()) {
-                int y = (int) pos.y + TooltipRenderer.PADDING_Y + 3 + (shouldShowRating || !hasStack ? 0 : 6) + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y);
-                for (int i = 0; i < ctx.getComponents().size(); i++) {
-                    ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
+            // Title
+            titleComponent.renderText(font, x + extraX, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
 
-                    if (i == 1) {
-                        y += (hasStack ? 3 : 0) - (shouldShowRating || !hasStack ? 0 : 6) - Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.Y) + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.Y);
-                    }
-
-                    if (i == 1) {
-                        if (hasStack || Util.shouldDisableIcon(ctx.stack())) {
-                            y += 12;
-                        }
-                        if (Util.shouldDisableDividerLine(ctx)) {
-                            y -= 6;
-                        }
-                    }
-
-                    int x = (int) pos.x;
-
-                    if (i == 0) {
-                        x = Util.getTitleAlignmentX(x + Util.getExtraTextPosition(ctx, TextType.TITLE, TextAxis.X) - (!hasStack ? 1 : 0), firstLineOffset, size, component, font, ctx);
-                    }
-                    else {
-                        x += TooltipRenderer.PADDING_X + Util.getExtraTextPosition(ctx, TextType.DESCRIPTION, TextAxis.X);
-                    }
-
-                    component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
-
-                    y += component.getHeight();
-
-                    if (hasStack && i == 0 && ctx.getComponents().size() > 1) {
-                        y += 6;
-                    }
-                }
-
-                y = (int) pos.y + TooltipRenderer.PADDING_Y + 6;
-                for (int i = 0; i < ctx.getComponents().size(); i++) {
-                    ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
-
-                    if (hasStack && i == 1) {
-                        y += 12;
-                    }
-
-                    int x = (int) pos.x + (i == 0 ? firstLineOffset : TooltipRenderer.PADDING_X);
-                    component.renderImage(font, x, y, ctx.graphics());
-
-                    y += component.getHeight();
-
-                    if (hasStack && i == 0 && ctx.getComponents().size() > 1) {
-                        y += 6;
-                    }
-                }
-
-                return;
+            // Rating text
+            if (hasRating) {
+                Component rating = TextUtils.computeRatingText(context);
+                context.getGraphics().drawString(font, TextUtils.computeRatingText(context), x + extraX, y + extraY + titleComponent.getHeight(), 0xEDDE76, false);
+                y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
             }
 
-            int yTitle = (int) pos.y + TooltipRenderer.PADDING_Y + 3;
-            if (!ctx.getComponents().isEmpty()) {
-                ClientTooltipComponent title = (ClientTooltipComponent) ctx.getComponents().get(0);
-                int xTitle = (int) pos.x + firstLineOffset;
-                title.renderText(font, xTitle, yTitle, ctx.pose().last().pose(), ctx.graphics().bufferSource());
-                // Hotfix for invisible tooltip stack title name on certain scrollable items (so the title isn't affected by the scissor)
-                ctx.flush();
-            }
+            y += titleComponent.getHeight();
+        }
 
-            int toLeft = (int) pos.x + TooltipRenderer.PADDING_X;
-            int toTop = TooltipRenderer.LAST_POS_YI + TooltipRenderer.LAST_HEADER_ABS + 7;
-            int toRight = (int) pos.x + size.x - TooltipRenderer.PADDING_X;
-            int toBottom = Math.min(TooltipRenderer.LAST_POS_YI + size.y - TooltipRenderer.PADDING_Y - 1, ctx.height() - 4);
-            ctx.graphics().enableScissor(toLeft, toTop, toRight, toBottom);
+        if (hasIcon) {
+            y += Constants.SEPARATION_TITLE_ICON;
+        }
 
-            int scroll = TooltipScrollState.getScroll();
+        for (int i = 1; i < components.size(); i++) {
+            ClientTooltipComponent component = components.get(i);
 
-            int y = TooltipRenderer.LAST_POS_YI + TooltipRenderer.LAST_HEADER_ABS - scroll;
-            for (int i = 1; i < ctx.getComponents().size(); i++) {
-                ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
-                int x = (int) pos.x + TooltipRenderer.PADDING_X;
-                int h = component.getHeight();
-                if (y + h >= toTop && y <= toBottom) {
-                    component.renderText(font, x, y, ctx.pose().last().pose(), ctx.graphics().bufferSource());
-                }
+            component.renderText(font, x, y, poseStack.last().pose(), graphics.bufferSource());
 
-                y += h;
-            }
-
-            // Image rendering
-            y = TooltipRenderer.LAST_POS_YI + TooltipRenderer.LAST_HEADER_ABS - scroll;
-            for (int i = 1; i < ctx.getComponents().size(); i++) {
-                ClientTooltipComponent component = (ClientTooltipComponent) ctx.getComponents().get(i);
-
-                int x = (int) pos.x + TooltipRenderer.PADDING_X;
-                int h = component.getHeight();
-                if (y + h >= toTop && y <= toBottom) {
-                    component.renderImage(font, x, y, ctx.graphics());
-                }
-                y += h;
-            }
-
-            ctx.graphics().disableScissor();
-        });
+            y += component.getHeight();
+        }
 
     }
 

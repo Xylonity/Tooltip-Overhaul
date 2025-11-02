@@ -1,6 +1,6 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
-import dev.xylonity.tooltipoverhaul.client.TooltipScrollState;
+import dev.xylonity.tooltipoverhaul.client.old.TooltipScrollState;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

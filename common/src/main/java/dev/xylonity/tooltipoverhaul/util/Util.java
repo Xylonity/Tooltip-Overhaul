@@ -1,10 +1,10 @@
 package dev.xylonity.tooltipoverhaul.util;
 
-import dev.xylonity.tooltipoverhaul.client.Palette;
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.TooltipRenderer;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.old.Palette;
+import dev.xylonity.tooltipoverhaul.client.old.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.old.TooltipRenderer;
+import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 import net.minecraft.client.gui.Font;
