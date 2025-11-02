@@ -14,7 +14,20 @@ public class TooltipPositionCalculator {
     }
 
     public Vec2 calculate() {
-        return new Vec2(context.getMouseX(), context.getMouseY()).add(new Vec2(12, -12));
+
+        int mouseX = context.getMouseX();
+        int mouseY = context.getMouseY();
+        int sizeX = (int) context.getTooltipSize().x;
+        int sizeY = (int) context.getTooltipSize().y;
+
+        Vec2 position = new Vec2(mouseX, mouseY);
+        position = position.add(new Vec2(12, -12));
+
+        if (mouseX + sizeX + 14 > context.getScreenWidth()) {
+            position = position.add(new Vec2(sizeX + 24, 0).negated());
+        }
+
+        return position;
     }
 
 }

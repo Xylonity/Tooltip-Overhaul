@@ -23,11 +23,11 @@ import java.util.Optional;
 public class RenderUtils {
 
     public static boolean hasIcon(TooltipContext context) {
-        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableIcon).orElse(TooltipsConfig.DISABLE_ICON);
+        return !context.getStack().isEmpty() && !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableIcon).orElse(TooltipsConfig.DISABLE_ICON);
     }
 
     public static boolean hasRating(TooltipContext context) {
-        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
+        return !context.getStack().isEmpty() && Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
     }
 
     public static boolean hasDividerLine(TooltipContext context) {
