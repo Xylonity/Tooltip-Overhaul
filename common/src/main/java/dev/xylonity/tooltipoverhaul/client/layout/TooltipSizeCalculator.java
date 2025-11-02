@@ -6,6 +6,7 @@ import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
@@ -23,7 +24,7 @@ public class TooltipSizeCalculator {
 
         boolean hasIcon = context.hasIcon();
         boolean hasRating = RenderUtils.hasRating(context);
-        boolean isEmptyTooltip = context.isEmptyTooltip();
+        boolean hasDividerLine = RenderUtils.hasDividerLine(context);
 
         List<ClientTooltipComponent> components = context.getComponents();
         Font font = context.getFont();
@@ -42,12 +43,21 @@ public class TooltipSizeCalculator {
         }
 
         if (hasRating) {
-            width = Math.max(width, font.width(TextUtils.computeRatingText(context)) + paddingX * 2);
+            Component rating = TextUtils.computeRatingText(context);
+            width = Math.max(width, font.width(rating) + paddingX * 2);
+
+            if (!hasIcon) {
+                height += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
+            }
         }
 
         if (hasIcon) {
             width += Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON;
             height += Constants.ICON_SIZE_PADDING;
+        }
+
+        if (hasDividerLine && components.size() > 1) {
+            height += Constants.DIVIDER_LINE_FULL_PADDING;
         }
 
         return new Vec2(width, height);

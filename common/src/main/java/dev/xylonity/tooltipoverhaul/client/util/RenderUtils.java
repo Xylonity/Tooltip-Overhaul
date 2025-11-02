@@ -30,6 +30,10 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowRating).orElse(TooltipsConfig.SHOW_RATING);
     }
 
+    public static boolean hasDividerLine(TooltipContext context) {
+        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableDividerLine).orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
+    }
+
     public static int calculatePadding(TooltipContext context, TextAxis axis) {
         if (axis == TextAxis.X) {
             return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getMainPanelPaddingX).orElse(TooltipsConfig.MAIN_PANEL_PADDING_X);

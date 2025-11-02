@@ -4,6 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
+import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.icon.background.SlotBorderIconBackground;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
@@ -42,9 +43,13 @@ public class StyleFactory {
         layers.add(new DefaultBackground());
         layers.add(new DefaultText());
 
-        if (RenderUtils.hasIcon(context)) {
+        if (context.hasIcon()) {
             layers.add(new SlotBorderIconBackground());
             layers.add(new DefaultIcon());
+        }
+
+        if (context.hasDividerLine() && context.getComponents().size() > 1) {
+            layers.add(new GradientDividerLine());
         }
 
         layers.add(new GradientInnerOverlay(0xFF969696, 0xFF575757, 0xFF3C3C3C));

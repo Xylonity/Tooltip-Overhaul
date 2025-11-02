@@ -48,6 +48,7 @@ public class TooltipContext {
     private final boolean isMainTooltip;
     private final boolean isEmptyTooltip;
     private final boolean hasIcon;
+    private final boolean hasDividerLine;
 
     private final int paddingX;
     private final int paddingY;
@@ -66,6 +67,7 @@ public class TooltipContext {
         this.frameData = CustomFrameManager.of(stack).orElse(null);
         this.isEmptyTooltip = stack.isEmpty();
         this.hasIcon = RenderUtils.hasIcon(this);
+        this.hasDividerLine = RenderUtils.hasDividerLine(this);
         this.paddingX = RenderUtils.calculatePadding(this, TextAxis.X);
         this.paddingY = RenderUtils.calculatePadding(this, TextAxis.Y);
         this.layers = new StyleFactory().create(this, frameData);
@@ -149,6 +151,10 @@ public class TooltipContext {
 
     public boolean hasIcon() {
         return hasIcon;
+    }
+
+    public boolean hasDividerLine() {
+        return hasDividerLine;
     }
 
     public int getPaddingX() {

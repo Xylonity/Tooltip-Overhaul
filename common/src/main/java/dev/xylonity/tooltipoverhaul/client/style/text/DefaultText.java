@@ -27,7 +27,7 @@ public class DefaultText implements TextLayer {
         GuiGraphics graphics = context.getGraphics();
 
         boolean hasIcon = context.hasIcon();
-        boolean isEmptyTooltip = context.isEmptyTooltip();
+        boolean hasDividerLine = context.hasDividerLine();
         boolean hasRating = RenderUtils.hasRating(context);
 
         int paddingX = context.getPaddingX();
@@ -39,30 +39,46 @@ public class DefaultText implements TextLayer {
         // Rendering the title first (along with the rating text if present)
         ClientTooltipComponent titleComponent = components.get(0);
         if (titleComponent != null) {
+            // If the icon is present, move the content to the side
             int extraX = 0;
+            // Alignment to the center of the icon background (if present)
             int extraY = 0;
+            // Extra alignment if there is a rating text present
             int titleAlignY = 0;
+            int ratingAlignY = 0;
             if (hasIcon) {
                 extraX = Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON;
                 extraY = (Constants.ICON_SIZE / 2);
-                titleAlignY = titleComponent.getHeight();
+                titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.ICON_SIZE / 4);
+            }
+            else {
+                // Don't apply extra rating alignment when the icon is enabled
+                ratingAlignY = titleComponent.getHeight();
             }
 
-            // Title
+            // Title text
             titleComponent.renderText(font, x + extraX, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
 
-            // Rating text
+            // Rating text. If there is no rating but there is an icon present, the padding between the content and the title is the same
             if (hasRating) {
                 Component rating = TextUtils.computeRatingText(context);
-                context.getGraphics().drawString(font, TextUtils.computeRatingText(context), x + extraX, y + extraY + titleComponent.getHeight(), 0xEDDE76, false);
+                context.getGraphics().drawString(font, TextUtils.computeRatingText(context), x + extraX, y + extraY + ratingAlignY, 0xEDDE76, false);
                 y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
+            }
+            else if (hasIcon) {
+                y += titleComponent.getHeight();
             }
 
             y += titleComponent.getHeight();
         }
 
+        // Extra space after the icon
         if (hasIcon) {
             y += Constants.SEPARATION_TITLE_ICON;
+        }
+
+        if (hasDividerLine && components.size() > 1) {
+            y += Constants.DIVIDER_LINE_FULL_PADDING;
         }
 
         for (int i = 1; i < components.size(); i++) {
