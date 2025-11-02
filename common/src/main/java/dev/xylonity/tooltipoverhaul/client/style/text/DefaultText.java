@@ -85,6 +85,7 @@ public class DefaultText implements TextLayer {
             ClientTooltipComponent component = components.get(i);
 
             component.renderText(font, x, y, poseStack.last().pose(), graphics.bufferSource());
+            component.renderImage(font, x, y, context.getGraphics());
 
             y += component.getHeight();
         }

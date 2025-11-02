@@ -22,7 +22,7 @@ public record CustomFrameData(
         Optional<String> namespace,
         Optional<String> texture,
         Optional<Integer> backgroundColor,
-        Optional<InnerBorderType> borderType,
+        Optional<String> borderType,
         Optional<GradientType> gradientType,
         Optional<List<String>> gradientColors,
         Optional<String> itemRating,
@@ -61,16 +61,8 @@ public record CustomFrameData(
         return texture.filter(t -> !t.trim().isEmpty()).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
     }
 
-    public InnerBorderType getBorderType() {
-        InnerBorderType type;
-        try {
-            type = InnerBorderType.valueOf(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE.toUpperCase(Locale.ROOT));
-        }
-        catch (Exception ignore) {
-            type = InnerBorderType.GRADIENT;
-        }
-
-        return borderType.orElse(type);
+    public String getBorderType() {
+        return borderType.orElse(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE);
     }
 
     public GradientType getGradientType() {

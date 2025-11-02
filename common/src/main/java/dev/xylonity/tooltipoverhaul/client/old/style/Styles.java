@@ -132,48 +132,48 @@ public class Styles {
             }
 
             // Inner overlay
-            switch (data.getBorderType()) {
-                case GLINT -> builder.innerOverlay(new GlintInnerOverlay(grads.get(0), grads.get(1), 0x00000000, 4, 2));
-                case GRADIENT -> builder.innerOverlay(new GradientInnerOverlay(grads.get(0), grads.get(1), grads.get(2)));
-                case STATIC -> builder.innerOverlay(new StaticInnerOverlay(grads.get(0)));
-                case AUTO_GRADIENT -> {
-                    if (data.hasCustomTexture()) {
-                        int[] auto = CustomFrameManager.getPalette(data);
-                        if (auto != null && auto.length >= 3) {
-                            builder.innerOverlay(new GradientInnerOverlay(auto[0], auto[1], auto[2]));
-                        } else {
-                            builder.innerOverlay(new GradientInnerOverlay(grads.get(0), grads.get(1), grads.get(2)));
-                        }
-                    } else {
-                        builder.innerOverlay(new GradientInnerOverlay(grads.get(0), grads.get(1), grads.get(2)));
-                    }
-                }
-                case AUTO_GLINT -> {
-                    if (data.hasCustomTexture()) {
-                        int[] auto = CustomFrameManager.getPalette(data);
-                        if (auto != null && auto.length >= 3) {
-                            builder.innerOverlay(new GlintInnerOverlay(auto[0], auto[1], 0x00000000, 4, 2));
-                        } else {
-                            builder.innerOverlay(new GlintInnerOverlay(grads.get(0), grads.get(1), 0x00000000, 4, 2));
-                        }
-                    } else {
-                        builder.innerOverlay(new GlintInnerOverlay(grads.get(0), grads.get(1), 0x00000000, 4, 2));
-                    }
-                }
-                case AUTO_STATIC -> {
-                    if (data.hasCustomTexture()) {
-                        int[] auto = CustomFrameManager.getPalette(data);
-                        if (auto != null && auto.length >= 3) {
-                            builder.innerOverlay(new StaticInnerOverlay(auto[0]));
-                        } else {
-                            builder.innerOverlay(new StaticInnerOverlay(grads.get(0)));
-                        }
-                    } else {
-                        builder.innerOverlay(new StaticInnerOverlay(grads.get(0)));
-                    }
-                }
-
-            }
+            //switch (data.getBorderType()) {
+            //    case GLINT -> builder.innerOverlay(new GlintInnerOverlay(grads.get(0), grads.get(1), 0x00000000, 4, 2));
+            //    case GRADIENT -> builder.innerOverlay(new GradientInnerOverlay(grads.get(0), grads.get(1), grads.get(2)));
+            //    case STATIC -> builder.innerOverlay(new StaticInnerOverlay(grads.get(0)));
+            //    case AUTO_GRADIENT -> {
+            //        if (data.hasCustomTexture()) {
+            //            int[] auto = CustomFrameManager.getPalette(data);
+            //            if (auto != null && auto.length >= 3) {
+            //                builder.innerOverlay(new GradientInnerOverlay(auto[0], auto[1], auto[2]));
+            //            } else {
+            //                builder.innerOverlay(new GradientInnerOverlay(grads.get(0), grads.get(1), grads.get(2)));
+            //            }
+            //        } else {
+            //            builder.innerOverlay(new GradientInnerOverlay(grads.get(0), grads.get(1), grads.get(2)));
+            //        }
+            //    }
+            //    case AUTO_GLINT -> {
+            //        if (data.hasCustomTexture()) {
+            //            int[] auto = CustomFrameManager.getPalette(data);
+            //            if (auto != null && auto.length >= 3) {
+            //                builder.innerOverlay(new GlintInnerOverlay(auto[0], auto[1], 0x00000000, 4, 2));
+            //            } else {
+            //                builder.innerOverlay(new GlintInnerOverlay(grads.get(0), grads.get(1), 0x00000000, 4, 2));
+            //            }
+            //        } else {
+            //            builder.innerOverlay(new GlintInnerOverlay(grads.get(0), grads.get(1), 0x00000000, 4, 2));
+            //        }
+            //    }
+            //    case AUTO_STATIC -> {
+            //        if (data.hasCustomTexture()) {
+            //            int[] auto = CustomFrameManager.getPalette(data);
+            //            if (auto != null && auto.length >= 3) {
+            //                builder.innerOverlay(new StaticInnerOverlay(auto[0]));
+            //            } else {
+            //                builder.innerOverlay(new StaticInnerOverlay(grads.get(0)));
+            //            }
+            //        } else {
+            //            builder.innerOverlay(new StaticInnerOverlay(grads.get(0)));
+            //        }
+            //    }
+//
+            //}
 
             switch (data.getEffect()) {
                 case "metal_shining" -> builder.addEffect(new MetalShiningEffect());

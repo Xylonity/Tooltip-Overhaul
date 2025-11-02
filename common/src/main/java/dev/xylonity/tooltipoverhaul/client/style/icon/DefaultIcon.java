@@ -29,14 +29,14 @@ public class DefaultIcon implements IconLayer {
             if (ModernFixCompat.SHOULD_RETURN_ORIGINAL_RENDER) {
                 ModernFixCompat.push();
                 try {
-                    RenderUtils.renderItem(context, Minecraft.getInstance().player, Minecraft.getInstance().level, context.getStack(), 0, 0, 0);
+                    RenderUtils.renderItem(context, Minecraft.getInstance().player, Minecraft.getInstance().level, context.getStack(), 0);
                 }
                 finally {
                     ModernFixCompat.pop();
                 }
             }
             else {
-                RenderUtils.renderItem(context, Minecraft.getInstance().player, Minecraft.getInstance().level, context.getStack(), 0, 0, 0);
+                RenderUtils.renderItem(context, Minecraft.getInstance().player, Minecraft.getInstance().level, context.getStack(), 0);
             }
 
         });

@@ -42,7 +42,11 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getMainPanelPaddingY).orElse(TooltipsConfig.MAIN_PANEL_PADDING_Y);
     }
 
-    public static void renderItem(TooltipContext context, @Nullable LivingEntity entity, @Nullable Level level, ItemStack stack, int x, int y, int seed) {
+    public static String getInnerOverlayType(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBorderType).orElse(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE);
+    }
+
+    public static void renderItem(TooltipContext context, @Nullable LivingEntity entity, @Nullable Level level, ItemStack stack, int seed) {
         if (!stack.isEmpty()) {
             BakedModel bakedmodel = Minecraft.getInstance().getItemRenderer().getModel(stack, level, entity, seed);
             context.getPose().pushPose();
