@@ -32,19 +32,22 @@ public class TooltipSizeCalculator {
         int paddingX = context.getPaddingX();
         int paddingY = context.getPaddingY();
 
-        int width = components.get(0).getWidth(font) + paddingX * 2;
+        int iconOffset = hasIcon ? (Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON) : 0;
+
+        int width = components.get(0).getWidth(font) + paddingX * 2 + iconOffset;
         int height = components.get(0).getHeight() + paddingY * 2;
         for (int i = 0; i < components.size(); i++) {
             if (i > 0) {
                 height += components.get(i).getHeight();
+                width = Math.max(width, components.get(i).getWidth(font) + paddingX * 2);
             }
 
-            width = Math.max(width, components.get(i).getWidth(font) + paddingX * 2);
+
         }
 
         if (hasRating) {
             Component rating = TextUtils.computeRatingText(context);
-            width = Math.max(width, font.width(rating) + paddingX * 2);
+            width = Math.max(width, font.width(rating) + paddingX * 2 + iconOffset);
 
             if (!hasIcon) {
                 height += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
@@ -52,7 +55,6 @@ public class TooltipSizeCalculator {
         }
 
         if (hasIcon) {
-            width += Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON;
             height += Constants.ICON_SIZE_PADDING;
         }
 
