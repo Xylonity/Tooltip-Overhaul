@@ -1,3 +1,13 @@
+# 1.4.0
+- Complete rewrite of the mod, internally structured in a more modular way.
+- All alignment errors have been fixed. Now the tooltip components adapt perfectly to its proportions when certain components are removed or moved.
+- The misalignment of the scrolling functionality has been fixed, and now when scrolling, the letters are cut off, unlike before, when the lines simply disappeared.
+- The entire code base has been optimized, greatly reducing computational power, so now the mod is more performant.
+- Micro-optimizations throughout the content, now the mod is lighter than ever
++ Added 6 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png
++ Added a new type of divider line: static. The divider line type is now configurable
++ Added a config option to enable drop shadow in tooltips. Disabled by default.
+
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.
 - Fixed divider line not adapting correctly its color with certain items with a custom frame defined
