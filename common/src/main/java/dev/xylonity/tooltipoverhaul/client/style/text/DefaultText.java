@@ -1,18 +1,20 @@
 package dev.xylonity.tooltipoverhaul.client.style.text;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.TextLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.Constants;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
+import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
 
-import java.awt.*;
 import java.util.List;
 
 public class DefaultText implements TextLayer {
@@ -81,13 +83,52 @@ public class DefaultText implements TextLayer {
             y += Constants.DIVIDER_LINE_FULL_PADDING;
         }
 
+        int contentStartY = y;
+
+        // If there is a scrolling state active, enables the GL scissor
+        if (TooltipScrollState.isIsActive()) {
+
+            graphics.flush();
+
+            Minecraft minecraft = Minecraft.getInstance();
+            int guiScale = (int) minecraft.getWindow().getGuiScale();
+
+            int scissorLeft = (int) position.x + paddingX;
+            int scissorRight = (int) position.x + (int) context.getTooltipSize().x - paddingX;
+            int scissorBottom = (int) position.y + (int) context.getTooltipSize().y - paddingY;
+
+            int windowHeight = minecraft.getWindow().getHeight();
+            int scaledLeft = scissorLeft * guiScale;
+            int scaledTop = windowHeight - (scissorBottom * guiScale);
+            int scaledWidth = (scissorRight - scissorLeft) * guiScale;
+            int scaledHeight = (scissorBottom - contentStartY) * guiScale;
+
+            GlStateManager._enableScissorTest();
+            GlStateManager._scissorBox(scaledLeft, scaledTop, scaledWidth, scaledHeight);
+
+            y -= TooltipScrollState.getScroll();
+        }
+
+        // Renders the content of the tooltip (scrollable or not)
         for (int i = 1; i < components.size(); i++) {
             ClientTooltipComponent component = components.get(i);
 
-            component.renderText(font, x, y, poseStack.last().pose(), graphics.bufferSource());
-            component.renderImage(font, x, y, context.getGraphics());
+            // Renders the lines if they're available in the viewport
+            if (!TooltipScrollState.isIsActive() ||
+                    (y + component.getHeight() >= contentStartY &&
+                            y <= (int)(position.y + context.getTooltipSize().y - paddingY))) {
+
+                component.renderText(font, x, y, poseStack.last().pose(), graphics.bufferSource());
+                component.renderImage(font, x, y, graphics);
+            }
 
             y += component.getHeight();
+        }
+
+        // Disables the GL scissor
+        if (TooltipScrollState.isIsActive()) {
+            graphics.flush();
+            GlStateManager._disableScissorTest();
         }
 
     }

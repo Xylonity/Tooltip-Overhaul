@@ -24,7 +24,7 @@ public class TooltipSizeCalculator {
 
         boolean hasIcon = context.hasIcon();
         boolean hasRating = RenderUtils.hasRating(context);
-        boolean hasDividerLine = RenderUtils.hasDividerLine(context);
+        boolean hasDividerLine = context.hasDividerLine();
 
         List<ClientTooltipComponent> components = context.getComponents();
         Font font = context.getFont();
@@ -41,7 +41,6 @@ public class TooltipSizeCalculator {
                 height += components.get(i).getHeight();
                 width = Math.max(width, components.get(i).getWidth(font) + paddingX * 2);
             }
-
 
         }
 
@@ -63,6 +62,50 @@ public class TooltipSizeCalculator {
         }
 
         return new Vec2(width, height);
+    }
+
+    /**
+     * Calculates the header height (title + rating + icon + divider)
+     */
+    public int calculateHeaderHeight() {
+
+        int height = 0;
+        boolean hasIcon = context.hasIcon();
+        boolean hasDividerLine = context.hasDividerLine();
+        boolean hasRating = RenderUtils.hasRating(context);
+
+        ClientTooltipComponent title = context.getComponents().get(0);
+        height += title.getHeight();
+
+        // TODO: calculate using the actual rating height (or maybe use the title height here)
+        if (hasRating) {
+            height += 10;
+        }
+        else if (hasIcon) {
+            height += title.getHeight();
+        }
+
+        if (hasIcon) {
+            height += Constants.SEPARATION_TITLE_ICON;
+        }
+
+        if (hasDividerLine && context.getComponents().size() > 1) {
+            height += Constants.DIVIDER_LINE_FULL_PADDING;
+        }
+
+        return height;
+    }
+
+    /**
+     * Calculates the height for the viewport scrollable content
+     */
+    public int calculateScrollableContentHeight() {
+        int height = 0;
+        for (int i = 1; i < context.getComponents().size(); i++) {
+            height += context.getComponents().get(i).getHeight();
+        }
+
+        return height;
     }
 
 }

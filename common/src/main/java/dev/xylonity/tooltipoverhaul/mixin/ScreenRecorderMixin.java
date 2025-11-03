@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
+import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.compat.emi.EmiDeferredHover;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -45,6 +46,11 @@ abstract class ScreenRecorderMixin {
             ;;
         }
 
+    }
+
+    @Inject(method = "removed", at = @At("HEAD"))
+    private void onScreenRemoved(CallbackInfo ci) {
+        TooltipScrollState.reset();
     }
 
 }

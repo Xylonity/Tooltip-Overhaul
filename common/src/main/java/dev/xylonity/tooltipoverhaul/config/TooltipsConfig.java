@@ -63,7 +63,7 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Horizontal padding for the main panel."
     )
-    public static int MAIN_PANEL_PADDING_X = 4;
+    public static int MAIN_PANEL_PADDING_X = 2;
 
     @ConfigEntry(
             comment = "Vertical padding for the main panel."

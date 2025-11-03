@@ -7,6 +7,7 @@
 + Added 6 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png
 + Added a new type of divider line: static. The divider line type is now configurable
 + Added a config option to enable drop shadow in tooltips. Disabled by default.
++ Fixed inner frame colors not adapting correctly to the stack's information
 
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.

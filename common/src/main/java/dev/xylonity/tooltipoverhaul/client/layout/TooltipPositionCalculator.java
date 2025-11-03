@@ -15,8 +15,8 @@ public class TooltipPositionCalculator {
 
     public Vec2 calculate() {
 
-        int extraMargin = 2;
-
+        int paddingX = context.getPaddingX();
+        int paddingY = context.getPaddingY();
         int mouseX = context.getMouseX();
         int mouseY = context.getMouseY();
         int tooltipWidth = (int) context.getTooltipSize().x;
@@ -29,23 +29,30 @@ public class TooltipPositionCalculator {
         float posY = mouseY - 12;
 
         // If it exceeds the right border, put the tooltip to the left
-        if (posX + tooltipWidth + extraMargin > screenWidth) {
+        // Not adding the padding here so the vanilla's wrapper doesn't flicker
+        if (posX + tooltipWidth > screenWidth) {
             posX = mouseX - tooltipWidth - 12;
         }
 
-        // If it exceeds the left border, put the tooltip to the right
-        if (posX < extraMargin) {
-            posX = extraMargin;
+        // Clamps to the right border of the screen (now taking into account the padding value),
+        // so the tooltip doesn't exceed the screen limits
+        if (posX + tooltipWidth + paddingX > screenWidth) {
+            posX = screenWidth - tooltipWidth - paddingX;
+        }
+
+        // Clamps to the left border of the screen
+        if (posX < paddingX) {
+            posX = paddingX;
         }
 
         // If it exceeds the bottom border, increase the height
-        if (posY + tooltipHeight + extraMargin > screenHeight) {
-            posY = screenHeight - tooltipHeight - extraMargin;
+        if (posY + tooltipHeight + paddingY > screenHeight) {
+            posY = screenHeight - tooltipHeight - paddingY;
         }
 
         // If it exceeds the top border, decrease the height
-        if (posY < extraMargin) {
-            posY = extraMargin;
+        if (posY < paddingY) {
+            posY = paddingY;
         }
 
         return new Vec2(posX, posY);
