@@ -9,6 +9,7 @@ import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.icon.background.SlotBorderIconBackground;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import net.minecraft.world.item.Rarity;
@@ -44,6 +45,7 @@ public class StyleFactory {
 
         layers.add(new DefaultBackground());
         layers.add(new DefaultText());
+        layers.add(new DefaultShadow());
 
         // If the icon is enabled
         if (context.hasIcon()) {
