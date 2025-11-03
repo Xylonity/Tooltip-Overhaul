@@ -9,15 +9,15 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
-public class GradientDividerLine implements DividerLineLayer {
+public class StaticDividerLine implements DividerLineLayer {
 
     @Override
     public void render(TooltipContext context, Vec2 position) {
 
         int y = (int) position.y;
-        int x = (int) (position.x + context.getTooltipSize().x * 0.1f);
+        int x = (int) position.x;
         int paddingX = context.getPaddingX();
-        int width = (int) ((int) context.getTooltipSize().x - context.getTooltipSize().x * 0.2f);
+        int width = (int) context.getTooltipSize().x;
 
         PoseStack pose = context.getGraphics().pose();
         Matrix4f matrix = pose.last().pose();
@@ -35,18 +35,10 @@ public class GradientDividerLine implements DividerLineLayer {
         int g = (baseColor >>> 8) & 0xFF;
         int b = baseColor & 0xFF;
 
-        int halfWidth = width / 2;
-        int centerX = x + halfWidth - paddingX;
-
-        buf.vertex(matrix, x - paddingX, y + 1, 0).color(r, g, b, 0).endVertex();
-        buf.vertex(matrix, centerX, y + 1, 0).color(r, g, b, 255).endVertex();
-        buf.vertex(matrix, centerX, y, 0).color(r, g, b, 255).endVertex();
-        buf.vertex(matrix, x - paddingX, y, 0).color(r, g, b, 0).endVertex();
-
-        buf.vertex(matrix, centerX, y + 1, 0).color(r, g, b, 255).endVertex();
-        buf.vertex(matrix, x + width - paddingX, y + 1, 0).color(r, g, b, 0).endVertex();
-        buf.vertex(matrix, x + width - paddingX, y, 0).color(r, g, b, 0).endVertex();
-        buf.vertex(matrix, centerX, y, 0).color(r, g, b, 255).endVertex();
+        buf.vertex(matrix, x - paddingX - 2, y + 1, 0).color(r, g, b, 255).endVertex();
+        buf.vertex(matrix, x + width - paddingX + 1, y + 1, 0).color(r, g, b, 255).endVertex();
+        buf.vertex(matrix, x + width - paddingX + 1, y, 0).color(r, g, b, 255).endVertex();
+        buf.vertex(matrix, x - paddingX - 2, y, 0).color(r, g, b, 255).endVertex();
 
         BufferUploader.drawWithShader(buf.end());
     }
