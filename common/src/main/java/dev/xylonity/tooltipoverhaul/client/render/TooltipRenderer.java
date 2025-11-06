@@ -11,6 +11,7 @@ import java.util.List;
 public class TooltipRenderer {
 
     private final TooltipContext context;
+    public static float COUNTER = 0;
 
     public TooltipRenderer(TooltipContext context) {
         this.context = context;

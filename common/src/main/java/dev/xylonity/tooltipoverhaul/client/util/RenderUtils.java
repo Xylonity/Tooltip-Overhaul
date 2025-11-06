@@ -34,6 +34,14 @@ public class RenderUtils {
         return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableDividerLine).orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
     }
 
+    public static String getIconAppearAnimation(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconAppearAnimation).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
+    }
+
+    public static float getIconRotatingSpeed(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconRotatingSpeed).orElse(TooltipsConfig.ICON_ROTATING_SPEED);
+    }
+
     public static int calculatePadding(TooltipContext context, TextAxis axis) {
         if (axis == TextAxis.X) {
             return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getMainPanelPaddingX).orElse(TooltipsConfig.MAIN_PANEL_PADDING_X);
