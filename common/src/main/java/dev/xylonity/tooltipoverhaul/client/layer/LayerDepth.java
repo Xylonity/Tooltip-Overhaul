@@ -10,8 +10,8 @@ public enum LayerDepth {
     ICON_BACKGROUND(1500),
     RENDERS(2000),
     DIVIDER_LINE(2500),
-    EFFECT(3000),
-    INNER_FRAME(3500),
+    INNER_FRAME(3000),
+    EFFECT(3500),
     OVERLAY(4000);
 
     private final int z;

@@ -17,6 +17,22 @@ public class ColorUtils {
         return parseDividerLineColor(Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineColor).orElse(TooltipsConfig.DIVIDER_LINE_COLOR), context);
     }
 
+    public static int red(int argb) {
+        return (argb >>> 16) & 0xFF;
+    }
+
+    public static int green(int argb) {
+        return (argb >>> 8) & 0xFF;
+    }
+
+    public static int blue(int argb) {
+        return argb & 0xFF;
+    }
+
+    public static int alpha(int argb) {
+        return (argb >>> 24) & 0xFF;
+    }
+
     private static int parseDividerLineColor(String matcher, TooltipContext context) {
         ItemStack stack = context.getStack();
         switch (matcher) {

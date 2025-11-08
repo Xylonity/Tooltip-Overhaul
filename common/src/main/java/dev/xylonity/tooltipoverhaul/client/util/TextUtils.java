@@ -1,16 +1,58 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
+import com.google.common.collect.Lists;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.TooltipFlag;
+
+import java.util.List;
 
 public class TextUtils {
+
+    public static List<ClientTooltipComponent> getTooltipComponentsFrom(ItemStack stack, Font font, int screenWidth, float screenSplit) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Player player = minecraft.player;
+        List<ClientTooltipComponent> componentList = Lists.newArrayList();
+
+        List<Component> originalComponentLines = stack.getTooltipLines(player, minecraft.options.advancedItemTooltips ? TooltipFlag.ADVANCED : TooltipFlag.NORMAL);
+        for (Component originalComponentLine : originalComponentLines) {
+            List<FormattedCharSequence> wrappedLines = font.split(originalComponentLine, Math.max((int)(screenWidth / screenSplit), 200));
+
+            if (wrappedLines.size() == 1) {
+                componentList.add(ClientTooltipComponent.create(originalComponentLine.getVisualOrderText()));
+            }
+            else {
+                for (FormattedCharSequence wrappedLine : wrappedLines) {
+                    componentList.add(ClientTooltipComponent.create(wrappedLine));
+                }
+
+            }
+
+        }
+
+        stack.getTooltipImage().ifPresent(component -> {
+            if (component instanceof BundleTooltip bundleTooltip) {
+                int idx = originalComponentLines.size() > 1 ? 1 : componentList.size();
+                componentList.add(idx, ClientTooltipComponent.create(bundleTooltip));
+            }
+
+        });
+
+        return componentList;
+    }
 
     public static Component computeRatingText(TooltipContext context) {
         // Computes the default color per rarity

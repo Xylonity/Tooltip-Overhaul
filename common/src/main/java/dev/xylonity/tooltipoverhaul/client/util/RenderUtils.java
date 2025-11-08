@@ -31,7 +31,7 @@ public class RenderUtils {
     }
 
     public static boolean hasDividerLine(TooltipContext context) {
-        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableDividerLine).orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
+        return !context.getStack().isEmpty() && !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableDividerLine).orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
     }
 
     public static String getIconAppearAnimation(TooltipContext context) {

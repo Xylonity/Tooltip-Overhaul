@@ -1,7 +1,11 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
+import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
+import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
+import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import dev.xylonity.tooltipoverhaul.util.ITooltipOverhaulItemAware;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -39,7 +43,60 @@ public class GuiGraphicsMixin {
 
         ItemStack stack = ((ITooltipOverhaulItemAware) this).tooltipsOverhaul$hoveredItem();
 
-        if (ItemStack.isSameItemSameTags(tooltipoverhaul$cachedMainStack, stack)) {
+        tooltipoverhaul$calculateCounterValue(stack);
+
+        tooltipoverhaul$cachedMainStack = stack.copy();
+
+        // We create the context and the renderer for the equipped stack here, as this is the highest priority when computing certain values a posteriori
+        TooltipContext equippedStackContext = EquippedContextCalculator.from((GuiGraphics) (Object) this, font, mouseX, mouseY, tooltipPositioner, stack, screenWidth, screenHeight);
+        TooltipRenderer equippedStackRenderer = new TooltipRenderer(equippedStackContext);
+
+        // The original lines of the original tooltip are rewrapped if the comparison exists, to prevent the content of the main tooltip from going beyond
+        // the margins of the screen when forcing the screen scale under extreme circumstances
+        List<ClientTooltipComponent> componentList;
+        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue());
+        if (isKeyDown && equippedStackContext != null) {
+            componentList = TextUtils.getTooltipComponentsFrom(stack, font, screenWidth, 2.2f);
+        }
+        else {
+            componentList = components;
+        }
+
+        // Then, the main renderer is computed here
+        TooltipContext context = new TooltipContext((GuiGraphics) (Object) this, font, componentList, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, stack, true);
+        TooltipRenderer renderer = new TooltipRenderer(context);
+
+        // Parity is assigned here so that both contexts inherit from each other
+        if (equippedStackContext != null) {
+            context.setOtherTooltipContext(equippedStackContext);
+            equippedStackContext.setOtherTooltipContext(context);
+        }
+
+        // Original sizes and positions are initialized
+        equippedStackRenderer.init();
+        renderer.init();
+
+        // The sizes and positions are recalculated after having been previously calculated, in order to readjust the layout of the tooltips and fit them
+        // to the margins of the screen
+        if (equippedStackContext != null) {
+            equippedStackRenderer.adjustLayout();
+            renderer.adjustLayout();
+        }
+
+        // If the rendering is correct, the rest of the call is canceled
+        if (renderer.render()) {
+            if (equippedStackContext != null) {
+                equippedStackRenderer.render();
+            }
+
+            ci.cancel();
+        }
+
+    }
+
+    @Unique
+    private void tooltipoverhaul$calculateCounterValue(ItemStack of) {
+        if (ItemStack.isSameItemSameTags(tooltipoverhaul$cachedMainStack, of)) {
             long elapsed = System.currentTimeMillis() - tooltipoverhaul$hoverStartTime;
             TooltipRenderer.COUNTER = elapsed / 1000f;
         }
@@ -48,13 +105,6 @@ public class GuiGraphicsMixin {
             TooltipRenderer.COUNTER = 0;
         }
 
-        tooltipoverhaul$cachedMainStack = stack.copy();
-
-        TooltipContext context = new TooltipContext((GuiGraphics) (Object) this, font, components, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, stack, true);
-        TooltipRenderer renderer = new TooltipRenderer(context);
-        if (renderer.render()) {
-            ci.cancel();
-        }
     }
 
 }

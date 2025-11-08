@@ -108,4 +108,29 @@ public class TooltipSizeCalculator {
         return height;
     }
 
+    public Vec2 adjustSize() {
+
+        Vec2 newSize = context.getTooltipSize();
+
+        boolean isMainTooltip = context.isMainTooltip();
+        TooltipContext otherContext = context.getOtherTooltipContext();
+
+        Vec2 otherContextPosition = otherContext != null ? otherContext.getTooltipPosition() : null;
+        Vec2 otherContextSize = otherContext != null ? otherContext.getTooltipSize() : null;
+
+        if (isMainTooltip) {
+            if (otherContextPosition != null && otherContextSize != null) {
+                if (otherContextPosition.x == context.getPaddingX() && context.getTooltipPosition().x + context.getTooltipSize().x > context.getScreenWidth()) {
+                    newSize = new Vec2(context.getScreenWidth() - context.getPaddingX() - context.getTooltipPosition().x, newSize.y);
+                }
+            }
+
+        }
+        else {
+
+        }
+
+        return newSize;
+    }
+
 }

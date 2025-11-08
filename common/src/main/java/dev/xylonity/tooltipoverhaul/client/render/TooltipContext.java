@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipPositionCalculator;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipSizeCalculator;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.client.style.StyleFactory;
@@ -53,6 +55,13 @@ public class TooltipContext {
     private final int paddingX;
     private final int paddingY;
 
+    private final TooltipPositionCalculator positionCalculator;
+    private final TooltipSizeCalculator sizeCalculator;
+
+    private static final long START_TIME = System.currentTimeMillis();
+
+    private @Nullable TooltipContext otherTooltipContext = null;
+
     public TooltipContext(GuiGraphics graphics, Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, int screenWidth, int screenHeight, ClientTooltipPositioner tooltipPositioner, @NotNull ItemStack stack, boolean isMainTooltip) {
         this.graphics = graphics;
         this.font = font;
@@ -70,6 +79,8 @@ public class TooltipContext {
         this.hasDividerLine = RenderUtils.hasDividerLine(this);
         this.paddingX = RenderUtils.calculatePadding(this, TextAxis.X);
         this.paddingY = RenderUtils.calculatePadding(this, TextAxis.Y);
+        this.positionCalculator = new TooltipPositionCalculator(this);
+        this.sizeCalculator = new TooltipSizeCalculator(this);
         this.layers = new StyleFactory().create(this, frameData);
     }
 
@@ -157,6 +168,10 @@ public class TooltipContext {
         return hasDividerLine;
     }
 
+    public long getStartTime() {
+        return START_TIME;
+    }
+
     public int getPaddingX() {
         return paddingX;
     }
@@ -165,9 +180,26 @@ public class TooltipContext {
         return paddingY;
     }
 
+    public TooltipPositionCalculator getPositionCalculator() {
+        return positionCalculator;
+    }
+
+    public TooltipSizeCalculator getSizeCalculator() {
+        return sizeCalculator;
+    }
+
     @Nullable
     public CustomFrameData getFrameData() {
         return frameData;
+    }
+
+    public void setOtherTooltipContext(@Nullable TooltipContext otherTooltipContext) {
+        this.otherTooltipContext = otherTooltipContext;
+    }
+
+    @Nullable
+    public TooltipContext getOtherTooltipContext() {
+        return otherTooltipContext;
     }
 
     public void flush() {
