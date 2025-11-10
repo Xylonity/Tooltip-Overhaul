@@ -6,9 +6,12 @@ import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
+import dev.xylonity.tooltipoverhaul.client.style.effect.*;
+import dev.xylonity.tooltipoverhaul.client.style.effect.NebulaEffect;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.icon.background.SlotBorderIconBackground;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
@@ -66,6 +69,8 @@ public class StyleFactory {
             default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
         }
 
+        //layers.add(new WhiteDustEffect());
+        layers.add(new DefaultOverlay());
 
         return layers;
     }

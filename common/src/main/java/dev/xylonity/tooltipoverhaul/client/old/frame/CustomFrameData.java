@@ -58,7 +58,7 @@ public record CustomFrameData(
         Optional<Boolean> disableDividerLine
 ) {
 
-    public String getTexture() {
+    public String getTextureLocation() {
         return texture.filter(t -> !t.trim().isEmpty()).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
     }
 

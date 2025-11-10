@@ -9,6 +9,7 @@
 + Added a config option to change the color of empty tooltips (without stack, generic tooltips)
 + Added an option to apply custom_frames to rarities, apart from items, tags and namespaces
 - Fixed alignment issues with tooltip positions when moving the cursor across the screen, including alignment issues and certain sizes when using the equipment comparison feature
+- Fixed overlay textures not adapting correctly to the tooltip proportions when using a modified padding
 + Added 6 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png
 + Added a new type of divider line: static. The divider line type is now configurable
 + Added a config option to enable drop shadow in tooltips. Disabled by default.

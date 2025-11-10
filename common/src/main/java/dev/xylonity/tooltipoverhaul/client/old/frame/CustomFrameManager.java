@@ -94,7 +94,7 @@ public class CustomFrameManager {
      * Gone through hard times trying to sync the positions correctly :skull:
      */
     public static void renderCustomFrame(TooltipContext ctx, Vec2 pos, Point size) {
-        String textureLocation = ctx.data().map(CustomFrameData::getTexture).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
+        String textureLocation = ctx.data().map(CustomFrameData::getTextureLocation).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
         if (textureLocation == null || textureLocation.isEmpty() || textureLocation.isBlank()) return;
 
         ResourceLocation texture = new ResourceLocation(textureLocation);
@@ -241,9 +241,9 @@ public class CustomFrameManager {
      * Returns the palette schema from the selected data if there is a frame texture present
      */
     public static int[] getPalette(CustomFrameData frameData) {
-        if (frameData == null || frameData.getTexture() == null) return new int[]{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+        if (frameData == null || frameData.getTextureLocation() == null) return new int[]{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
 
-        ResourceLocation texture = new ResourceLocation(frameData.getTexture());
+        ResourceLocation texture = new ResourceLocation(frameData.getTextureLocation());
         TextureInfo meta = getTexMeta(texture);
         int idx = meta.frames > 1 ? (int)((System.currentTimeMillis() / FRAME_TIME) % meta.frames) : 0;
 
