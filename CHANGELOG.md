@@ -4,6 +4,9 @@
 - The misalignment of the scrolling functionality has been fixed, and now when scrolling, the letters are cut off, unlike before, when the lines simply disappeared.
 - The entire code base has been optimized, greatly reducing computational power, so now the mod is more performant and lighter.
 - Added 7 new effects: magic_orbs, echo, speed_lines, galaxy, nebula, spiral, white_dust
+- Added a config option to change the default position of the main tooltip
++ Added a config option to change the padding of empty tooltips (without stack, generic tooltips)
++ Added a config option to change the color of empty tooltips (without stack, generic tooltips)
 + Added an option to apply custom_frames to rarities, apart from items, tags and namespaces
 - Fixed alignment issues with tooltip positions when moving the cursor across the screen, including alignment issues and certain sizes when using the equipment comparison feature
 + Added 6 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png

@@ -1,6 +1,8 @@
 package dev.xylonity.tooltipoverhaul.client.layout;
 
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
+import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
 import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
@@ -27,8 +29,8 @@ public class TooltipPositionCalculator {
         int screenHeight = context.getScreenHeight();
 
         // Initial position (with offset)
-        float posX = mouseX + (isMainTooltip ? 12 : -12);
-        float posY = mouseY - 12;
+        float posX = mouseX + (isMainTooltip ? 12 : -12) + PositionUtils.getMainPanelPosition(context, TextAxis.X);
+        float posY = mouseY - 12 + PositionUtils.getMainPanelPosition(context, TextAxis.Y);
 
         if (isMainTooltip) {
             TooltipContext equippedContext = context.getOtherTooltipContext();

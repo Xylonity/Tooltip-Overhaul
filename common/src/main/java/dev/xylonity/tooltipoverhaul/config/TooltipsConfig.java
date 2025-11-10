@@ -36,12 +36,22 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Horizontal offset (in pixels) for the second panel when a 3D preview is shown. Negative = left, positive = right."
     )
-    public static int SECOND_PANEL_X = -5;
+    public static int SECOND_PANEL_X = 0;
 
     @ConfigEntry(
             comment = "Vertical offset (in pixels) for the second panel when a 3D preview is shown. Negative = up, positive = down."
     )
     public static int SECOND_PANEL_Y = 0;
+
+    @ConfigEntry(
+            comment = "Horizontal offset (in pixels) for the tooltip. Negative = left, positive = right."
+    )
+    public static int TOOLTIP_POSITION_X = 0;
+
+    @ConfigEntry(
+            comment = "Vertical offset (in pixels) for the tooltip. Negative = up, positive = down."
+    )
+    public static int TOOLTIP_POSITION_Y = 0;
 
     @ConfigEntry(
             comment = "Default inner overlay style for tooltips. Options: glint, solid (monochrome), gradient."

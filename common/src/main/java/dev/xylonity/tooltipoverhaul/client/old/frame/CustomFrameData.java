@@ -12,7 +12,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,6 +28,8 @@ public record CustomFrameData(
         Optional<Integer> colorItemRating,
         Optional<String> ratingAlignment,
         Optional<String> titleAlignment,
+        Optional<Integer> tooltipPositionX,
+        Optional<Integer> tooltipPositionY,
         Optional<Integer> titlePositionX,
         Optional<Integer> titlePositionY,
         Optional<Integer> ratingPositionX,
@@ -136,6 +137,15 @@ public record CustomFrameData(
     public int getTooltipDescriptionPositionX() {
         return tooltipDescriptionPositionX.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_X);
     }
+
+    public int getTooltipPositionX() {
+        return tooltipPositionX.orElse(TooltipsConfig.TOOLTIP_POSITION_X);
+    }
+
+    public int getTooltipPositionY() {
+        return tooltipPositionY.orElse(TooltipsConfig.TOOLTIP_POSITION_Y);
+    }
+
 
     public int getBackgroundColor() {
         return backgroundColor.orElse(Palette.PANEL_BG);
