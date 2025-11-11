@@ -34,6 +34,10 @@ public class RenderUtils {
         return !context.getStack().isEmpty() && !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableDividerLine).orElse(TooltipsConfig.DISABLE_DIVIDER_LINE);
     }
 
+    public static boolean hasShadow(TooltipContext context) {
+        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowShadow).orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
+    }
+
     public static String getIconAppearAnimation(TooltipContext context) {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconAppearAnimation).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
     }
@@ -42,7 +46,19 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconRotatingSpeed).orElse(TooltipsConfig.ICON_ROTATING_SPEED);
     }
 
+    public static String getIconBackgroundType(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconBackground).orElse(TooltipsConfig.ICON_BACKGROUND_TYPE);
+    }
+
     public static int calculatePadding(TooltipContext context, TextAxis axis) {
+        if (context.getStack().isEmpty()) {
+            if (axis == TextAxis.X) {
+                return TooltipsConfig.NO_STACK_TOOLTIP_PADDING_X;
+            }
+
+            return TooltipsConfig.NO_STACK_TOOLTIP_PADDING_Y;
+        }
+
         if (axis == TextAxis.X) {
             return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getMainPanelPaddingX).orElse(TooltipsConfig.MAIN_PANEL_PADDING_X);
         }

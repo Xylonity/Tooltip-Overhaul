@@ -81,6 +81,16 @@ public final class TooltipsConfig {
     public static int MAIN_PANEL_PADDING_Y = 2;
 
     @ConfigEntry(
+            comment = "Horizontal padding for the main panel when there isn't a stack present."
+    )
+    public static int NO_STACK_TOOLTIP_PADDING_X = 1;
+
+    @ConfigEntry(
+            comment = "Vertical padding for the main panel when there isn't a stack present."
+    )
+    public static int NO_STACK_TOOLTIP_PADDING_Y = 1;
+
+    @ConfigEntry(
             comment = "Title alignment. Options: left, middle, right."
     )
     public static String TITLE_X_ALIGNMENT = "left";
@@ -91,7 +101,7 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
-            comment = "Icon background type. Options: focus, void, slot and slot_border"
+            comment = "Icon background type. Options: focus, void, slot, slot_border and glow"
     )
     public static String ICON_BACKGROUND_TYPE = "slot_border";
 
@@ -136,6 +146,11 @@ public final class TooltipsConfig {
     public static boolean DISABLE_ICON = false;
 
     @ConfigEntry(
+            comment = "Enable the tooltip shadow."
+    )
+    public static boolean SHOW_TOOLTIP_SHADOW = false;
+
+    @ConfigEntry(
             comment = "Animation style for the icon appearance."
     )
     public static String ICON_APPEAR_ANIMATION = "skew";
@@ -164,6 +179,11 @@ public final class TooltipsConfig {
             comment = "Divider line color. Options: 'match_inner_frame_color', 'match_item_name_color' or a hex ARGB color (e.g., 0xA0EFEFEF)."
     )
     public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
+
+    @ConfigEntry(
+            comment = "Color palette for tooltips without a stack. Must specify exactly 3 ARGB colors."
+    )
+    public static String NO_STACK_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";
 
     @ConfigEntry(
             comment = "Color palette for COMMON rarity (bright to dark). Must specify exactly 3 ARGB colors."

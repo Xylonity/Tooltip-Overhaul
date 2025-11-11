@@ -5,6 +5,7 @@
 - The entire code base has been optimized, greatly reducing computational power, so now the mod is more performant and lighter.
 - Added 7 new effects: magic_orbs, echo, speed_lines, galaxy, nebula, spiral, white_dust
 - Added a config option to change the default position of the main tooltip
+- Added a new type of icon background: "glow". It's dynamic, thus matching the inner frame color
 + Added a config option to change the padding of empty tooltips (without stack, generic tooltips)
 + Added a config option to change the color of empty tooltips (without stack, generic tooltips)
 + Added an option to apply custom_frames to rarities, apart from items, tags and namespaces

@@ -1,4 +1,4 @@
-package dev.xylonity.tooltipoverhaul.client.old;
+package dev.xylonity.tooltipoverhaul.client.util;
 
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
@@ -10,6 +10,8 @@ import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 public final class Palette {
 
     public static final int PANEL_BG = TooltipsConfig.DEFAULT_BACKGROUND_COLOR;
+
+    public static final int[] NO_STACK = ConfigColorParser.parsePalette(TooltipsConfig.NO_STACK_PALETTE_COLORS);
 
     public static final int[] COMMON = ConfigColorParser.parsePalette(TooltipsConfig.COMMON_PALETTE_COLORS);
 

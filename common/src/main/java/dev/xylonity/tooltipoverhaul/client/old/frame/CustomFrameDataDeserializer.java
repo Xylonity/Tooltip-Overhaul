@@ -60,6 +60,8 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Boolean> showSecondPanel = parseBool(entry, "showSecondPanel");
         Optional<Boolean> showRating = parseBool(entry, "showRating");
 
+        Optional<Boolean> showShadow = parseBool(entry, "showShadow");
+
         Optional<Boolean> disableIcon = parseBool(entry, "disableIcon");
         Optional<Boolean> disableScrolling = parseBool(entry, "disableScrolling");
         Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
@@ -102,6 +104,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 iconBackgroundType,
                 showSecondPanel,
                 showRating,
+                showShadow,
                 disableIcon,
                 disableScrolling,
                 disableTooltip,

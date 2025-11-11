@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import dev.xylonity.tooltipoverhaul.client.old.Palette;
+import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.client.old.style.background.icon.SlotBorderIconBackground;
 import dev.xylonity.tooltipoverhaul.client.old.style.background.icon.FocusIconBackground;
 import dev.xylonity.tooltipoverhaul.client.old.style.background.icon.SlotIconBackground;
@@ -15,7 +15,6 @@ import dev.xylonity.tooltipoverhaul.client.old.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.old.style.inner.GradientInnerOverlay;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameManager;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 

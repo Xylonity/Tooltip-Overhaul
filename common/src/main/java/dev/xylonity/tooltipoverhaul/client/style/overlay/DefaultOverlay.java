@@ -31,7 +31,7 @@ public class DefaultOverlay implements OverlayLayer {
             return;
         }
 
-        ResourceLocation textureLocation = TooltipOverhaul.locationOf(rawTexturePath);
+        ResourceLocation textureLocation = TooltipOverhaul.rawPathOf(rawTexturePath);
         TextureMetadata textureMetadata = getTextureMetadata(textureLocation);
 
         int textureWidth = textureMetadata.width();

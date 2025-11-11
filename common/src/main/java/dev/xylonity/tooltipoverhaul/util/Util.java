@@ -1,6 +1,6 @@
 package dev.xylonity.tooltipoverhaul.util;
 
-import dev.xylonity.tooltipoverhaul.client.old.Palette;
+import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.client.old.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.old.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;

@@ -1,6 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.old.frame;
 
-import dev.xylonity.tooltipoverhaul.client.old.Palette;
+import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -52,6 +52,7 @@ public record CustomFrameData(
         Optional<String> iconBackgroundType,
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
+        Optional<Boolean> showShadow,
         Optional<Boolean> disableIcon,
         Optional<Boolean> disableScrolling,
         Optional<Boolean> disableTooltip,
@@ -157,6 +158,10 @@ public record CustomFrameData(
 
     public int getTooltipDescriptionPositionY() {
         return tooltipDescriptionPositionY.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
+    }
+
+    public boolean shouldShowShadow() {
+        return showShadow.orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
     }
 
     public int getSecondPanelX() {

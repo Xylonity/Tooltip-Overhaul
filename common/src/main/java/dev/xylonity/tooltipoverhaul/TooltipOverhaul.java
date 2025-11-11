@@ -14,8 +14,12 @@ public class TooltipOverhaul {
 
     public static final TooltipPlatform PLATFORM = ServiceLoader.load(TooltipPlatform.class).findFirst().orElseThrow();
 
-    public static ResourceLocation locationOf(String path) {
+    public static ResourceLocation rawPathOf(String path) {
         return new ResourceLocation(path);
+    }
+
+    public static ResourceLocation pathOf(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 
 }
