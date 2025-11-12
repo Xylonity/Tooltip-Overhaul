@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
+import com.google.common.collect.Lists;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
@@ -8,12 +9,35 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 public class ColorUtils {
 
     public static int getDividerLineColor(TooltipContext context) {
         return parseDividerLineColor(Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineColor).orElse(TooltipsConfig.DIVIDER_LINE_COLOR), context);
+    }
+
+    public static int[] getInnerOverlayColors(TooltipContext context) {
+        int[] colors;
+        CustomFrameData data = context.getFrameData();
+        if (data != null) {
+            CustomFrameData.GradientType gradientType = data.getGradientType();
+            if (gradientType != CustomFrameData.GradientType.CUSTOM) {
+                colors = Arrays.copyOf(Palette.of(gradientType), 3);
+            }
+            else {
+                int[] configuredColors = data.getGradientColors(context);
+                colors = configuredColors.length == 3 ? configuredColors : Arrays.copyOf(getColorsPerRarity(context), 3);
+            }
+
+        }
+        else {
+            colors = Arrays.copyOf(getColorsPerRarity(context), 3);
+        }
+
+        return colors;
     }
 
     public static int red(int argb) {
@@ -37,10 +61,10 @@ public class ColorUtils {
         switch (matcher) {
             case "match_inner_frame_color" -> {
                 if (context.getFrameData() != null && context.getFrameData().hasGradientColors()) {
-                    return ConfigColorParser.parseColor(context.getFrameData().getGradientColors().get(0));
+                    return context.getFrameData().getGradientColors(context)[0];
                 }
 
-                return getColorPerRarity(stack);
+                return getFirstColorOfRarity(context);
             }
             case "match_item_name_color" -> {
                 TextColor color = stack.getHoverName().getStyle().getColor();
@@ -64,16 +88,20 @@ public class ColorUtils {
         return 0xFFFFFFFF;
     }
 
-    private static int getColorPerRarity(ItemStack stack) {
-        final Rarity r = stack.getRarity();
-        // Computes the default color per rarity
-        // Defaults to a simulated legendary rarity
-        int palette = Palette.LEGENDARY[0];
-        if (r == Rarity.COMMON) palette = Palette.COMMON[0];
-        if (r == Rarity.UNCOMMON) palette = Palette.UNCOMMON[0];
-        if (r == Rarity.RARE) palette = Palette.RARE[0];
-        if (r == Rarity.EPIC) palette = Palette.EPIC[0];
-        return palette;
+    public static int[] getColorsPerRarity(TooltipContext context) {
+        Rarity rarity = context.getStack().getRarity();
+        int[] colors = Palette.LEGENDARY;
+
+        if (rarity == Rarity.COMMON) colors = Palette.COMMON;
+        if (rarity == Rarity.UNCOMMON) colors = Palette.UNCOMMON;
+        if (rarity == Rarity.RARE) colors = Palette.RARE;
+        if (rarity == Rarity.EPIC) colors = Palette.EPIC;
+
+        return Arrays.copyOf(colors, 3);
+    }
+
+    public static int getFirstColorOfRarity(TooltipContext context) {
+        return getColorsPerRarity(context)[0];
     }
 
 }

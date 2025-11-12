@@ -79,9 +79,9 @@ public class Util {
         ItemStack stack = ctx.stack();
         switch (matcher) {
             case "match_inner_frame_color" -> {
-                if (ctx.data().isPresent() && ctx.data().get().hasGradientColors()) {
-                    return ConfigColorParser.parseColor(ctx.data().get().getGradientColors().get(0));
-                }
+                //if (ctx.data().isPresent() && ctx.data().get().hasGradientColors()) {
+                //    return ConfigColorParser.parseColor(ctx.data().get().getGradientColors().get(0));
+                //}
 
                 return getColorPerRarity(stack);
             }

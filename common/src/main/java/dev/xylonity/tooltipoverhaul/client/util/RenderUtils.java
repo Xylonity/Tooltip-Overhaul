@@ -50,6 +50,10 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconBackground).orElse(TooltipsConfig.ICON_BACKGROUND_TYPE);
     }
 
+    public static String getDividerLineType(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineType).orElse(TooltipsConfig.DIVIDER_LINE_TYPE);
+    }
+
     public static int calculatePadding(TooltipContext context, TextAxis axis) {
         if (context.getStack().isEmpty()) {
             if (axis == TextAxis.X) {

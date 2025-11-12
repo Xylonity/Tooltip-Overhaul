@@ -26,7 +26,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Integer> backgroundColor = parseInt(entry, "backgroundColor");
         Optional<String> borderType = parseString(entry, "borderType");
         Optional<CustomFrameData.GradientType> gradientType = parseEnum(entry, "gradientType", CustomFrameData.GradientType.class);
-        Optional<List<String>> gradientColors = parseOptionalStringList(entry);
+        Optional<List<String>> gradientColors = parseOptionalStringList(entry, "gradientColors");
         Optional<String> itemRating = parseString(entry, "itemRating");
         Optional<Integer> colorItemRating = parseInt(entry, "colorItemRating");
 
@@ -49,7 +49,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
         Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");
         Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
-        Optional<CustomFrameData.DividerLineType> dividerLineType = parseEnum(entry, "dividerLineType", CustomFrameData.DividerLineType.class);
+        Optional<String> dividerLineType = parseString(entry, "dividerLineType");
         Optional<String> dividerLineColor = parseString(entry, "dividerLineColor");
 
         Optional<String> particles = parseString(entry, "particles");
@@ -150,10 +150,10 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         return Optional.empty();
     }
 
-    private Optional<List<String>> parseOptionalStringList(JsonObject content) {
-        if (!content.has("gradientColors") || content.get("gradientColors").isJsonNull()) return Optional.empty();
+    private Optional<List<String>> parseOptionalStringList(JsonObject content, String field) {
+        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
 
-        JsonElement elem = content.get("gradientColors");
+        JsonElement elem = content.get(field);
         if (elem.isJsonArray()) {
             List<String> list = elem.getAsJsonArray().asList().stream().filter(JsonElement::isJsonPrimitive).map(JsonElement::getAsString).toList();
             return list.isEmpty() ? Optional.empty() : Optional.of(list);

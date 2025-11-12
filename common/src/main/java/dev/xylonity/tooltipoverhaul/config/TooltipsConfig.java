@@ -181,6 +181,11 @@ public final class TooltipsConfig {
     public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
 
     @ConfigEntry(
+            comment = "Divider line type. Options: 'gradient', 'static'"
+    )
+    public static String DIVIDER_LINE_TYPE = "gradient";
+
+    @ConfigEntry(
             comment = "Color palette for tooltips without a stack. Must specify exactly 3 ARGB colors."
     )
     public static String NO_STACK_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";

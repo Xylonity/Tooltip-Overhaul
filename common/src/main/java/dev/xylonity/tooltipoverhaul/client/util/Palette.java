@@ -25,8 +25,8 @@ public final class Palette {
 
     public static final int[] CHAOS = ConfigColorParser.parsePalette(TooltipsConfig.CHAOS_PALETTE_COLORS);
 
-    public static int[] of(CustomFrameData.GradientType t) {
-        return switch (t) {
+    public static int[] of(CustomFrameData.GradientType type) {
+        return switch (type) {
             case UNCOMMON -> UNCOMMON;
             case RARE -> RARE;
             case EPIC -> EPIC;

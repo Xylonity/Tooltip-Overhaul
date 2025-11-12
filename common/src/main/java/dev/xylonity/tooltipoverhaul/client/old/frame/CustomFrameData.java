@@ -1,7 +1,10 @@
 package dev.xylonity.tooltipoverhaul.client.old.frame;
 
+import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -11,6 +14,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,7 +49,7 @@ public record CustomFrameData(
         Optional<Integer> secondPanelY,
         Optional<Float> secondPanelRendererSize,
         Optional<Float> secondPanelRendererSpeed,
-        Optional<DividerLineType> dividerLineType,//
+        Optional<String> dividerLineType,
         Optional<String> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
@@ -75,16 +79,41 @@ public record CustomFrameData(
         return gradientColors.isPresent();
     }
 
-    public List<String> getGradientColors() {
-        return gradientColors.filter(colors -> colors.size() >= 3).map(colors -> colors.subList(0, 3)).orElse(List.of("#FFFFFFFF", "#FFFFFFFF", "#FFFFFFFF"));
+    public int[] getGradientColors(TooltipContext context) {
+        return gradientColors
+                .map(list -> {
+                    int length = Math.min(3, list.size());
+                    if (length == 0) {
+                        return new int[0];
+                    }
+
+                    int[] array = new int[3];
+                    int last = 0;
+                    for (int i = 0; i < length; i++) {
+                        String key = list.get(i);
+                        if (key == null || key.isBlank()) {
+                            continue;
+                        }
+
+                        last = ConfigColorParser.parseColor(key.trim());
+                        array[i] = last;
+                    }
+
+                    for (int i = length; i < 3; i++) {
+                        array[i] = last;
+                    }
+
+                    return array;
+                })
+                .orElseGet(() -> Arrays.copyOf(ColorUtils.getColorsPerRarity(context), 3));
     }
 
     public String getItemRating(ItemStack stack) {
         return itemRating.filter(rating -> !rating.trim().isEmpty()).orElse(Util.getDefaultRarity(stack).getString());
     }
 
-    public int getItemRatingColor(ItemStack stack) {
-        return colorItemRating.orElse(getRarityColor(stack));
+    public int getItemRatingColor(TooltipContext context) {
+        return colorItemRating.orElse(ColorUtils.getFirstColorOfRarity(context));
     }
 
     public boolean shouldDisableDividerLine() {
@@ -93,18 +122,6 @@ public record CustomFrameData(
 
     public boolean shouldDisableTooltip() {
         return disableTooltip.orElse(false);
-    }
-
-    private int getRarityColor(ItemStack stack) {
-        final Rarity r = stack.getRarity();
-        // Computes the default color per rarity
-        // Defaults to a simulated legendary rarity
-        int palette = Palette.LEGENDARY[0];
-        if (r == Rarity.COMMON) palette = Palette.COMMON[0];
-        if (r == Rarity.UNCOMMON) palette = Palette.UNCOMMON[0];
-        if (r == Rarity.RARE) palette = Palette.RARE[0];
-        if (r == Rarity.EPIC) palette = Palette.EPIC[0];
-        return palette;
     }
 
     public String getIconAppearAnimation() {
@@ -133,6 +150,10 @@ public record CustomFrameData(
 
     public int getRatingPositionY() {
         return ratingPositionY.orElse(TooltipsConfig.RATING_POSITION_Y);
+    }
+
+    public String getDividerLineType() {
+        return dividerLineType.orElse(TooltipsConfig.DIVIDER_LINE_TYPE);
     }
 
     public int getTooltipDescriptionPositionX() {
@@ -272,16 +293,6 @@ public record CustomFrameData(
         return colorItemRating.isPresent();
     }
 
-    public enum InnerBorderType {
-        NONE,
-        STATIC,
-        GLINT,
-        GRADIENT,
-        AUTO_STATIC,
-        AUTO_GLINT,
-        AUTO_GRADIENT
-    }
-
     public enum GradientType {
         COMMON,
         UNCOMMON,
@@ -290,11 +301,6 @@ public record CustomFrameData(
         LEGENDARY,
         CHAOS,
         CUSTOM
-    }
-
-    public enum DividerLineType {
-        NONE,
-        NORMAL
     }
 
 }

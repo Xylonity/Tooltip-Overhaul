@@ -35,9 +35,11 @@ public class GradientInnerOverlay implements InnerOverlayLayer {
 
     private static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int z, int c1, int c2, int c3) {
         int mid = height / 2;
+
         // Left border (top and bottom sections)
         graphics.fillGradient(x, y, x + 1, y + mid, z, c1, c2);
         graphics.fillGradient(x, y + mid, x + 1, y + height, z, c2, c3);
+
         // Right border (top and bottom sections)
         graphics.fillGradient(x + width - 1, y, x + width, y + mid, z, c1, c2);
         graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, z, c2, c3);

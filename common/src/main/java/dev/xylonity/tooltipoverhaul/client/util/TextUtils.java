@@ -84,7 +84,7 @@ public class TextUtils {
                 MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
 
                 if (data.hasCustomColorItemRating()) {
-                    return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(context.getStack())));
+                    return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(context)));
                 }
                 // If the frame doesn't provide a color, uses rarity color by default
                 else {

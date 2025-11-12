@@ -119,9 +119,9 @@ public class Styles {
                     grads.add(p[2]);
                 }
                 default -> {
-                    for (String hex : data.getGradientColors()) {
-                        grads.add(color(hex));
-                    }
+                    //for (String hex : data.getGradientColors()) {
+                    //    grads.add(color(hex));
+                    //}
 
                     // fallback when the color defs are not entirely populated
                     while (grads.size() < 3) {
