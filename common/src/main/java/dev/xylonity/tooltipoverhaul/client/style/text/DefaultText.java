@@ -49,9 +49,9 @@ public class DefaultText implements TextLayer {
             int titleAlignY = 0;
             int ratingAlignY = 0;
             if (hasIcon) {
-                extraX = Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON;
-                extraY = (Constants.ICON_SIZE / 2);
-                titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.ICON_SIZE / 4);
+                extraX = Constants.getIconSize(context) + Constants.getIconTitleSeparation(context);
+                extraY = (Constants.getIconSize(context) / 2);
+                titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.getIconSize(context) / 4);
             }
             else {
                 // Don't apply extra rating alignment when the icon is enabled
@@ -63,8 +63,8 @@ public class DefaultText implements TextLayer {
 
             // Rating text. If there is no rating but there is an icon present, the padding between the content and the title is the same
             if (hasRating) {
-                Component rating = TextUtils.computeRatingText(context);
-                context.getGraphics().drawString(font, TextUtils.computeRatingText(context), x + extraX, y + extraY + ratingAlignY, 0xEDDE76, false);
+                Component rating = TextUtils.getRatingText(context);
+                context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX, y + extraY + ratingAlignY, 0xEDDE76, false);
                 y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
             }
             else if (hasIcon) {
@@ -76,17 +76,16 @@ public class DefaultText implements TextLayer {
 
         // Extra space after the icon
         if (hasIcon) {
-            y += Constants.SEPARATION_TITLE_ICON;
+            y += Constants.getIconTitleSeparation(context);
         }
 
         if (hasDividerLine && components.size() > 1) {
             if (hasIcon) {
-                y += Constants.DIVIDER_LINE_FULL_PADDING;
+                y += Constants.getDividerLineFullPadding(context);
             }
             else {
-
+                y += Constants.getDividerLineFullPadding(context);
             }
-
 
         }
 

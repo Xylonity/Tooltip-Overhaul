@@ -13,8 +13,8 @@ public class SlotIconBackground implements IconBackgroundLayer {
         int positionX = (int) context.getTooltipPosition().x - 1 + context.getPaddingX();
         int positionY = (int) context.getTooltipPosition().y + context.getPaddingY();
 
-        int slotSizeX = positionX + Constants.ICON_SIZE;
-        int slotSizeY = positionY + Constants.ICON_SIZE;
+        int slotSizeX = positionX + Constants.getIconSize(context);
+        int slotSizeY = positionY + Constants.getIconSize(context);
 
         int x0 = positionX;
         int y0 = positionY;

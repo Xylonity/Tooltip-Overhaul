@@ -9,6 +9,7 @@
 + Added a config option to change the padding of empty tooltips (without stack, generic tooltips)
 + Added a config option to change the color of empty tooltips (without stack, generic tooltips)
 + Added an option to apply custom_frames to rarities, apart from items, tags and namespaces
+- Added a config option to change the top and bottom paddings of the divider line
 - Added a config option to change the size of the second panel (preview panel)
 - Fixed alignment issues with tooltip positions when moving the cursor across the screen, including alignment issues and certain sizes when using the equipment comparison feature
 - Fixed overlay textures not adapting correctly to the tooltip proportions when using a modified padding

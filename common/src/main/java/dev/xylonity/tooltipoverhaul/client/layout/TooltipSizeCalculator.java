@@ -9,7 +9,6 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
 
-import java.awt.*;
 import java.util.List;
 
 public class TooltipSizeCalculator {
@@ -32,8 +31,10 @@ public class TooltipSizeCalculator {
         int paddingX = context.getPaddingX();
         int paddingY = context.getPaddingY();
 
-        int iconOffset = hasIcon ? (Constants.ICON_SIZE + Constants.SEPARATION_TITLE_ICON) : 0;
+        // Offset to the right if the icon is active
+        int iconOffset = hasIcon ? (Constants.getIconSize(context) + Constants.getIconTitleSeparation(context)) : 0;
 
+        // Computes approximated width and height using the component amount
         int width = components.get(0).getWidth(font) + paddingX * 2 + iconOffset;
         int height = components.get(0).getHeight() + paddingY * 2;
         for (int i = 0; i < components.size(); i++) {
@@ -44,8 +45,9 @@ public class TooltipSizeCalculator {
 
         }
 
+        // Computes the new width if the rating is larger than the tooltip's width and adds extra height in case the icon is not present
         if (hasRating) {
-            Component rating = TextUtils.computeRatingText(context);
+            Component rating = TextUtils.getRatingText(context);
             width = Math.max(width, font.width(rating) + paddingX * 2 + iconOffset);
 
             if (!hasIcon) {
@@ -53,59 +55,23 @@ public class TooltipSizeCalculator {
             }
         }
 
+        // If the tooltip has an icon active, subtracts the title component height (which is approximately 10)
         if (hasIcon) {
-            height += Constants.ICON_SIZE_PADDING;
+            height += Constants.getIconSize(context) - 10;
         }
 
+        //
         if (hasDividerLine && components.size() > 1) {
-            height += Constants.DIVIDER_LINE_FULL_PADDING;
+            if (hasIcon) {
+                height += Constants.getDividerLineFullPadding(context);
+            }
+            else {
+                height += Constants.getDividerLineFullPadding(context);
+            }
+
         }
 
         return new Vec2(width, height);
-    }
-
-    /**
-     * Calculates the header height (title + rating + icon + divider)
-     */
-    public int calculateHeaderHeight() {
-
-        int height = 0;
-        boolean hasIcon = context.hasIcon();
-        boolean hasDividerLine = context.hasDividerLine();
-        boolean hasRating = RenderUtils.hasRating(context);
-
-        ClientTooltipComponent title = context.getComponents().get(0);
-        height += title.getHeight();
-
-        // TODO: calculate using the actual rating height (or maybe use the title height here)
-        if (hasRating) {
-            height += 10;
-        }
-        else if (hasIcon) {
-            height += title.getHeight();
-        }
-
-        if (hasIcon) {
-            height += Constants.SEPARATION_TITLE_ICON;
-        }
-
-        if (hasDividerLine && context.getComponents().size() > 1) {
-            height += Constants.DIVIDER_LINE_FULL_PADDING;
-        }
-
-        return height;
-    }
-
-    /**
-     * Calculates the height for the viewport scrollable content
-     */
-    public int calculateScrollableContentHeight() {
-        int height = 0;
-        for (int i = 1; i < context.getComponents().size(); i++) {
-            height += context.getComponents().get(i).getHeight();
-        }
-
-        return height;
     }
 
     public Vec2 adjustSize() {

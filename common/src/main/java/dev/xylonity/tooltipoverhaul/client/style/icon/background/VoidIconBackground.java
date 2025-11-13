@@ -17,8 +17,8 @@ public class VoidIconBackground implements IconBackgroundLayer {
         int positionX = (int) context.getTooltipPosition().x - 1 + context.getPaddingX();
         int positionY = (int) context.getTooltipPosition().y + context.getPaddingY();
 
-        int slotSizeX = positionX + Constants.ICON_SIZE / 2;
-        int slotSizeY = positionY + Constants.ICON_SIZE / 2;
+        int slotSizeX = positionX + Constants.getIconSize(context) / 2;
+        int slotSizeY = positionY + Constants.getIconSize(context) / 2;
 
         ResourceLocation texture = TooltipOverhaul.pathOf("textures/gui/star.png");
 

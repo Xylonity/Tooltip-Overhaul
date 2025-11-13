@@ -3,7 +3,6 @@ package dev.xylonity.tooltipoverhaul.client.util;
 import com.google.common.collect.Lists;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -54,7 +53,7 @@ public class TextUtils {
         return componentList;
     }
 
-    public static Component computeRatingText(TooltipContext context) {
+    public static Component getRatingText(TooltipContext context) {
         // Computes the default color per rarity
         // Defaults to a simulated legendary rarity with gold color
         // Can't use enum checking here as it would crash on certain rarity enum injections

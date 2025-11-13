@@ -25,7 +25,7 @@ public class DefaultIcon implements IconLayer {
 
         context.push(() -> {
 
-            context.translate(positionX + Constants.ICON_SIZE / 2f, positionY + Constants.ICON_SIZE / 2f, context.getLayerDepth().getZ());
+            context.translate(positionX + Constants.getIconSize(context) / 2f, positionY + Constants.getIconSize(context) / 2f, context.getLayerDepth().getZ());
 
             IconAnimation animationType = IconAnimation.fromString(RenderUtils.getIconAppearAnimation(context));
 

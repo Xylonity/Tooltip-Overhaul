@@ -64,6 +64,16 @@ public final class TooltipsConfig {
     public static int TOOLTIP_POSITION_Y = 0;
 
     @ConfigEntry(
+            comment = "Extra padding above the divider line"
+    )
+    public static int DIVIDER_LINE_TOP_PADDING = 0;
+
+    @ConfigEntry(
+            comment = "Extra padding below the divider line"
+    )
+    public static int DIVIDER_LINE_BOTTOM_PADDING = 0;
+
+    @ConfigEntry(
             comment = "Default inner overlay style for tooltips. Options: glint, solid (monochrome), gradient."
     )
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";

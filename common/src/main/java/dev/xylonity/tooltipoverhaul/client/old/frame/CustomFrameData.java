@@ -40,6 +40,8 @@ public record CustomFrameData(
         Optional<Integer> tooltipDescriptionPositionY,
         Optional<Integer> mainPanelPaddingX,
         Optional<Integer> mainPanelPaddingY,
+        Optional<Integer> dividerLineTopPadding,
+        Optional<Integer> dividerLineBottomPadding,
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<String> iconAppearAnimation,
@@ -155,6 +157,15 @@ public record CustomFrameData(
     public String getDividerLineType() {
         return dividerLineType.orElse(TooltipsConfig.DIVIDER_LINE_TYPE);
     }
+
+    public int getDividerLineTopPadding() {
+        return dividerLineTopPadding.orElse(TooltipsConfig.DIVIDER_LINE_TOP_PADDING);
+    }
+
+    public int getDividerLineBottomPadding() {
+        return dividerLineBottomPadding.orElse(TooltipsConfig.DIVIDER_LINE_BOTTOM_PADDING);
+    }
+
 
     public int getTooltipDescriptionPositionX() {
         return tooltipDescriptionPositionX.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_X);

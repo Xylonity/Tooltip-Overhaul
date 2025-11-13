@@ -42,6 +42,8 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Integer> tooltipDescriptionPositionY = parseInt(entry, "tooltipDescriptionPositionY");
         Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
         Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
+        Optional<Integer> dividerLineTopPadding = parseInt(entry, "dividerLineTopPadding");
+        Optional<Integer> dividerLineBottomPadding = parseInt(entry, "dividerLineBottomPadding");
         Optional<Float> iconSize = parseFloat(entry, "iconSize");
         Optional<Float> iconRotatingSpeed = parseFloat(entry, "iconRotatingSpeed");
         Optional<String> iconAppearAnimation = parseString(entry, "iconAppearAnimation");
@@ -92,6 +94,8 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 tooltipDescriptionPositionY,
                 mainPanelPaddingX,
                 mainPanelPaddingY,
+                dividerLineTopPadding,
+                dividerLineBottomPadding,
                 iconSize,
                 iconRotatingSpeed,
                 iconAppearAnimation,

@@ -39,16 +39,7 @@ public class TooltipRenderer {
         context.setTooltipSize(new Vec2(uncappedSize.x, cappedHeight));
         context.setTooltipPosition(positionCalculator.calculate());
 
-        // Calculates the header (non-scrollable)
-        int headerHeight = sizeCalculator.calculateHeaderHeight();
-
-        // Calculates the scrollable height
-        int scrollableContentHeight = sizeCalculator.calculateScrollableContentHeight();
-
-        // The max height to show scrollable content
-        int availableViewportHeight = cappedHeight - headerHeight - (context.getPaddingY() * 2);
-
-        TooltipScrollState.begin(scrollableContentHeight, availableViewportHeight);
+        TooltipScrollState.begin((int) uncappedSize.y, cappedHeight);
         TooltipScrollState.tick();
     }
 
