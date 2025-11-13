@@ -305,19 +305,6 @@ public final class TooltipRenderer {
             layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
         }
 
-        // Renders the second panel
-        if (
-            (ctx.isMainTooltip()) && ctx.getOtherTooltipContext() == null &&
-            ((ctx.data().isPresent() && ctx.data().get().shouldShowSecondPanel()) ||
-            (ctx.stack().getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER) ||
-            (ctx.stack().getItem() instanceof ArmorItem && TooltipsConfig.ARMOR_ITEMS_RENDERER))
-        ) {
-            for (ITooltipLayer layer : LAYERS_SECOND) {
-                layer.render(ctx, pos, ttSize, style, rating, font, customFrame.orElse(null));
-            }
-
-        }
-
         // Renders the equipped badge qualifier above the compared stack's tooltip
         if (ctx.getOtherTooltipContext() != null && !ctx.isMainTooltip()) {
             for (ITooltipLayer layer : LAYERS_EQUIPPED_BADGE) {

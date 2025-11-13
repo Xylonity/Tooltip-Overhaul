@@ -9,7 +9,7 @@ import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
  */
 public final class Palette {
 
-    public static final int PANEL_BG = TooltipsConfig.DEFAULT_BACKGROUND_COLOR;
+    public static final int PANEL_BG = ConfigColorParser.parseColor(TooltipsConfig.DEFAULT_BACKGROUND_COLOR);
 
     public static final int[] NO_STACK = ConfigColorParser.parsePalette(TooltipsConfig.NO_STACK_PALETTE_COLORS);
 

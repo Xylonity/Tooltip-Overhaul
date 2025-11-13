@@ -4,6 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
+import dev.xylonity.tooltipoverhaul.client.style.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.divider.StaticDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
@@ -112,6 +113,10 @@ public class StyleFactory {
                 case "static" -> layers.add(new StaticDividerLine());
             }
 
+        }
+
+        if (RenderUtils.hasPreview(context)) {
+            layers.add(new DefaultPreviewBackground());
         }
 
         layers.add(new DefaultOverlay());

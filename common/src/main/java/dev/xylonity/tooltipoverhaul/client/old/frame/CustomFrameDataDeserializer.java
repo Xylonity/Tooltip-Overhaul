@@ -47,6 +47,8 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<String> iconAppearAnimation = parseString(entry, "iconAppearAnimation");
         Optional<Integer> secondPanelX = parseInt(entry, "secondPanelX");
         Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
+        Optional<Integer> secondPanelSizeX = parseInt(entry, "secondPanelSizeX");
+        Optional<Integer> secondPanelSizeY = parseInt(entry, "secondPanelSizeY");
         Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");
         Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
         Optional<String> dividerLineType = parseString(entry, "dividerLineType");
@@ -95,6 +97,8 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 iconAppearAnimation,
                 secondPanelX,
                 secondPanelY,
+                secondPanelSizeX,
+                secondPanelSizeY,
                 secondPanelRendererSize,
                 secondPanelRendererSpeed,
                 dividerLineType,

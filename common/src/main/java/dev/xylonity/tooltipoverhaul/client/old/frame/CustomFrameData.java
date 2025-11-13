@@ -10,9 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,6 +45,8 @@ public record CustomFrameData(
         Optional<String> iconAppearAnimation,
         Optional<Integer> secondPanelX,
         Optional<Integer> secondPanelY,
+        Optional<Integer> secondPanelSizeX,
+        Optional<Integer> secondPanelSizeY,
         Optional<Float> secondPanelRendererSize,
         Optional<Float> secondPanelRendererSpeed,
         Optional<String> dividerLineType,
@@ -193,6 +193,14 @@ public record CustomFrameData(
         return secondPanelY.orElse(TooltipsConfig.SECOND_PANEL_Y);
     }
 
+    public int getSecondPanelSizeX() {
+        return secondPanelSizeX.orElse(TooltipsConfig.SECOND_PANEL_SIZE_X);
+    }
+
+    public int getSecondPanelSizeY() {
+        return secondPanelSizeY.orElse(TooltipsConfig.SECOND_PANEL_SIZE_Y);
+    }
+
     public String getRatingAlignment() {
         return ratingAlignment.orElse(TooltipsConfig.RATING_X_ALIGNMENT);
     }
@@ -285,8 +293,15 @@ public record CustomFrameData(
         return disableIcon.isPresent() && disableIcon.get();
     }
 
-    public boolean shouldShowSecondPanel() {
-        return showSecondPanel.isPresent() && showSecondPanel.get();
+    public boolean shouldShowSecondPanel(TooltipContext context) {
+        if (context.getStack().getItem() instanceof TieredItem && showSecondPanel.orElse(TooltipsConfig.TIERED_ITEMS_RENDERER)) {
+            return true;
+        }
+        else if (context.getStack().getItem() instanceof ArmorItem && showSecondPanel.orElse(TooltipsConfig.ARMOR_ITEMS_RENDERER)) {
+            return true;
+        }
+
+        return false;
     }
 
     public boolean hasCustomColorItemRating() {

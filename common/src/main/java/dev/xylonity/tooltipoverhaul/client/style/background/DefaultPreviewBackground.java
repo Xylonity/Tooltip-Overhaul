@@ -3,18 +3,21 @@ package dev.xylonity.tooltipoverhaul.client.style.background;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.BackgroundLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
+import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
+import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.world.phys.Vec2;
 
-import java.awt.*;
-
-public class DefaultBackground implements BackgroundLayer {
+public class DefaultPreviewBackground implements BackgroundLayer {
 
     @Override
     public void render(TooltipContext context, Vec2 position) {
-        int x0 = (int) (position.x - 3);
+        int sizeX = RenderUtils.calculateSecondPanelSize(context, TextAxis.X);
+        int sizeY = RenderUtils.calculateSecondPanelSize(context, TextAxis.Y);
+        int x0 = (int) (position.x - sizeX - 15 - 9);
         int y0 = (int) (position.y - 2);
-        int x1 = (int) (position.x + context.getTooltipSize().x + 2);
-        int y1 = (int) (position.y + context.getTooltipSize().y + 2);
+        int x1 = (int) (position.x - 15 - 9);
+        int y1 = (int) (position.y + sizeY);
 
         int backgroundColor = ColorUtils.getBackgroundColor(context);
 

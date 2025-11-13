@@ -44,6 +44,16 @@ public final class TooltipsConfig {
     public static int SECOND_PANEL_Y = 0;
 
     @ConfigEntry(
+            comment = "Size (in pixels) of the second panel in the X axis when a 3D preview is shown."
+    )
+    public static int SECOND_PANEL_SIZE_X = 0;
+
+    @ConfigEntry(
+            comment = "Size (in pixels) of the second panel in the Y axis when a 3D preview is shown."
+    )
+    public static int SECOND_PANEL_SIZE_Y = 0;
+
+    @ConfigEntry(
             comment = "Horizontal offset (in pixels) for the tooltip. Negative = left, positive = right."
     )
     public static int TOOLTIP_POSITION_X = 0;
@@ -59,9 +69,9 @@ public final class TooltipsConfig {
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
 
     @ConfigEntry(
-            comment = "Default tooltip background color in ARGB format (0xAARRGGBB). Example: 0xF0010110."
+            comment = "Default tooltip background color in ARGB format (#AARRGGBB). Example: #F0010110."
     )
-    public static int DEFAULT_BACKGROUND_COLOR = 0xF0000000;
+    public static String DEFAULT_BACKGROUND_COLOR = "#F0000000";
 
     @ConfigEntry(
             comment = "Override vanilla tooltips even when no ItemStack is present (e.g., JEI category buttons or unsupported stacks). "

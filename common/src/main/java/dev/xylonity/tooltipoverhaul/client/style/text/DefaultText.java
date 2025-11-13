@@ -80,7 +80,14 @@ public class DefaultText implements TextLayer {
         }
 
         if (hasDividerLine && components.size() > 1) {
-            y += Constants.DIVIDER_LINE_FULL_PADDING;
+            if (hasIcon) {
+                y += Constants.DIVIDER_LINE_FULL_PADDING;
+            }
+            else {
+
+            }
+
+
         }
 
         int contentStartY = y;

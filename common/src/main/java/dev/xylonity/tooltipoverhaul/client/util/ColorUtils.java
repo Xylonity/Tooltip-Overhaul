@@ -1,6 +1,5 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
-import com.google.common.collect.Lists;
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
@@ -10,13 +9,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 public class ColorUtils {
 
     public static int getDividerLineColor(TooltipContext context) {
         return parseDividerLineColor(Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineColor).orElse(TooltipsConfig.DIVIDER_LINE_COLOR), context);
+    }
+
+    public static int getBackgroundColor(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBackgroundColor).orElse(Palette.PANEL_BG);
     }
 
     public static int[] getInnerOverlayColors(TooltipContext context) {

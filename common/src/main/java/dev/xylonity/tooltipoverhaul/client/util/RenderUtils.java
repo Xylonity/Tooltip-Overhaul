@@ -12,8 +12,10 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
@@ -36,6 +38,25 @@ public class RenderUtils {
 
     public static boolean hasShadow(TooltipContext context) {
         return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowShadow).orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
+    }
+
+    public static boolean hasPreview(TooltipContext context) {
+        if (context.getStack().getItem() instanceof TieredItem) {
+            return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.TIERED_ITEMS_RENDERER);
+        }
+        else if (context.getStack().getItem() instanceof ArmorItem) {
+            return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.ARMOR_ITEMS_RENDERER);
+        }
+
+        return false;
+    }
+
+    public static int calculateSecondPanelSize(TooltipContext context, TextAxis axis) {
+        if (axis == TextAxis.X) {
+            return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getSecondPanelSizeX).orElse(TooltipsConfig.SECOND_PANEL_SIZE_X);
+        }
+
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getSecondPanelSizeY).orElse(TooltipsConfig.SECOND_PANEL_SIZE_Y);
     }
 
     public static String getIconAppearAnimation(TooltipContext context) {
