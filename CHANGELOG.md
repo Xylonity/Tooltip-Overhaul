@@ -3,6 +3,7 @@
 - All alignment errors have been fixed. Now the tooltip components adapt perfectly to its proportions when certain components are removed or moved.
 - The misalignment of the scrolling functionality has been fixed, and now when scrolling, the letters are cut off, unlike before, when the lines simply disappeared.
 - The entire code base has been optimized, greatly reducing computational power, so now the mod is more performant and lighter.
+- Added a new type of style, vignette.
 - Added 7 new effects: magic_orbs, echo, speed_lines, galaxy, nebula, spiral, white_dust
 - Added a config option to change the default position of the main tooltip
 - Added a new type of icon background: "glow". It's dynamic, thus matching the inner frame color

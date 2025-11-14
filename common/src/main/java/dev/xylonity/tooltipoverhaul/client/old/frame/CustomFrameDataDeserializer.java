@@ -58,6 +58,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
 
         Optional<String> particles = parseString(entry, "particles");
         Optional<String> specialEffect = parseString(entry, "specialEffect");
+        List<String> vignettes = parseStringList(entry, "vignettes");
 
         Optional<String> iconBackgroundType = parseString(entry, "iconBackgroundType");
 
@@ -109,6 +110,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 dividerLineColor,
                 particles,
                 specialEffect,
+                vignettes,
                 iconBackgroundType,
                 showSecondPanel,
                 showRating,

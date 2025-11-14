@@ -7,6 +7,7 @@ import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.divider.StaticDividerLine;
+import dev.xylonity.tooltipoverhaul.client.style.effect.NebulaEffect;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.icon.background.*;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
@@ -14,9 +15,12 @@ import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
+import dev.xylonity.tooltipoverhaul.client.style.vignette.CircularVignette;
+import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +66,24 @@ public class StyleFactory {
             default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
         }
 
+        // Vignette effects
+        boolean hasVignette = RenderUtils.hasVignette(context);
+        if (hasVignette) {
+            List<String> rawVignetteEntries = context.getFrameData().vignettes();
+            if (!rawVignetteEntries.isEmpty()) {
+                StringBuilder rawKeys = new StringBuilder();
+                for (String rawVignette : rawVignetteEntries) {
+                    rawKeys.append(rawVignette).append(",");
+                }
+
+                parseVignetteEntries(rawKeys.toString(), layers);
+            }
+            else {
+                parseVignetteEntries(TooltipsConfig.VIGNETTES, layers);
+            }
+
+        }
+
         return layers;
     }
 
@@ -77,6 +99,12 @@ public class StyleFactory {
             case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
             case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
             default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
+        }
+
+        // Vignette effects
+        boolean hasVignette = RenderUtils.hasVignette(context);
+        if (hasVignette) {
+            parseVignetteEntries(TooltipsConfig.VIGNETTES, layers);
         }
 
         return layers;
@@ -120,6 +148,16 @@ public class StyleFactory {
         }
 
         layers.add(new DefaultOverlay());
+
+    }
+
+    private void parseVignetteEntries(String key, List<ITooltipLayer> layers) {
+        List<VignetteEntry> vignetteEntries = VignetteEntry.Parser.from(TooltipsConfig.VIGNETTES);
+        for (VignetteEntry entry : vignetteEntries) {
+            switch (entry.type()) {
+                case "circular" -> layers.add(new CircularVignette(entry));
+            }
+        }
 
     }
 

@@ -12,6 +12,7 @@ public enum LayerDepth {
     DIVIDER_LINE(2500),
     INNER_FRAME(3000),
     EFFECT(3500),
+    VIGNETTE(3550),
     OVERLAY(7500);
 
     private final int z;

@@ -40,6 +40,10 @@ public class RenderUtils {
         return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowShadow).orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
     }
 
+    public static boolean hasVignette(TooltipContext context) {
+        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(TooltipsConfig.VIGNETTES.isBlank());
+    }
+
     public static boolean hasPreview(TooltipContext context) {
         if (context.getStack().getItem() instanceof TieredItem) {
             return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.TIERED_ITEMS_RENDERER);

@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client.util;
 
 import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 
 import java.util.Optional;
@@ -22,6 +23,25 @@ public class PositionUtils {
 
     public static int getDividerLineBottomPadding(TooltipContext context) {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineBottomPadding).orElse(TooltipsConfig.DIVIDER_LINE_BOTTOM_PADDING);
+    }
+
+    public static int getVignettePosition(TooltipContext context, VignetteEntry vignetteEntry, TextAxis axis) {
+        int tooltipWidth = (int) context.getTooltipSize().x;
+        int tooltipHeight = (int) context.getTooltipSize().y;
+        if (axis == TextAxis.X) {
+            return (int) switch (vignetteEntry.position()) {
+                case "middle", "top_middle", "bottom_middle" -> tooltipWidth * 0.5;
+                case "right", "top_right", "bottom_right" -> tooltipWidth;
+                default -> 0;
+            };
+
+        }
+
+        return (int) switch (vignetteEntry.position()) {
+            case "left", "middle", "right" -> tooltipHeight * 0.5;
+            case "bottom_left", "bottom_middle", "bottom_right" -> tooltipHeight;
+            default -> 0;
+        };
     }
 
 }

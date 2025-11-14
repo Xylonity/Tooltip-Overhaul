@@ -171,6 +171,22 @@ public final class TooltipsConfig {
     public static boolean SHOW_TOOLTIP_SHADOW = false;
 
     @ConfigEntry(
+            comment = "Vignette entries for gradient overlays around the tooltip background. " +
+                    "Each vignette must be written in parentheses in this exact order: " +
+                    "(type, position, color, radius, overText, extraPositionX, extraPositionY). " +
+                    "Example: (circular, top_left, #FF567823, 0.4, true, 0, 0). " +
+                    "You can define multiple vignettes by separating them with commas: " +
+                    "(...), (...), (...). " +
+                    "type = vignette shape (options: circular). position = anchor on the tooltip " +
+                    "(e.g. top_left, top_right, middle, right, bottom_left). color = ARGB hex in #AARRGGBB. " +
+                    "radius = relative size factor (e.g. radius 0.4). " +
+                    "overText = whether this vignette is rendered over the tooltip contents (true) " +
+                    "or behind them (false). extraPositionX / extraPositionY = additional pixel offset " +
+                    "from the chosen position."
+    )
+    public static String VIGNETTES = "";
+
+    @ConfigEntry(
             comment = "Animation style for the icon appearance."
     )
     public static String ICON_APPEAR_ANIMATION = "skew";

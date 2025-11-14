@@ -42,6 +42,10 @@ public class ColorUtils {
         return colors;
     }
 
+    public static int alpha(int argb) {
+        return (argb >>> 24) & 0xFF;
+    }
+
     public static int red(int argb) {
         return (argb >>> 16) & 0xFF;
     }
@@ -52,10 +56,6 @@ public class ColorUtils {
 
     public static int blue(int argb) {
         return argb & 0xFF;
-    }
-
-    public static int alpha(int argb) {
-        return (argb >>> 24) & 0xFF;
     }
 
     private static int parseDividerLineColor(String matcher, TooltipContext context) {

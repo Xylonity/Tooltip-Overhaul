@@ -55,6 +55,7 @@ public record CustomFrameData(
         Optional<String> dividerLineColor,
         Optional<String> particles,
         Optional<String> specialEffect,
+        List<String> vignettes,
         Optional<String> iconBackgroundType,
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
@@ -132,6 +133,10 @@ public record CustomFrameData(
 
     public String getIconBackground() {
         return iconBackgroundType.orElse(TooltipsConfig.ICON_BACKGROUND_TYPE);
+    }
+
+    public boolean hasVignette() {
+        return !vignettes.isEmpty();
     }
 
     public float getIconRotatingSpeed() {
