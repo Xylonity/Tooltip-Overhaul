@@ -152,7 +152,7 @@ public class StyleFactory {
     }
 
     private void parseVignetteEntries(String key, List<ITooltipLayer> layers) {
-        List<VignetteEntry> vignetteEntries = VignetteEntry.Parser.from(TooltipsConfig.VIGNETTES);
+        List<VignetteEntry> vignetteEntries = VignetteEntry.Parser.from(key);
         for (VignetteEntry entry : vignetteEntries) {
             switch (entry.type()) {
                 case "circular" -> layers.add(new CircularVignette(entry));
