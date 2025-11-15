@@ -1,6 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;

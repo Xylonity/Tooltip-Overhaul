@@ -1,13 +1,12 @@
 package dev.xylonity.tooltipoverhaul.client.style;
 
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.divider.StaticDividerLine;
-import dev.xylonity.tooltipoverhaul.client.style.effect.NebulaEffect;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.icon.background.*;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;

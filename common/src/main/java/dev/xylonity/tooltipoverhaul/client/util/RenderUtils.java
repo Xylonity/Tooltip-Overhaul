@@ -1,7 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
 import com.mojang.blaze3d.platform.Lighting;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.CrashReport;

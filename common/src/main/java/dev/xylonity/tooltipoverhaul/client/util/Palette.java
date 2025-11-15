@@ -1,7 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 
 /**

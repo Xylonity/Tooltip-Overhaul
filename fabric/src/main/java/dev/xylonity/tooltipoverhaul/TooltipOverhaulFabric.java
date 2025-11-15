@@ -3,7 +3,7 @@ package dev.xylonity.tooltipoverhaul;
 import dev.xylonity.tooltipoverhaul.client.event.TooltipOverhaulClientEvents;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;

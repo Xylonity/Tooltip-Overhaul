@@ -1,4 +1,4 @@
-package dev.xylonity.tooltipoverhaul.client.old.frame;
+package dev.xylonity.tooltipoverhaul.client.frame;
 
 import java.util.List;
 import java.util.Objects;

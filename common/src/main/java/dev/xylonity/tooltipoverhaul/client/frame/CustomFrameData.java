@@ -1,11 +1,10 @@
-package dev.xylonity.tooltipoverhaul.client.old.frame;
+package dev.xylonity.tooltipoverhaul.client.frame;
 
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
-import dev.xylonity.tooltipoverhaul.util.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -112,7 +111,7 @@ public record CustomFrameData(
     }
 
     public String getItemRating(ItemStack stack) {
-        return itemRating.filter(rating -> !rating.trim().isEmpty()).orElse(Util.getDefaultRarity(stack).getString());
+        return itemRating.filter(rating -> !rating.trim().isEmpty()).orElse("W");
     }
 
     public int getItemRatingColor(TooltipContext context) {
@@ -224,10 +223,6 @@ public record CustomFrameData(
     public String getTitleAlignment() {
         return titleAlignment.orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
     }
-
-    //public String getParticles() {
-    //    return particles.filter(p -> !p.trim().isEmpty()).orElse(Defaults.PARTICLES);
-    //}
 
     public float getIconSize() {
         return iconSize.orElse(TooltipsConfig.ICON_SIZE);

@@ -1,7 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
 import com.google.common.collect.Lists;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;

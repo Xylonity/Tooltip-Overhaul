@@ -6,8 +6,8 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipPositionCalculator;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipSizeCalculator;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameData;
-import dev.xylonity.tooltipoverhaul.client.old.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.client.style.StyleFactory;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
@@ -21,7 +21,6 @@ import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.List;
 
 /**

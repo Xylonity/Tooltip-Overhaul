@@ -1,4 +1,4 @@
-package dev.xylonity.tooltipoverhaul.client.old.frame;
+package dev.xylonity.tooltipoverhaul.client.frame;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
