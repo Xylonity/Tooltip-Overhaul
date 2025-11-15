@@ -1,11 +1,13 @@
 package dev.xylonity.tooltipoverhaul;
 
 import dev.xylonity.tooltipoverhaul.client.event.TooltipOverhaulClientEvents;
+import dev.xylonity.tooltipoverhaul.client.command.ReloadCommand;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
@@ -26,6 +28,10 @@ public class TooltipOverhaulFabric implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             CustomFrameManager.initialize();
         });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, context, selection) ->
+                ReloadCommand.register(dispatcher)
+        );
 
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
                 new SimpleSynchronousResourceReloadListener() {

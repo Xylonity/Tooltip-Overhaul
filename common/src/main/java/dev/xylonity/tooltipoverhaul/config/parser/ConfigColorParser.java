@@ -49,7 +49,8 @@ public class ConfigColorParser {
             value |= 0xFF00_0000L;
         }
         else if (length != 8) {
-            throw new IllegalArgumentException("Hex length must be 6 or 8: " + rawHex);
+            return 0xFFFFFFFF;
+            //throw new IllegalArgumentException("Hex length must be 6 or 8: " + rawHex);
         }
 
         return (int) (value & 0xFFFF_FFFFL);
