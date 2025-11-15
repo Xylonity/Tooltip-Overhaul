@@ -15,6 +15,7 @@ import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
+import dev.xylonity.tooltipoverhaul.client.style.vignette.CircularHoleVignette;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.CircularVignette;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
@@ -156,6 +157,7 @@ public class StyleFactory {
         for (VignetteEntry entry : vignetteEntries) {
             switch (entry.type()) {
                 case "circular" -> layers.add(new CircularVignette(entry));
+                case "hole" -> layers.add(new CircularHoleVignette(entry));
             }
         }
 

@@ -177,7 +177,7 @@ public final class TooltipsConfig {
                     "Example: (circular, top_left, #FF567823, 0.4, true, 0, 0). " +
                     "You can define multiple vignettes by separating them with commas: " +
                     "(...), (...), (...). " +
-                    "type = vignette shape (options: circular). position = anchor on the tooltip " +
+                    "type = vignette shape (options: circular, hole). position = anchor on the tooltip " +
                     "(e.g. top_left, top_right, middle, right, bottom_left). color = ARGB hex in #AARRGGBB. " +
                     "radius = relative size factor (e.g. radius 0.4). " +
                     "overText = whether this vignette is rendered over the tooltip contents (true) " +
