@@ -4,7 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
-import dev.xylonity.tooltipoverhaul.client.style.background.DefaultPreviewBackground;
+import dev.xylonity.tooltipoverhaul.client.style.preview.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.divider.StaticDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
@@ -12,6 +12,8 @@ import dev.xylonity.tooltipoverhaul.client.style.icon.background.*;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.preview.inner.DefaultPreviewGradientInnerOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewStackRenderer;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.CircularHoleVignette;
@@ -56,10 +58,10 @@ public class StyleFactory {
 
         List<ITooltipLayer> layers = new ArrayList<>();
 
-        assignDefaultLayers(context, layers);
+        int[] colors = ColorUtils.getInnerOverlayColors(context);
+        assignDefaultLayers(context, layers, colors);
 
         // Inner overlay
-        int[] colors = ColorUtils.getInnerOverlayColors(context);
         switch (RenderUtils.getInnerOverlayType(context)) {
             case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
             case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
@@ -91,10 +93,10 @@ public class StyleFactory {
 
         List<ITooltipLayer> layers = new ArrayList<>();
 
-        assignDefaultLayers(context, layers);
+        int[] colors = ColorUtils.getColorsPerRarity(context);
+        assignDefaultLayers(context, layers, colors);
 
         // Inner overlay
-        int[] colors = ColorUtils.getColorsPerRarity(context);
         switch (RenderUtils.getInnerOverlayType(context)) {
             case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
             case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
@@ -110,7 +112,7 @@ public class StyleFactory {
         return layers;
     }
 
-    private void assignDefaultLayers(TooltipContext context, List<ITooltipLayer> layers) {
+    private void assignDefaultLayers(TooltipContext context, List<ITooltipLayer> layers, int[] colors) {
 
         layers.add(new DefaultBackground());
         layers.add(new DefaultText());
@@ -145,6 +147,8 @@ public class StyleFactory {
 
         if (RenderUtils.hasPreview(context)) {
             layers.add(new DefaultPreviewBackground());
+            layers.add(new DefaultPreviewStackRenderer());
+            layers.add(new DefaultPreviewGradientInnerOverlay(colors[0], colors[1], colors[2]));
         }
 
         layers.add(new DefaultOverlay());

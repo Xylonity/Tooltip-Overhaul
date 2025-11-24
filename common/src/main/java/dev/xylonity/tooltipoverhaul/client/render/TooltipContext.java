@@ -50,6 +50,7 @@ public class TooltipContext {
     private final boolean isEmptyTooltip;
     private final boolean hasIcon;
     private final boolean hasDividerLine;
+    private final boolean hasPreview;
 
     private final int paddingX;
     private final int paddingY;
@@ -81,6 +82,7 @@ public class TooltipContext {
         this.positionCalculator = new TooltipPositionCalculator(this);
         this.sizeCalculator = new TooltipSizeCalculator(this);
         this.layers = new StyleFactory().create(this, frameData);
+        this.hasPreview = RenderUtils.hasPreview(this);
     }
 
     public GuiGraphics getGraphics() {
@@ -165,6 +167,10 @@ public class TooltipContext {
 
     public boolean hasDividerLine() {
         return hasDividerLine;
+    }
+
+    public boolean hasPreview() {
+        return hasPreview;
     }
 
     public long getStartTime() {

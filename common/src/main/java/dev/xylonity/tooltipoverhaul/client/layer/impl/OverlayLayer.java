@@ -9,12 +9,16 @@ public interface OverlayLayer extends ITooltipLayer {
     @Override
     default void renderInternal(TooltipContext context) {
         context.push(() -> {
-            LayerDepth layerDepth = LayerDepth.OVERLAY;
-            context.translate(0, 0, layerDepth.getZ());
-            context.setLayerDepth(layerDepth);
+            context.translate(0, 0, getLayerDepth().getZ());
+            context.setLayerDepth(getLayerDepth());
             render(context, context.getTooltipPosition());
         });
 
+    }
+
+    @Override
+    default LayerDepth getLayerDepth() {
+        return LayerDepth.OVERLAY;
     }
 
 }

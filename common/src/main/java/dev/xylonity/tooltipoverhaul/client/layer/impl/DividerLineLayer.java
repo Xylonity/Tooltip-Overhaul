@@ -15,9 +15,8 @@ public interface DividerLineLayer extends ITooltipLayer {
     @Override
     default void renderInternal(TooltipContext context) {
         context.push(() -> {
-            LayerDepth layerDepth = LayerDepth.DIVIDER_LINE;
-            context.translate(0, 0, layerDepth.getZ());
-            context.setLayerDepth(layerDepth);
+            context.translate(0, 0, getLayerDepth().getZ());
+            context.setLayerDepth(getLayerDepth());
 
             boolean hasIcon = context.hasIcon();
             boolean hasRating = RenderUtils.hasRating(context);
@@ -50,6 +49,11 @@ public interface DividerLineLayer extends ITooltipLayer {
             render(context, new Vec2(x, y));
         });
 
+    }
+
+    @Override
+    default LayerDepth getLayerDepth() {
+        return LayerDepth.DIVIDER_LINE;
     }
 
 }

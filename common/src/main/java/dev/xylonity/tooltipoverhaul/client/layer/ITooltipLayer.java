@@ -8,7 +8,11 @@ import java.awt.*;
 @FunctionalInterface
 public interface ITooltipLayer {
 
-    void render(TooltipContext context, Vec2 position);
+    LayerDepth getLayerDepth();
+
+    default void render(TooltipContext context, Vec2 position) {
+        ;;
+    }
 
     default void renderInternal(TooltipContext context) {
         render(context, context.getTooltipPosition());

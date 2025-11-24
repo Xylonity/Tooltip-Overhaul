@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.Mod;
 public class TooltipOverhaulClientEvents {
 
     @Mod.EventBusSubscriber(modid = TooltipOverhaul.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-    public static class TooltipOverhaulClientModEvents {
+    public static class TooltipOverhaulClientForgeEvents {
 
         @SubscribeEvent
         public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
@@ -22,7 +22,7 @@ public class TooltipOverhaulClientEvents {
     }
 
     @Mod.EventBusSubscriber(modid = TooltipOverhaul.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class TooltipOverhaulClientGameEvents {
+    public static class TooltipOverhaulClientModEvents {
 
         @SubscribeEvent
         public static void registerKeyMappingsEvent(RegisterKeyMappingsEvent event) {
