@@ -28,7 +28,7 @@ public class DefaultPreviewStackRenderer implements PreviewRendererLayer {
 
         context.multiply(Axis.ZP, -45);
 
-        float scale = Math.min(sizeX / 5f, sizeY / 5f) / 2.5f;
+        float scale = Math.min(sizeX / 5f, sizeY / 10f) / 2.5f;
 
         context.scale(scale, scale, scale);
 

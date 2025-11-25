@@ -15,13 +15,14 @@
 - Added a config option to change the size of the second panel (preview panel)
 - Added a config option to change the position of the main panel
 - Added a config option to enable drop shadow in tooltips.
+- Now the preview panel correctly repositions itself if there is no sufficient space at the left of the tooltip. This is configurable
 - Fixed alignment issues with tooltip positions when moving the cursor across the screen, including alignment issues and certain size miscalculations when using the equipment comparison feature
 - Fixed overlay textures not adapting correctly to the tooltip proportions when using a modified padding
-- Fixed background color config option not parsing the color correctly, thus matching an incorrect hex code. No using text instead of numbers (e.g. -684233 -> "#FFFFFF") 
-+ Preview panel renderer rotating anchor point is now correctly positioned.
-+ Now the size of the preview panel renderer adapts automatically to the bounds of the panel
+- Fixed background color config option not parsing the color correctly, thus matching an incorrect hex code. Now using text instead of numbers (e.g. -684233 -> "#FFFFFF") 
+- Preview panel renderer rotating anchor point is now correctly positioned.
+- Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
 + Added 6 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png
-+ Added a new type of divider line: static. The divider line type is now configurable
+- Added a new type of divider line: static. The divider line type is now configurable
 + Fixed inner frame colors not adapting correctly to the stack's information
 
 # 1.3.0

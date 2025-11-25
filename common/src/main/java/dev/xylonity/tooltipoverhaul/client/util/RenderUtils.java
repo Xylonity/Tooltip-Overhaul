@@ -47,20 +47,32 @@ public class RenderUtils {
         return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(TooltipsConfig.VIGNETTES.isBlank());
     }
 
-    public static boolean hasPreview(TooltipContext context) {
-        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue());
-        if (isKeyDown && context.getOtherTooltipContext() != null) {
+    public static boolean hasPreviewOfTieredItem(TooltipContext context) {
+        if (isComparisonActive(context)) {
             return false;
         }
-        
+
         if (context.getStack().getItem() instanceof TieredItem) {
             return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.TIERED_ITEMS_RENDERER);
         }
-        else if (context.getStack().getItem() instanceof ArmorItem) {
+
+        return false;
+    }
+
+    public static boolean hasPreviewOfArmorItem(TooltipContext context) {
+        if (isComparisonActive(context)) {
+            return false;
+        }
+
+        if (context.getStack().getItem() instanceof ArmorItem) {
             return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.ARMOR_ITEMS_RENDERER);
         }
 
         return false;
+    }
+
+    private static boolean isComparisonActive(TooltipContext context) {
+        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue()) && context.getOtherTooltipContext() != null;
     }
 
     public static int calculateSecondPanelSize(TooltipContext context, TextAxis axis) {

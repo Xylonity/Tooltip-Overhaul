@@ -13,6 +13,7 @@ import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.preview.inner.DefaultPreviewGradientInnerOverlay;
+import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewArmorStand;
 import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewStackRenderer;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
@@ -145,10 +146,19 @@ public class StyleFactory {
 
         }
 
-        if (RenderUtils.hasPreview(context)) {
+        boolean hasPreviewOfTieredItem = RenderUtils.hasPreviewOfTieredItem(context);
+        boolean hasPreviewOfArmorItem = RenderUtils.hasPreviewOfArmorItem(context);
+        if (hasPreviewOfTieredItem || hasPreviewOfArmorItem) {
             layers.add(new DefaultPreviewBackground());
-            layers.add(new DefaultPreviewStackRenderer());
             layers.add(new DefaultPreviewGradientInnerOverlay(colors[0], colors[1], colors[2]));
+
+            if (hasPreviewOfTieredItem) {
+                layers.add(new DefaultPreviewStackRenderer());
+            }
+            else {
+                layers.add(new DefaultPreviewArmorStand());
+            }
+
         }
 
         layers.add(new DefaultOverlay());
