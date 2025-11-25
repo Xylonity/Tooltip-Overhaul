@@ -8,7 +8,6 @@ import dev.xylonity.tooltipoverhaul.client.layout.TooltipPositionCalculator;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipSizeCalculator;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
-import dev.xylonity.tooltipoverhaul.client.style.StyleFactory;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
 import net.minecraft.client.gui.Font;
@@ -43,7 +42,7 @@ public class TooltipContext {
     private Vec2 tooltipPosition;
     private LayerDepth layerDepth;
 
-    private final List<ITooltipLayer> layers;
+    private List<ITooltipLayer> layers;
     private final @Nullable CustomFrameData frameData;
 
     private final boolean isMainTooltip;
@@ -81,7 +80,6 @@ public class TooltipContext {
         this.paddingY = RenderUtils.calculatePadding(this, TextAxis.Y);
         this.positionCalculator = new TooltipPositionCalculator(this);
         this.sizeCalculator = new TooltipSizeCalculator(this);
-        this.layers = new StyleFactory().create(this, frameData);
         this.hasPreview = RenderUtils.hasPreview(this);
     }
 
@@ -151,6 +149,10 @@ public class TooltipContext {
 
     public Vec2 getTooltipPosition() {
         return tooltipPosition;
+    }
+
+    public void setTooltipLayers(List<ITooltipLayer> layers) {
+        this.layers = layers;
     }
 
     public List<ITooltipLayer> getTooltipLayers() {

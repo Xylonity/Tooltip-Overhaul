@@ -110,9 +110,31 @@ public class TooltipPositionCalculator {
                 }
             }
 
+            if (otherContext != null && !otherContext.isMainTooltip()) {
+                int equippedHeight = otherContextSize != null ? (int) otherContextSize.y : 0;
+                float equippedPosY = mouseY - 12;
+
+                // Checks if the equipped tooltip would be clamped at the bottom
+                boolean equippedClampedAtBottom = equippedPosY + equippedHeight + paddingY > screenHeight;
+                // Checks if the equipped tooltip would be clamped at the top
+                boolean equippedClampedAtTop = equippedPosY < paddingY;
+
+                if (equippedClampedAtBottom || equippedClampedAtTop) {
+                    // Using the same Y position as the equipped tooltip will have after clamping
+                    if (equippedClampedAtBottom) {
+                        newPosition = new Vec2(newPosition.x, screenHeight - equippedHeight - paddingY);
+                    }
+                    else {
+                        newPosition = new Vec2(newPosition.x, paddingY);
+                    }
+
+                }
+
+            }
+
             // Vertically aligns the tooltip under a certain margin. That is, if the main tooltip is too high or too
-            // low, the equipable tooltip is aligned with respect to the margins of the screen
-            int margin = 60;
+            // low, the equippable tooltip is aligned with respect to the margins of the screen
+            int margin = 100;
             if (otherContextPosition != null && otherContextSize != null) {
                 if (posY != otherContextPosition.y) {
                     int difference = (int) (posY - otherContextPosition.y);
@@ -150,8 +172,8 @@ public class TooltipPositionCalculator {
             }
 
             // Vertically aligns the tooltip under a certain margin. That is, if the main tooltip is too high or too
-            // low, the equipable tooltip is aligned with respect to the margins of the screen
-            int margin = 60;
+            // low, the equippable tooltip is aligned with respect to the margins of the screen
+            int margin = 100;
             if (otherContextPosition != null && otherContextSize != null) {
                 if (posY != otherContextPosition.y) {
                     int difference = (int) (posY - otherContextPosition.y);
@@ -165,6 +187,19 @@ public class TooltipPositionCalculator {
 
             }
 
+            float finalY = newPosition.y;
+
+            // If it exceeds the bottom border, clamps to bottom
+            if (finalY + tooltipHeight + paddingY > screenHeight) {
+                finalY = screenHeight - tooltipHeight - paddingY;
+            }
+
+            // If it exceeds the top border, clamps to the top
+            if (finalY < paddingY) {
+                finalY = paddingY;
+            }
+
+            newPosition = new Vec2(newPosition.x, finalY);
         }
 
         return newPosition;

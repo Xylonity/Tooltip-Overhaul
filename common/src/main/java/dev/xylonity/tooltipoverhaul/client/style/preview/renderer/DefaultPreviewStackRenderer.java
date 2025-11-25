@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client.style.preview.renderer;
 
 import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.IconLayer;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.PreviewRendererLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
@@ -9,17 +10,17 @@ import dev.xylonity.tooltipoverhaul.compat.modernfix.ModernFixCompat;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec2;
 
-public class DefaultPreviewStackRenderer implements IconLayer {
+public class DefaultPreviewStackRenderer implements PreviewRendererLayer {
 
     @Override
-    public void render(TooltipContext context, Vec2 position) {
+    public void render(TooltipContext context, Vec2 startPosition, Vec2 endPosition) {
 
         int sizeX = RenderUtils.calculateSecondPanelSize(context, TextAxis.X);
         int sizeY = RenderUtils.calculateSecondPanelSize(context, TextAxis.Y);
-        int x0 = (int) (position.x - 22);
-        int y0 = (int) (position.y - 2);
-        int x1 = (int) (position.x - 26 - sizeX);
-        int y1 = (int) (position.y + sizeY);
+        int x0 = (int) startPosition.x;
+        int y0 = (int) startPosition.y;
+        int x1 = (int) endPosition.x;
+        int y1 = (int) endPosition.y;
 
         context.translate((x1 + sizeX / 2f + 2), (y0 + sizeY / 2f) + 2, 0);
 

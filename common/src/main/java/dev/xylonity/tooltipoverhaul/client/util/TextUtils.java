@@ -30,7 +30,10 @@ public class TextUtils {
         for (Component originalComponentLine : originalComponentLines) {
             List<FormattedCharSequence> wrappedLines = font.split(originalComponentLine, Math.max((int)(screenWidth / screenSplit), 200));
 
-            if (wrappedLines.size() == 1) {
+            if (wrappedLines.isEmpty()) {
+                componentList.add(ClientTooltipComponent.create(FormattedCharSequence.EMPTY));
+            }
+            else if (wrappedLines.size() == 1) {
                 componentList.add(ClientTooltipComponent.create(originalComponentLine.getVisualOrderText()));
             }
             else {

@@ -46,12 +46,18 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Size (in pixels) of the second panel in the X axis when a 3D preview is shown."
     )
-    public static int SECOND_PANEL_SIZE_X = 0;
+    public static int SECOND_PANEL_SIZE_X = 30;
 
     @ConfigEntry(
             comment = "Size (in pixels) of the second panel in the Y axis when a 3D preview is shown."
     )
-    public static int SECOND_PANEL_SIZE_Y = 0;
+    public static int SECOND_PANEL_SIZE_Y = 60;
+
+    @ConfigEntry(
+            comment = "Automatically reposition the preview panel (second panel) to the right side when there " +
+                    "is insufficient space on the left. If set to false, the panel will always remain on the left."
+    )
+    public static boolean AUTO_REPOSITION_PREVIEW_PANEL = true;
 
     @ConfigEntry(
             comment = "Horizontal offset (in pixels) for the tooltip. Negative = left, positive = right."

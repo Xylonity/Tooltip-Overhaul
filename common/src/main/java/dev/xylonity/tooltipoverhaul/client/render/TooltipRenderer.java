@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.render;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipPositionCalculator;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipSizeCalculator;
+import dev.xylonity.tooltipoverhaul.client.style.StyleFactory;
 import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
 import net.minecraft.world.phys.Vec2;
 
@@ -23,6 +24,9 @@ public class TooltipRenderer {
         if (context == null) return;
 
         if (context.getComponents().isEmpty()) return;
+
+        // The style is computed here so the context knows if its context pair already exists
+        context.setTooltipLayers(new StyleFactory().create(context, context.getFrameData()));
 
         TooltipSizeCalculator sizeCalculator = context.getSizeCalculator();
         TooltipPositionCalculator positionCalculator = context.getPositionCalculator();

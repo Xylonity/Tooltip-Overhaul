@@ -1,9 +1,12 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Lighting;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.mixin.KeyMappingAccessor;
+import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -45,6 +48,11 @@ public class RenderUtils {
     }
 
     public static boolean hasPreview(TooltipContext context) {
+        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue());
+        if (isKeyDown && context.getOtherTooltipContext() != null) {
+            return false;
+        }
+        
         if (context.getStack().getItem() instanceof TieredItem) {
             return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.TIERED_ITEMS_RENDERER);
         }
