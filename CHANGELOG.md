@@ -21,7 +21,7 @@
 - Fixed background color config option not parsing the color correctly, thus matching an incorrect hex code. Now using text instead of numbers (e.g. -684233 -> "#FFFFFF") 
 - Preview panel renderer rotating anchor point is now correctly positioned.
 - Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
-+ Added 6 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png
+- Added 8 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png, neon_fire_frame.png, garden_frame.png, construction_punk_frame.png, cavemen_frame.png, nuclear_alarm_frame.png
 - Added a new type of divider line: static. The divider line type is now configurable
 + Fixed inner frame colors not adapting correctly to the stack's information
 

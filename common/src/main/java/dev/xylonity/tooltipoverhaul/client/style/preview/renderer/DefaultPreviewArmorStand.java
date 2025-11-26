@@ -23,10 +23,8 @@ public class DefaultPreviewArmorStand implements PreviewRendererLayer {
 
         int sizeX = RenderUtils.calculateSecondPanelSize(context, TextAxis.X);
         int sizeY = RenderUtils.calculateSecondPanelSize(context, TextAxis.Y);
-        int x0 = (int) startPosition.x;
         int y0 = (int) startPosition.y;
         int x1 = (int) endPosition.x;
-        int y1 = (int) endPosition.y;
 
         context.translate((x1 + sizeX / 2f + 2), (y0 + sizeY / 1.15f) + 2, 0);
 
