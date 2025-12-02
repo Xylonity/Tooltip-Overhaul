@@ -4,16 +4,16 @@ package dev.xylonity.tooltipoverhaul.client.layer;
  * Defines multiple predefined locations along the Z-Axis to blit things into. Per priority order
  */
 public enum LayerDepth {
-    SHADOW(450),
-    BACKGROUND(500),
-    TEXT(1000),
-    ICON_BACKGROUND(1500),
-    RENDERS(2000),
-    DIVIDER_LINE(2500),
-    INNER_FRAME(3000),
-    EFFECT(3500),
-    VIGNETTE(3550),
-    OVERLAY(7500);
+    SHADOW(500),
+    BACKGROUND(700),
+    TEXT(900),
+    ICON_BACKGROUND(1100),
+    RENDERS(1300),
+    DIVIDER_LINE(1500),
+    INNER_FRAME(1700),
+    VIGNETTE(1900),
+    OVERLAY(2100),
+    EFFECT(2300);
 
     private final int z;
 

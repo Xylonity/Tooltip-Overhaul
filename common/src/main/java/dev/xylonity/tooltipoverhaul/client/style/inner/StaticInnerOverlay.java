@@ -21,16 +21,16 @@ public class StaticInnerOverlay implements InnerOverlayLayer {
         int height = (int) (context.getTooltipSize().y + 4);
 
         // Top
-        context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, color);
 
         // Bottom
-        context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, color);
 
         // Left
-        context.getGraphics().fill(x0, y0, x0 + 1, y0 + height, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x0, y0, x0 + 1, y0 + height, color);
 
         // Right
-        context.getGraphics().fill(x0 + width - 1, y0, x0 + width, y0 + height, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x0 + width - 1, y0, x0 + width, y0 + height, color);
     }
 
 }

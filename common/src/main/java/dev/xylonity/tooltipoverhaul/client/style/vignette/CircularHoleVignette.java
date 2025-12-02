@@ -41,7 +41,7 @@ public class CircularHoleVignette implements VignetteLayer {
 
         int color = vignetteEntry.color();
 
-        context.translate(anchorPositionX, anchorPositionY, vignetteEntry.overText() ? context.getLayerDepth().getZ() : 0);
+        context.translate(anchorPositionX, anchorPositionY, 0);
 
         context.getGraphics().enableScissor(
                 positionX - paddingX - 1,

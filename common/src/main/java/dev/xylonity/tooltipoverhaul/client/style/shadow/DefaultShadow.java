@@ -18,16 +18,16 @@ public class DefaultShadow implements ShadowLayer {
         int bgColor = 0x80000000;
 
         // Background
-        context.getGraphics().fill(x0, y0, x1, y1, context.getLayerDepth().getZ(), bgColor);
+        context.getGraphics().fill(x0, y0, x1, y1, 0, bgColor);
 
         // Top border
-        context.getGraphics().fill(x0, y0 - 1, x1, y0, context.getLayerDepth().getZ(), bgColor);
+        context.getGraphics().fill(x0, y0 - 1, x1, y0, 0, bgColor);
         // Bottom border
-        context.getGraphics().fill(x0, y1 + 1, x1, y1, context.getLayerDepth().getZ(), bgColor);
+        context.getGraphics().fill(x0, y1 + 1, x1, y1, 0, bgColor);
         // Left border
-        context.getGraphics().fill(x0 - 1, y0, x0, y1, context.getLayerDepth().getZ(), bgColor);
+        context.getGraphics().fill(x0 - 1, y0, x0, y1, 0, bgColor);
         // Right border
-        context.getGraphics().fill(x1 + 1, y0, x1, y1, context.getLayerDepth().getZ(), bgColor);
+        context.getGraphics().fill(x1 + 1, y0, x1, y1, 0, bgColor);
     }
 
 }

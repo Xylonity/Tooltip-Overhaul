@@ -4,6 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
+import dev.xylonity.tooltipoverhaul.client.style.effect.*;
 import dev.xylonity.tooltipoverhaul.client.style.preview.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.divider.StaticDividerLine;
@@ -62,13 +63,6 @@ public class StyleFactory {
         int[] colors = ColorUtils.getInnerOverlayColors(context);
         assignDefaultLayers(context, layers, colors);
 
-        // Inner overlay
-        switch (RenderUtils.getInnerOverlayType(context)) {
-            case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
-            case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
-            default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
-        }
-
         // Vignette effects
         boolean hasVignette = RenderUtils.hasVignette(context);
         if (hasVignette) {
@@ -87,6 +81,8 @@ public class StyleFactory {
 
         }
 
+        layers.add(new DefaultOverlay());
+
         return layers;
     }
 
@@ -97,18 +93,13 @@ public class StyleFactory {
         int[] colors = ColorUtils.getColorsPerRarity(context);
         assignDefaultLayers(context, layers, colors);
 
-        // Inner overlay
-        switch (RenderUtils.getInnerOverlayType(context)) {
-            case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
-            case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
-            default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
-        }
-
         // Vignette effects
         boolean hasVignette = RenderUtils.hasVignette(context);
         if (hasVignette) {
             parseVignetteEntries(TooltipsConfig.VIGNETTES, layers);
         }
+
+        layers.add(new DefaultOverlay());
 
         return layers;
     }
@@ -120,6 +111,13 @@ public class StyleFactory {
 
         if (RenderUtils.hasShadow(context)) {
             layers.add(new DefaultShadow());
+        }
+
+        // Inner overlay
+        switch (RenderUtils.getInnerOverlayType(context)) {
+            case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
+            case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
+            default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
         }
 
         // If the icon is enabled
@@ -161,8 +159,7 @@ public class StyleFactory {
 
         }
 
-        layers.add(new DefaultOverlay());
-
+        layers.add(new WhiteDustEffect());
     }
 
     private void parseVignetteEntries(String key, List<ITooltipLayer> layers) {

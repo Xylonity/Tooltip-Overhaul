@@ -10,12 +10,11 @@ public record VignetteEntry(
         String position,
         int color,
         float radius,
-        boolean overText,
         int extraPositionX,
         int extraPositionY
 ) {
 
-    private static final int valueAmount = 7;
+    private static final int valueAmount = 6;
 
     public static final class Parser {
 
@@ -42,7 +41,6 @@ public record VignetteEntry(
                 String position;
                 int color;
                 float radius;
-                boolean overText;
                 int extraPositionX;
                 int extraPositionY;
                 try {
@@ -50,15 +48,14 @@ public record VignetteEntry(
                     position = parts[1];
                     color = ConfigColorParser.parseColor(parts[2]);
                     radius = Float.parseFloat(parts[3]);
-                    overText = Boolean.parseBoolean(parts[4]);
-                    extraPositionX = Integer.parseInt(parts[5]);
-                    extraPositionY = Integer.parseInt(parts[6]);
+                    extraPositionX = Integer.parseInt(parts[4]);
+                    extraPositionY = Integer.parseInt(parts[5]);
                 }
                 catch (Exception e) {
                     continue;
                 }
 
-                vignetteEntries.add(new VignetteEntry(type, position, color, radius, overText, extraPositionX, extraPositionY));
+                vignetteEntries.add(new VignetteEntry(type, position, color, radius, extraPositionX, extraPositionY));
 
             }
 
