@@ -7,6 +7,7 @@ import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
 import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import dev.xylonity.tooltipoverhaul.util.ITooltipOverhaulItemAware;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -54,7 +55,13 @@ public class GuiGraphicsMixin {
         // The original lines of the original tooltip are rewrapped if the comparison exists, to prevent the content of the main tooltip from going beyond
         // the margins of the screen when forcing the screen scale under extreme circumstances
         List<ClientTooltipComponent> componentList;
-        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue());
+
+        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
+        boolean isKeyDown = false;
+        if (!compareKey.equals(InputConstants.UNKNOWN)) {
+            isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
+        }
+
         if (isKeyDown && equippedStackContext != null) {
             componentList = TextUtils.getTooltipComponentsFrom(stack, font, screenWidth, 2.2f);
         }

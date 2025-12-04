@@ -20,7 +20,12 @@ public class EquippedContextCalculator {
 
     public static @Nullable TooltipContext from(GuiGraphics graphics, Font font, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, ItemStack fromStack, int screenWidth, int screenHeight) {
 
-        boolean isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue());
+        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
+        boolean isKeyDown = false;
+        if (!compareKey.equals(InputConstants.UNKNOWN)) {
+            isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
+        }
+
         if (!isKeyDown) {
             return null;
         }

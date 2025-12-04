@@ -72,7 +72,13 @@ public class RenderUtils {
     }
 
     private static boolean isComparisonActive(TooltipContext context) {
-        return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key().getValue()) && context.getOtherTooltipContext() != null;
+        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
+        boolean isKeyDown = false;
+        if (!compareKey.equals(InputConstants.UNKNOWN)) {
+            isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
+        }
+
+        return isKeyDown && context.getOtherTooltipContext() != null;
     }
 
     public static int calculateSecondPanelSize(TooltipContext context, TextAxis axis) {
