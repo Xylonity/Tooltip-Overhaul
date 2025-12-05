@@ -29,23 +29,23 @@ public class FocusIconBackground implements IconBackgroundLayer {
         int color = (((int) (40 + 30 * Math.sin(TooltipRenderer.COUNTER * 2.5))) << 24) | 0xFFFFFF;
 
         // Background
-        context.getGraphics().fill(x0, y0, x1, y1, context.getLayerDepth().getZ(), 0x8018181C);
+        context.getGraphics().fill(x0, y0, x1, y1, 0x8018181C);
 
         // Top left
-        context.getGraphics().fill(x0, y0 - 1, x0 + 5, y0, context.getLayerDepth().getZ(), color);
-        context.getGraphics().fill(x0 - 1, y0 - 1, x0, y0 + 5, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x0, y0 - 1, x0 + 5, y0, color);
+        context.getGraphics().fill(x0 - 1, y0 - 1, x0, y0 + 5, color);
 
         // Bottom left
-        context.getGraphics().fill(x0, y1 + 1, x0 + 5, y1, context.getLayerDepth().getZ(), color);
-        context.getGraphics().fill(x0 - 1, y1 - 5, x0, y1 + 1, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x0, y1 + 1, x0 + 5, y1, color);
+        context.getGraphics().fill(x0 - 1, y1 - 5, x0, y1 + 1, color);
 
         // Top right
-        context.getGraphics().fill(x1 - 5, y0 - 1, x1 + 1, y0, context.getLayerDepth().getZ(), color);
-        context.getGraphics().fill(x1 + 1, y0, x1, y0 + 5, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x1 - 5, y0 - 1, x1 + 1, y0, color);
+        context.getGraphics().fill(x1 + 1, y0, x1, y0 + 5, color);
 
         // Bottom right
-        context.getGraphics().fill(x1 - 5, y1, x1 + 1, y1 + 1, context.getLayerDepth().getZ(), color);
-        context.getGraphics().fill(x1 + 1, y1 - 5, x1, y1, context.getLayerDepth().getZ(), color);
+        context.getGraphics().fill(x1 - 5, y1, x1 + 1, y1 + 1, color);
+        context.getGraphics().fill(x1 + 1, y1 - 5, x1, y1, color);
     }
 
 }

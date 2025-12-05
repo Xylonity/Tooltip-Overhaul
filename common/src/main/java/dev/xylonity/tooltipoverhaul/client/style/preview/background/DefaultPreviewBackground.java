@@ -17,16 +17,16 @@ public class DefaultPreviewBackground implements PreviewBackgroundLayer {
         int backgroundColor = ColorUtils.getBackgroundColor(context);
 
         // Background
-        context.getGraphics().fill(x0, y0, x1, y1, 0, backgroundColor);
+        context.getGraphics().fill(x0, y0, x1, y1, backgroundColor);
 
         // Top border
-        context.getGraphics().fill(x1, y0 - 1, x0, y0, 0, backgroundColor);
+        context.getGraphics().fill(x1, y0 - 1, x0, y0, backgroundColor);
         // Bottom border
-        context.getGraphics().fill(x1, y1, x0, y1 + 1, 0, backgroundColor);
+        context.getGraphics().fill(x1, y1, x0, y1 + 1, backgroundColor);
         // Left border
-        context.getGraphics().fill(x1 - 1, y0, x1, y1, 0, backgroundColor);
+        context.getGraphics().fill(x1 - 1, y0, x1, y1, backgroundColor);
         // Right border
-        context.getGraphics().fill(x0, y0, x0 + 1, y1, 0, backgroundColor);
+        context.getGraphics().fill(x0, y0, x0 + 1, y1, backgroundColor);
     }
 
 }

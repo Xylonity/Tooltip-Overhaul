@@ -22,16 +22,16 @@ public class SlotIconBackground implements IconBackgroundLayer {
         int y1 = slotSizeY;
 
         // Background
-        context.getGraphics().fill(x0, y0, x1, y1, context.getLayerDepth().getZ(), 0x903E3E3E);
+        context.getGraphics().fill(x0, y0, x1, y1, 0x903E3E3E);
 
         // Top border
-        context.getGraphics().fill(x0, y0 - 1, x1, y0, context.getLayerDepth().getZ(), 0x903E3E3E);
+        context.getGraphics().fill(x0, y0 - 1, x1, y0, 0x903E3E3E);
         // Bottom border
-        context.getGraphics().fill(x0, y1 + 1, x1, y1, context.getLayerDepth().getZ(), 0x903E3E3E);
+        context.getGraphics().fill(x0, y1 + 1, x1, y1, 0x903E3E3E);
         // Left border
-        context.getGraphics().fill(x0 - 1, y0, x0, y1, context.getLayerDepth().getZ(), 0x903E3E3E);
+        context.getGraphics().fill(x0 - 1, y0, x0, y1, 0x903E3E3E);
         // Right border
-        context.getGraphics().fill(x1 + 1, y0, x1, y1, context.getLayerDepth().getZ(), 0x903E3E3E);
+        context.getGraphics().fill(x1 + 1, y0, x1, y1, 0x903E3E3E);
     }
 
 }

@@ -33,19 +33,19 @@ public class GlowingIconBackground implements IconBackgroundLayer {
 
         int innerGlow = (Math.min(Math.max(glowIntensity + 30, 0), 255) << 24) | color;
 
-        context.getGraphics().fill(x0, y0, x1, y1, context.getLayerDepth().getZ(), 0xC0181825);
+        context.getGraphics().fill(x0, y0, x1, y1, 0xC0181825);
 
         // Top border
-        context.getGraphics().fill(x0 - 1, y0 - 1, x1 + 1, y0, context.getLayerDepth().getZ(), innerGlow);
+        context.getGraphics().fill(x0 - 1, y0 - 1, x1 + 1, y0, innerGlow);
 
         // Bottom border
-        context.getGraphics().fill(x0 - 1, y1, x1 + 1, y1 + 1, context.getLayerDepth().getZ(), innerGlow);
+        context.getGraphics().fill(x0 - 1, y1, x1 + 1, y1 + 1, innerGlow);
 
         // Left border
-        context.getGraphics().fill(x0 - 1, y0, x0, y1, context.getLayerDepth().getZ(), innerGlow);
+        context.getGraphics().fill(x0 - 1, y0, x0, y1, innerGlow);
 
         // Right border
-        context.getGraphics().fill(x1, y0, x1 + 1, y1, context.getLayerDepth().getZ(), innerGlow);
+        context.getGraphics().fill(x1, y0, x1 + 1, y1, innerGlow);
     }
 
 }

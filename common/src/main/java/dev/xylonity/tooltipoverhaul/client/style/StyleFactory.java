@@ -4,6 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
+import dev.xylonity.tooltipoverhaul.client.style.badge.DefaultEquippedBadge;
 import dev.xylonity.tooltipoverhaul.client.style.effect.*;
 import dev.xylonity.tooltipoverhaul.client.style.preview.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
@@ -159,7 +160,10 @@ public class StyleFactory {
 
         }
 
-        layers.add(new WhiteDustEffect());
+        if (!context.isMainTooltip()) {
+            layers.add(new DefaultEquippedBadge(colors[0], colors[1], colors[2]));
+        }
+
     }
 
     private void parseVignetteEntries(String key, List<ITooltipLayer> layers) {

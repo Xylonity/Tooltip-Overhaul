@@ -11,6 +11,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
@@ -161,6 +162,18 @@ public class RenderUtils {
             context.getPose().popPose();
         }
 
+    }
+
+    public static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int c1, int c2, int c3) {
+        int mid = height / 2;
+
+        // Left border (top and bottom sections)
+        graphics.fillGradient(x, y, x + 1, y + mid, c1, c2);
+        graphics.fillGradient(x, y + mid, x + 1, y + height - 1, c2, c3);
+
+        // Right border (top and bottom sections)
+        graphics.fillGradient(x + width - 1, y, x + width, y + mid, c1, c2);
+        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height - 1, c2, c3);
     }
 
 }

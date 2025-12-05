@@ -82,7 +82,7 @@ public class TextUtils {
             if (data.hasCustomItemRating()) {
 
                 // Computes the rating, either as a translatable key or a literal component
-                String raw = String.valueOf(data.getItemRating(context.getStack()));
+                String raw = data.getItemRating(context.getStack());
                 MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
 
                 if (data.hasCustomColorItemRating()) {
