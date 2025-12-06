@@ -26,7 +26,7 @@ public record CustomFrameData(
         Optional<GradientType> gradientType,
         Optional<List<String>> gradientColors,
         Optional<String> itemRating,
-        Optional<Integer> colorItemRating,
+        Optional<String> colorItemRating,
         Optional<String> ratingAlignment,
         Optional<String> titleAlignment,
         Optional<Integer> tooltipPositionX,
@@ -115,7 +115,7 @@ public record CustomFrameData(
     }
 
     public int getItemRatingColor(TooltipContext context) {
-        return colorItemRating.orElse(ColorUtils.getFirstColorOfRarity(context));
+        return colorItemRating.map(ConfigColorParser::parseColor).orElseGet(() -> ColorUtils.getFirstColorOfRarity(context));
     }
 
     public boolean shouldDisableDividerLine() {

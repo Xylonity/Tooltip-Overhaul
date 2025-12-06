@@ -2,10 +2,12 @@
 - Complete rewrite of the mod, internally structured in a more modular and maintainable way.
 - All alignment errors have been fixed. Now the tooltip components adapt perfectly to its proportions when certain components are removed or moved.
 - The misalignment of the scrolling functionality has been fixed, and now when scrolling, the letters are cut off, unlike before, when the lines simply disappeared.
-- The entire code base has been optimized, greatly reducing computational power, so now the mod is more performant and lighter.
-- Added a new type of style, vignette.
+- The entire code base has been optimized, reducing computational power.
+- Added a new type of style, vignette, with two variants.
 - Added a command "/tooltipoverhaul reload" to reload custom_frames.json files without restarting the game
 - Added 7 new effects: magic_orbs, echo, speed_lines, galaxy, nebula, spiral, white_dust
+- Added 8 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png, neon_fire_frame.png, garden_frame.png, construction_punk_frame.png, cavemen_frame.png, nuclear_alarm_frame.png
+- Added a new type of divider line: static. The divider line type is now configurable
 - Added a config option to change the default position of the main tooltip
 - Added a new type of icon background: "glow". It's dynamic, thus matching the inner frame color
 - Added a config option to change the padding of empty tooltips (without stack, generic tooltips)
@@ -15,15 +17,15 @@
 - Added a config option to change the position of the main panel
 - Added a config option to enable drop shadow in tooltips.
 - Now the preview panel correctly repositions itself if there is no sufficient space at the left of the tooltip. This is configurable
+- Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
+- Now the preview panel renderer rotating anchor point is now correctly positioned.
+- Now the preview panel renderers automatically adapt their size to the preview panel's size.
 - Fixed alignment issues with tooltip positions when moving the cursor across the screen, including alignment issues and certain size miscalculations when using the equipment comparison feature
 - Fixed overlay textures not adapting correctly to the tooltip proportions when using a modified padding
 - Fixed background color config option not parsing the color correctly, thus matching an incorrect hex code. Now using text instead of numbers (e.g. -684233 -> "#FFFFFF") 
 - Fixed GL State error log spam after unbinding the equipment comparison keybind
-- Preview panel renderer rotating anchor point is now correctly positioned.
-- Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
-- Added 8 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png, neon_fire_frame.png, garden_frame.png, construction_punk_frame.png, cavemen_frame.png, nuclear_alarm_frame.png
-- Added a new type of divider line: static. The divider line type is now configurable
 - Fixed inner frame colors not adapting correctly to the stack's information
+- Fixed non-working 'colorItemRating' custom_frames.json config entry.
 - Fixed stack bleeding (on forge) where raw tooltips inherit the hovered stack information
 
 + IN UPCOMING UPDATES:

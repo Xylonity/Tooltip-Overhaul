@@ -28,7 +28,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<CustomFrameData.GradientType> gradientType = parseEnum(entry, "gradientType", CustomFrameData.GradientType.class);
         Optional<List<String>> gradientColors = parseOptionalStringList(entry, "gradientColors");
         Optional<String> itemRating = parseString(entry, "itemRating");
-        Optional<Integer> colorItemRating = parseInt(entry, "colorItemRating");
+        Optional<String> colorItemRating = parseString(entry, "colorItemRating");
 
         Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
         Optional<String> titleAlignment = parseString(entry, "titleAlignment");

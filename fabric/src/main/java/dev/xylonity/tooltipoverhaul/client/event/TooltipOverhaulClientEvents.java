@@ -35,8 +35,9 @@ public class TooltipOverhaulClientEvents {
                                         context.getSource().sendFeedback(Component.translatable("tooltipoverhaul.reload_resources.success"));
 
                                         return 1;
-                                    } catch (Exception e) {
-                                        TooltipOverhaul.LOGGER.error("Failed to reload via client command", e);
+                                    }
+                                    catch (Exception exception) {
+                                        TooltipOverhaul.LOGGER.error("Failed to reload via client command", exception);
 
                                         context.getSource().sendError(Component.translatable("tooltipoverhaul.reload_resources.fail"));
 
