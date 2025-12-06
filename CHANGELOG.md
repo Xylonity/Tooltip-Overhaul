@@ -10,7 +10,6 @@
 - Added a new type of icon background: "glow". It's dynamic, thus matching the inner frame color
 - Added a config option to change the padding of empty tooltips (without stack, generic tooltips)
 - Added a config option to change the color of empty tooltips (without stack, generic tooltips)
-+ Added an option to apply custom_frames to rarities, apart from items, tags and namespaces
 - Added a config option to change the top and bottom paddings of the divider line
 - Added a config option to change the size of the second panel (preview panel)
 - Added a config option to change the position of the main panel
