@@ -23,7 +23,12 @@
 - Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
 - Added 8 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png, neon_fire_frame.png, garden_frame.png, construction_punk_frame.png, cavemen_frame.png, nuclear_alarm_frame.png
 - Added a new type of divider line: static. The divider line type is now configurable
-+ Fixed inner frame colors not adapting correctly to the stack's information
+- Fixed inner frame colors not adapting correctly to the stack's information
+- Fixed stack bleeding (on forge) where raw tooltips inherit the hovered stack information
+
++ IN UPCOMING UPDATES:
++ New config entry to apply custom frames to specific rarities
++ Weapon/Tool comparison
 
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.

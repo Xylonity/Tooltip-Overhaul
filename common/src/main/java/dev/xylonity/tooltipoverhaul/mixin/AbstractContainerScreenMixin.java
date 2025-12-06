@@ -7,6 +7,8 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(value = AbstractContainerScreen.class, priority = 1)
 public interface AbstractContainerScreenMixin {
+
     @Accessor("hoveredSlot")
     Slot getHoveredSlot();
+
 }
