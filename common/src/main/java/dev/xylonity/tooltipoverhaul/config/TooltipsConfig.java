@@ -127,39 +127,14 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
+            comment = "Effects. Options: cinder, echo, galaxy, magic_orbs, speed_lines, nebula, spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars. You can chain effects together, for example: 'white_dust, nebula'"
+    )
+    public static String EFFECTS = "";
+
+    @ConfigEntry(
             comment = "Icon background type. Options: focus, void, slot, slot_border and glow"
     )
     public static String ICON_BACKGROUND_TYPE = "slot_border";
-
-    @ConfigEntry(
-            comment = "Horizontal position offset for the title."
-    )
-    public static int TITLE_POSITION_X = 1;
-
-    @ConfigEntry(
-            comment = "Vertical position offset for the title."
-    )
-    public static int TITLE_POSITION_Y = 0;
-
-    @ConfigEntry(
-            comment = "Horizontal position offset for the rating text."
-    )
-    public static int RATING_POSITION_X = 1;
-
-    @ConfigEntry(
-            comment = "Vertical position offset for the rating text."
-    )
-    public static int RATING_POSITION_Y = 0;
-
-    @ConfigEntry(
-            comment = "Horizontal position offset for the tooltip description (the main content text)."
-    )
-    public static int TOOLTIP_DESCRIPTION_POSITION_X = 0;
-
-    @ConfigEntry(
-            comment = "Vertical position offset for the tooltip description (the main content text)."
-    )
-    public static int TOOLTIP_DESCRIPTION_POSITION_Y = 0;
 
     @ConfigEntry(
             comment = "Show rating text."
@@ -201,16 +176,6 @@ public final class TooltipsConfig {
     public static float ICON_ROTATING_SPEED = 0f;
 
     @ConfigEntry(
-            comment = "Size of the icon."
-    )
-    public static float ICON_SIZE = 1.35f;
-
-    @ConfigEntry(
-            comment = "Size of the second panel renderer."
-    )
-    public static float SECOND_PANEL_RENDERER_SIZE = 2.75f;
-
-    @ConfigEntry(
             comment = "Rotation speed multiplier for the tiered item preview in the second panel."
     )
     public static float SECOND_PANEL_RENDERER_SPEED = 1f;
@@ -221,7 +186,7 @@ public final class TooltipsConfig {
     public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
 
     @ConfigEntry(
-            comment = "Divider line type. Options: 'gradient', 'static'"
+            comment = "Divider line type. Options: 'gradient', 'static', 'linear'"
     )
     public static String DIVIDER_LINE_TYPE = "gradient";
 

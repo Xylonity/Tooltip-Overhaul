@@ -41,11 +41,15 @@ public class RenderUtils {
     }
 
     public static boolean hasShadow(TooltipContext context) {
-        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowShadow).orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowShadow).orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
     }
 
     public static boolean hasVignette(TooltipContext context) {
         return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(TooltipsConfig.VIGNETTES.isBlank());
+    }
+
+    public static boolean shouldRender(TooltipContext context) {
+        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableTooltip).orElse(false);
     }
 
     public static boolean hasPreviewOfTieredItem(TooltipContext context) {
@@ -104,6 +108,10 @@ public class RenderUtils {
 
     public static String getDividerLineType(TooltipContext context) {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineType).orElse(TooltipsConfig.DIVIDER_LINE_TYPE);
+    }
+
+    public static String getEffect(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getEffect).orElse(TooltipsConfig.EFFECTS);
     }
 
     public static int calculatePadding(TooltipContext context, TextAxis axis) {

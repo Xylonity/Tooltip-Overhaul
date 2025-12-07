@@ -4,6 +4,7 @@ import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.IconLayer;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.PreviewRendererLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
 import dev.xylonity.tooltipoverhaul.compat.modernfix.ModernFixCompat;
@@ -24,7 +25,7 @@ public class DefaultPreviewStackRenderer implements PreviewRendererLayer {
 
         context.translate((x1 + sizeX / 2f + 2), (y0 + sizeY / 2f) + 2, 0);
 
-        context.multiply(Axis.YP, ((System.currentTimeMillis() - context.getStartTime()) / 20f) % 360);
+        context.multiply(Axis.YP, (((System.currentTimeMillis() - context.getStartTime()) / 20f) % 360) * AnimationUtils.getSecondPanelRendererSpeed(context));
 
         context.multiply(Axis.ZP, -45);
 

@@ -31,12 +31,6 @@ public record CustomFrameData(
         Optional<String> titleAlignment,
         Optional<Integer> tooltipPositionX,
         Optional<Integer> tooltipPositionY,
-        Optional<Integer> titlePositionX,
-        Optional<Integer> titlePositionY,
-        Optional<Integer> ratingPositionX,
-        Optional<Integer> ratingPositionY,
-        Optional<Integer> tooltipDescriptionPositionX,
-        Optional<Integer> tooltipDescriptionPositionY,
         Optional<Integer> mainPanelPaddingX,
         Optional<Integer> mainPanelPaddingY,
         Optional<Integer> dividerLineTopPadding,
@@ -48,7 +42,6 @@ public record CustomFrameData(
         Optional<Integer> secondPanelY,
         Optional<Integer> secondPanelSizeX,
         Optional<Integer> secondPanelSizeY,
-        Optional<Float> secondPanelRendererSize,
         Optional<Float> secondPanelRendererSpeed,
         Optional<String> dividerLineType,
         Optional<String> dividerLineColor,
@@ -142,22 +135,6 @@ public record CustomFrameData(
         return iconRotatingSpeed.orElse(TooltipsConfig.ICON_ROTATING_SPEED);
     }
 
-    public int getTitlePositionX() {
-        return titlePositionX.orElse(TooltipsConfig.TITLE_POSITION_X);
-    }
-
-    public int getTitlePositionY() {
-        return titlePositionY.orElse(TooltipsConfig.TITLE_POSITION_Y);
-    }
-
-    public int getRatingPositionX() {
-        return ratingPositionX.orElse(TooltipsConfig.RATING_POSITION_X);
-    }
-
-    public int getRatingPositionY() {
-        return ratingPositionY.orElse(TooltipsConfig.RATING_POSITION_Y);
-    }
-
     public String getDividerLineType() {
         return dividerLineType.orElse(TooltipsConfig.DIVIDER_LINE_TYPE);
     }
@@ -170,11 +147,6 @@ public record CustomFrameData(
         return dividerLineBottomPadding.orElse(TooltipsConfig.DIVIDER_LINE_BOTTOM_PADDING);
     }
 
-
-    public int getTooltipDescriptionPositionX() {
-        return tooltipDescriptionPositionX.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_X);
-    }
-
     public int getTooltipPositionX() {
         return tooltipPositionX.orElse(TooltipsConfig.TOOLTIP_POSITION_X);
     }
@@ -183,17 +155,12 @@ public record CustomFrameData(
         return tooltipPositionY.orElse(TooltipsConfig.TOOLTIP_POSITION_Y);
     }
 
-
     public int getBackgroundColor() {
         return backgroundColor.orElse(Palette.PANEL_BG);
     }
 
     public boolean shouldDisableScrolling() {
         return disableScrolling.orElse(TooltipsConfig.DISABLE_TOOLTIP_SCROLLING);
-    }
-
-    public int getTooltipDescriptionPositionY() {
-        return tooltipDescriptionPositionY.orElse(TooltipsConfig.TOOLTIP_DESCRIPTION_POSITION_Y);
     }
 
     public boolean shouldShowShadow() {
@@ -222,14 +189,6 @@ public record CustomFrameData(
 
     public String getTitleAlignment() {
         return titleAlignment.orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
-    }
-
-    public float getIconSize() {
-        return iconSize.orElse(TooltipsConfig.ICON_SIZE);
-    }
-
-    public float getSecondPanelRendererSize() {
-        return secondPanelRendererSize.orElse(TooltipsConfig.SECOND_PANEL_RENDERER_SIZE);
     }
 
     public float getSecondPanelRendererSpeed() {

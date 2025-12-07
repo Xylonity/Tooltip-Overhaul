@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.math.Axis;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.PreviewRendererLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
 import dev.xylonity.tooltipoverhaul.compat.modernfix.ModernFixCompat;
@@ -31,7 +32,7 @@ public class DefaultPreviewArmorStand implements PreviewRendererLayer {
         context.multiply(Axis.XP, -30);
         context.multiply(Axis.YP, -45);
 
-        context.multiply(Axis.YP, ((System.currentTimeMillis() - context.getStartTime()) / 20f) % 360);
+        context.multiply(Axis.YP, (((System.currentTimeMillis() - context.getStartTime()) / 20f) % 360) * AnimationUtils.getSecondPanelRendererSpeed(context));
 
         float scale = Math.min(sizeX, sizeY / 2f) / 1.25f;
 

@@ -34,12 +34,6 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<String> titleAlignment = parseString(entry, "titleAlignment");
         Optional<Integer> tooltipPositionX = parseInt(entry, "tooltipPositionX");
         Optional<Integer> tooltipPositionY = parseInt(entry, "tooltipPositionY");
-        Optional<Integer> titlePositionX = parseInt(entry, "titlePositionX");
-        Optional<Integer> titlePositionY = parseInt(entry, "titlePositionY");
-        Optional<Integer> ratingPositionX = parseInt(entry, "ratingPositionX");
-        Optional<Integer> ratingPositionY = parseInt(entry, "ratingPositionY");
-        Optional<Integer> tooltipDescriptionPositionX = parseInt(entry, "tooltipDescriptionPositionX");
-        Optional<Integer> tooltipDescriptionPositionY = parseInt(entry, "tooltipDescriptionPositionY");
         Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
         Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
         Optional<Integer> dividerLineTopPadding = parseInt(entry, "dividerLineTopPadding");
@@ -51,7 +45,6 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
         Optional<Integer> secondPanelSizeX = parseInt(entry, "secondPanelSizeX");
         Optional<Integer> secondPanelSizeY = parseInt(entry, "secondPanelSizeY");
-        Optional<Float> secondPanelRendererSize = parseFloat(entry, "secondPanelRendererSize");
         Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
         Optional<String> dividerLineType = parseString(entry, "dividerLineType");
         Optional<String> dividerLineColor = parseString(entry, "dividerLineColor");
@@ -87,12 +80,6 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 titleAlignment,
                 tooltipPositionX,
                 tooltipPositionY,
-                titlePositionX,
-                titlePositionY,
-                ratingPositionX,
-                ratingPositionY,
-                tooltipDescriptionPositionX,
-                tooltipDescriptionPositionY,
                 mainPanelPaddingX,
                 mainPanelPaddingY,
                 dividerLineTopPadding,
@@ -104,7 +91,6 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 secondPanelY,
                 secondPanelSizeX,
                 secondPanelSizeY,
-                secondPanelRendererSize,
                 secondPanelRendererSpeed,
                 dividerLineType,
                 dividerLineColor,

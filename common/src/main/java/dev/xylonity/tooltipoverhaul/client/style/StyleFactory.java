@@ -5,6 +5,7 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
 import dev.xylonity.tooltipoverhaul.client.style.badge.DefaultEquippedBadge;
+import dev.xylonity.tooltipoverhaul.client.style.divider.LinearDividerLine;
 import dev.xylonity.tooltipoverhaul.client.style.effect.*;
 import dev.xylonity.tooltipoverhaul.client.style.preview.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
@@ -84,6 +85,8 @@ public class StyleFactory {
 
         layers.add(new DefaultOverlay());
 
+        assignEffects(context, layers, colors);
+
         return layers;
     }
 
@@ -101,6 +104,8 @@ public class StyleFactory {
         }
 
         layers.add(new DefaultOverlay());
+
+        assignEffects(context, layers, colors);
 
         return layers;
     }
@@ -141,6 +146,7 @@ public class StyleFactory {
             switch (dividerLineType) {
                 case "gradient" -> layers.add(new GradientDividerLine());
                 case "static" -> layers.add(new StaticDividerLine());
+                case "linear" -> layers.add(new LinearDividerLine());
             }
 
         }
@@ -173,6 +179,28 @@ public class StyleFactory {
                 case "circular" -> layers.add(new CircularVignette(entry));
                 case "hole" -> layers.add(new CircularHoleVignette(entry));
             }
+        }
+
+    }
+
+    private void assignEffects(TooltipContext context, List<ITooltipLayer> layers, int[] colors) {
+        for (String part : RenderUtils.getEffect(context).split("\\s*[;,]\\s*")) {
+            switch (part.trim().toLowerCase()) {
+                case "cinder" -> layers.add(new CinderEffect());
+                case "echo" -> layers.add(new EchoEffect());
+                case "galaxy" -> layers.add(new GalaxyEffect());
+                case "magic_orbs" -> layers.add(new MagicOrbsEffect());
+                case "speed_lines" -> layers.add(new SpeedLinesEffect()); ///
+                case "nebula" -> layers.add(new NebulaEffect());
+                case "spiral" -> layers.add(new TimeSpiralEffect());
+                case "white_dust" -> layers.add(new WhiteDustEffect());
+                case "metal_shining" -> layers.add(new MetalShiningEffect());
+                case "rim_light" -> layers.add(new RimLightEffect(0x88154c79, 0x0)); ///
+                case "ripples" -> layers.add(new RipplesEffect()); ///
+                case "sonar" -> layers.add(new SonarEffect());
+                case "stars" -> layers.add(new StarsEffect());
+            }
+
         }
 
     }

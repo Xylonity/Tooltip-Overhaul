@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.util;
 import com.google.common.collect.Lists;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -18,8 +19,13 @@ import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TextUtils {
+
+    public static boolean shouldDisableScrolling(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableScrolling).orElse(TooltipsConfig.DISABLE_TOOLTIP_SCROLLING);
+    }
 
     public static List<ClientTooltipComponent> getTooltipComponentsFrom(ItemStack stack, Font font, int screenWidth, float screenSplit) {
         Minecraft minecraft = Minecraft.getInstance();

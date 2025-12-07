@@ -7,7 +7,7 @@
 - Added a command "/tooltipoverhaul reload" to reload custom_frames.json files without restarting the game
 - Added 7 new effects: magic_orbs, echo, speed_lines, galaxy, nebula, spiral, white_dust
 - Added 8 new frames: draconic_fire_frame.png, medieval_crossroads_frame.png, plasma_lamp_frame.png, neon_fire_frame.png, garden_frame.png, construction_punk_frame.png, cavemen_frame.png, nuclear_alarm_frame.png
-- Added a new type of divider line: static. The divider line type is now configurable
+- Added 2 new types for the divider line: "static" and "linear". The divider line type is now configurable
 - Added a config option to change the default position of the main tooltip
 - Added a new type of icon background: "glow". It's dynamic, thus matching the inner frame color
 - Added a config option to change the padding of empty tooltips (without stack, generic tooltips)
@@ -16,6 +16,7 @@
 - Added a config option to change the size of the second panel (preview panel)
 - Added a config option to change the position of the main panel
 - Added a config option to enable drop shadow in tooltips.
+- Added a config option to set effects in the global configuration
 - Now the preview panel correctly repositions itself if there is no sufficient space at the left of the tooltip. This is configurable
 - Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
 - Now the preview panel renderer rotating anchor point is now correctly positioned.
@@ -27,6 +28,9 @@
 - Fixed inner frame colors not adapting correctly to the stack's information
 - Fixed non-working 'colorItemRating' custom_frames.json config entry.
 - Fixed stack bleeding (on forge) where raw tooltips inherit the hovered stack information
+- Fixed stars effect adapting to the screen position rather than the tooltip position
+- Deleted 'titlePositionX', 'titlePositionY', 'ratingPositionX', 'ratingPositionY', 'tooltipDescriptionPositionX', 'tooltipDescriptionPositionY', 'secondPanelRendererSize' config options. The first 6 position options were irrelevant for the common use-case, 'secondPanelRendererSize' is no longer needed because the renderers now adapt to the size of the preview panel rather than having an independent size. If ANY of these config options are needed, talk to me and I'll readd them in future versions
+- Temporary disabled 'iconSize' config option
 
 + IN UPCOMING UPDATES:
 + New config entry to apply custom frames to specific rarities

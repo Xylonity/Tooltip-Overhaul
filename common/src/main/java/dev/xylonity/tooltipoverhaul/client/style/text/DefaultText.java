@@ -4,10 +4,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.TextLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.Constants;
-import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
-import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
-import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
+import dev.xylonity.tooltipoverhaul.client.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -58,13 +55,18 @@ public class DefaultText implements TextLayer {
                 ratingAlignY = titleComponent.getHeight();
             }
 
+            int titleAlignment = computeTitleAlignment(context, titleComponent, x + extraX);
+
             // Title text
-            titleComponent.renderText(font, x + extraX, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
+            titleComponent.renderText(font, x + extraX + titleAlignment, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
 
             // Rating text. If there is no rating but there is an icon present, the padding between the content and the title is the same
             if (hasRating) {
                 Component rating = TextUtils.getRatingText(context);
-                context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX, y + extraY + ratingAlignY, 0xEDDE76, false);
+
+                int ratingAlignment = computeRatingAlignment(context, rating, x + extraX);
+
+                context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX + ratingAlignment, y + extraY + ratingAlignY, 0xEDDE76, false);
                 y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
             }
             else if (hasIcon) {
@@ -136,6 +138,52 @@ public class DefaultText implements TextLayer {
             graphics.flush();
             GlStateManager._disableScissorTest();
         }
+
+    }
+
+    private int computeTitleAlignment(TooltipContext context, ClientTooltipComponent component, int startX) {
+        return switch (PositionUtils.getTitleTextAlignment(context)) {
+            case "middle" -> {
+                int tooltipSizeX = (int) context.getTooltipSize().x;
+                int tooltipPositionX = (int) context.getTooltipPosition().x;
+
+                int total = tooltipSizeX + tooltipPositionX;
+
+                yield (total - startX - context.getPaddingX()) / 2 - component.getWidth(context.getFont()) / 2;
+            }
+            case "right" -> {
+                int tooltipSizeX = (int) context.getTooltipSize().x;
+                int tooltipPositionX = (int) context.getTooltipPosition().x;
+
+                int total = tooltipSizeX + tooltipPositionX;
+
+                yield (total - startX - context.getPaddingX()) - component.getWidth(context.getFont());
+            }
+            default -> 0;
+        };
+
+    }
+
+    private int computeRatingAlignment(TooltipContext context, Component component, int startX) {
+        return switch (PositionUtils.getRatingTextAlignment(context)) {
+            case "middle" -> {
+                int tooltipSizeX = (int) context.getTooltipSize().x;
+                int tooltipPositionX = (int) context.getTooltipPosition().x;
+
+                int total = tooltipSizeX + tooltipPositionX;
+
+                yield (total - startX - context.getPaddingX()) / 2 - context.getFont().width(component) / 2;
+            }
+            case "right" -> {
+                int tooltipSizeX = (int) context.getTooltipSize().x;
+                int tooltipPositionX = (int) context.getTooltipPosition().x;
+
+                int total = tooltipSizeX + tooltipPositionX;
+
+                yield (total - startX - context.getPaddingX()) - context.getFont().width(component);
+            }
+            default -> 0;
+        };
 
     }
 

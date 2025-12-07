@@ -25,6 +25,22 @@ public class PositionUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getDividerLineBottomPadding).orElse(TooltipsConfig.DIVIDER_LINE_BOTTOM_PADDING);
     }
 
+    public static int getSecondPanelPosition(TooltipContext context, TextAxis axis) {
+        if (axis == TextAxis.X) {
+            return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getSecondPanelX).orElse(TooltipsConfig.SECOND_PANEL_X);
+        }
+
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getSecondPanelY).orElse(TooltipsConfig.SECOND_PANEL_Y);
+    }
+
+    public static String getRatingTextAlignment(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getRatingAlignment).orElse(TooltipsConfig.RATING_X_ALIGNMENT);
+    }
+
+    public static String getTitleTextAlignment(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getTitleAlignment).orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
+    }
+
     public static int getVignettePosition(TooltipContext context, VignetteEntry vignetteEntry, TextAxis axis) {
         int tooltipWidth = (int) context.getTooltipSize().x;
         int tooltipHeight = (int) context.getTooltipSize().y;

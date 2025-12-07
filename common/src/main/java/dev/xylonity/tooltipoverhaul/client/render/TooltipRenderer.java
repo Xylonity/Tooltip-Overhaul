@@ -4,7 +4,10 @@ import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipPositionCalculator;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipSizeCalculator;
 import dev.xylonity.tooltipoverhaul.client.style.StyleFactory;
+import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
+import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.world.phys.Vec2;
 
 import javax.annotation.Nullable;
@@ -43,8 +46,14 @@ public class TooltipRenderer {
         context.setTooltipSize(new Vec2(uncappedSize.x, cappedHeight));
         context.setTooltipPosition(positionCalculator.calculate());
 
-        TooltipScrollState.begin((int) uncappedSize.y, cappedHeight);
-        TooltipScrollState.tick();
+        if (!TextUtils.shouldDisableScrolling(context)) {
+            TooltipScrollState.begin((int) uncappedSize.y, cappedHeight);
+            TooltipScrollState.tick();
+        }
+        else {
+            TooltipScrollState.reset();
+        }
+
     }
 
     /**
@@ -65,6 +74,10 @@ public class TooltipRenderer {
         if (context == null) return false;
 
         if (context.getComponents().isEmpty()) return false;
+
+        if (!RenderUtils.shouldRender(context)) return false;
+
+        if (context.getStack().isEmpty() && !TooltipsConfig.SHOW_TOOLTIP_WITHOUT_STACK) return false;
 
         List<ITooltipLayer> layers = context.getTooltipLayers();
 

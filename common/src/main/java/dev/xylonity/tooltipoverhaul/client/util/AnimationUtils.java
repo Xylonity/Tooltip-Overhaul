@@ -1,6 +1,16 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+
+import java.util.Optional;
+
 public class AnimationUtils {
+
+    public static float getSecondPanelRendererSpeed(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getSecondPanelRendererSpeed).orElse(TooltipsConfig.SECOND_PANEL_RENDERER_SPEED);
+    }
 
     public static float easeOutCubic(float time) {
         float ease = 1f - time;
