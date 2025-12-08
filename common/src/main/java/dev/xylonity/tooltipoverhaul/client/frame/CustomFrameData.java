@@ -196,7 +196,7 @@ public record CustomFrameData(
     }
 
     public String getEffect() {
-        return specialEffect.filter(effect -> !effect.trim().isEmpty()).orElse("none");
+        return specialEffect.orElse(TooltipsConfig.EFFECTS);
     }
 
     public List<ResourceLocation> getItemLocations() {

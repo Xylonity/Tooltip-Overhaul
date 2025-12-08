@@ -17,10 +17,12 @@
 - Added a config option to change the position of the main panel
 - Added a config option to enable drop shadow in tooltips.
 - Added a config option to set effects in the global configuration
+- Now effects can be chained together
 - Now the preview panel correctly repositions itself if there is no sufficient space at the left of the tooltip. This is configurable
 - Now the size of the renderer of the preview panel adapts automatically to the bounds of the panel
 - Now the preview panel renderer rotating anchor point is now correctly positioned.
 - Now the preview panel renderers automatically adapt their size to the preview panel's size.
+- Now ripples effect spawns ripples constantly, which lifespans are relative to the tooltip size
 - Fixed alignment issues with tooltip positions when moving the cursor across the screen, including alignment issues and certain size miscalculations when using the equipment comparison feature
 - Fixed overlay textures not adapting correctly to the tooltip proportions when using a modified padding
 - Fixed background color config option not parsing the color correctly, thus matching an incorrect hex code. Now using text instead of numbers (e.g. -684233 -> "#FFFFFF") 

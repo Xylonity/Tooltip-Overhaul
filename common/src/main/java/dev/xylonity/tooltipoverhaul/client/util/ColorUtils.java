@@ -106,4 +106,21 @@ public class ColorUtils {
         return getColorsPerRarity(context)[0];
     }
 
+    public static int mulAlpha(int color, float scale) {
+        int alpha = (color >>> 24) & 0xFF;
+        int newA = Math.max(0, Math.min(255, Math.round(alpha * scale)));
+        return (color & 0x00FFFFFF) | (newA << 24);
+    }
+
+    public static int lerpColor(int c0, int c1, float time) {
+        time = AnimationUtils.clamp01(time);
+
+        int alpha = (int) (ColorUtils.alpha(c0) + (ColorUtils.alpha(c1) - ColorUtils.alpha(c0)) * time);
+        int red = (int) (ColorUtils.red(c0) + (ColorUtils.red(c1) - ColorUtils.red(c0)) * time);
+        int green = (int) (ColorUtils.green(c0) + (ColorUtils.green(c1) - ColorUtils.green(c0)) * time);
+        int blue = (int) (ColorUtils.blue(c0) + (ColorUtils.blue(c1) - ColorUtils.blue(c0)) * time);
+
+        return (AnimationUtils.clamp255(alpha) << 24) | (AnimationUtils.clamp255(red) << 16) | (AnimationUtils.clamp255(green) << 8) | AnimationUtils.clamp255(blue);
+    }
+
 }
