@@ -82,11 +82,11 @@ public class WhiteDustEffect implements EffectLayer {
             Tesselator tesselator = Tesselator.getInstance();
             BufferBuilder bufferBuilder = tesselator.getBuilder();
 
-            // Stars
-            renderStars(bufferBuilder, tesselator, pose, centerX, centerY, radius, time);
-
             // Dust
             renderDust(bufferBuilder, tesselator, pose, centerX, centerY, radius, time);
+
+            // Stars
+            renderStars(bufferBuilder, tesselator, pose, centerX, centerY, radius, time);
 
             // Glyphs
             renderGlyphs(bufferBuilder, tesselator, pose, centerX, centerY, radius, timeLoop);
@@ -104,7 +104,7 @@ public class WhiteDustEffect implements EffectLayer {
 
     }
 
-    private void renderStars(BufferBuilder buf, Tesselator tess, Matrix4f pose, float centerX, float centerY, float radius, float tGlobal) {
+    private void renderDust(BufferBuilder buf, Tesselator tess, Matrix4f pose, float centerX, float centerY, float radius, float tGlobal) {
 
         buf.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
@@ -142,8 +142,7 @@ public class WhiteDustEffect implements EffectLayer {
         BufferUploader.drawWithShader(buf.end());
     }
 
-    private void renderDust(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radius, float time) {
-
+    private void renderStars(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radius, float time) {
         for (int i = 0; i < RUNE_COUNT; i++) {
             float[] rune = RUNES[i];
             float angleSeed  = rune[0];
@@ -163,23 +162,23 @@ public class WhiteDustEffect implements EffectLayer {
             float size = 5.0f * (0.8f + 0.4f * glow);
 
             int type = (i % 4 == 3) ? 3 : (i % 3);
-            dust(bufferBuilder, tesselator, pose, dustX, dustY, size, runeRotation, glow, type);
+            star(bufferBuilder, tesselator, pose, dustX, dustY, size, runeRotation, glow, type);
         }
 
     }
 
-    private void dust(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float size, float rotation, float glow, int type) {
+    private void star(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float size, float rotation, float glow, int type) {
         if (type == 3) {
             float glowSize = size * 1.6f;
             float coreSize = size * 0.9f;
 
-            drawCosmicStar(bufferBuilder, tesselator, pose, centerX, centerY, glowSize, RUNE_COLOR, 0.5f * glow);
-            drawCosmicStar(bufferBuilder, tesselator, pose, centerX, centerY, coreSize, RUNE_COLOR, glow);
+            drawStar(bufferBuilder, tesselator, pose, centerX, centerY, glowSize, RUNE_COLOR, 0.5f * glow);
+            drawStar(bufferBuilder, tesselator, pose, centerX, centerY, coreSize, RUNE_COLOR, glow);
         }
 
     }
 
-    private void drawCosmicStar(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float size, int color, float alphaMult) {
+    private void drawStar(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float size, int color, float alphaMult) {
 
         bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 
