@@ -1,9 +1,11 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
+import dev.xylonity.tooltipoverhaul.util.ColorTest;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
@@ -30,8 +32,14 @@ public class ColorUtils {
                 colors = Arrays.copyOf(Palette.of(gradientType), 3);
             }
             else {
-                int[] configuredColors = data.getGradientColors(context);
-                colors = configuredColors.length == 3 ? configuredColors : Arrays.copyOf(getColorsPerRarity(context), 3);
+                if (data.getBorderType().startsWith("auto") && data.hasCustomTexture()) {
+                    colors = ColorTest.getOverlayGradient(TooltipOverhaul.rawPathOf(data.getTextureLocation()));
+                }
+                else {
+                    int[] configuredColors = data.getGradientColors(context);
+                    colors = configuredColors.length == 3 ? configuredColors : Arrays.copyOf(getColorsPerRarity(context), 3);
+                }
+
             }
 
         }
@@ -62,8 +70,8 @@ public class ColorUtils {
         ItemStack stack = context.getStack();
         switch (matcher) {
             case "match_inner_frame_color" -> {
-                if (context.getFrameData() != null && context.getFrameData().hasGradientColors()) {
-                    return context.getFrameData().getGradientColors(context)[0];
+                if (context.getFrameData() != null) {
+                    return getInnerOverlayColors(context)[0];
                 }
 
                 return getFirstColorOfRarity(context);
@@ -83,6 +91,7 @@ public class ColorUtils {
                 if (matcher.startsWith("0x") || matcher.startsWith("0X") || matcher.startsWith("#")) {
                     return ConfigColorParser.parseColor(matcher);
                 }
+
             }
 
         }

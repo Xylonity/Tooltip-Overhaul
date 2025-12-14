@@ -104,7 +104,7 @@ public class StarsEffect implements EffectLayer {
     }
 
     private void spawnStar(int width, int height, long now) {
-        Random random = new Random(0x5A77BEEFL);
+        Random random = new Random();
         float margin = 10f;
 
         float localX = margin + random.nextFloat() * Math.max(1f, width - 2f * margin);

@@ -57,81 +57,83 @@ dependencies {
     modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:15.20.0.112"
 
     // draconic evolution
-    //modImplementation ("curse.maven:draconic-evolution-223565:6793843")
-    //modImplementation ("curse.maven:brandons-core-231382:5422013")
-    //modImplementation ("curse.maven:codechicken-lib-1-8-242818:5753868")
-//
-    //// waystones
-    //modImplementation ("curse.maven:waystones-245755:6856603")
-    //modImplementation ("curse.maven:balm-531761:6841886")
-//
-    //// apotheosis
-    //modImplementation ("curse.maven:patchouli-306770:6164575")
-    //modImplementation ("curse.maven:placebo-283644:6274231")
-    //modImplementation ("curse.maven:apothic-attributes-898963:5634071")
-    //modImplementation ("curse.maven:apotheosis-313970:6461960")
-//
-    //// ftb quests
-    ////modImplementation ("curse.maven:ftb-quests-forge-289412:6829212")
-    ////modImplementation ("curse.maven:ftb-teams-forge-404468:6130786")
-    ////modImplementation ("curse.maven:ftb-library-forge-404465:6807424")
-    //modImplementation ("curse.maven:architectury-api-419699:5137938")
-//
-    //// macaws bridges
-    //modImplementation ("curse.maven:macaws-bridges-351725:6528751")
-//
-    //// simply swords
-    //modImplementation ("curse.maven:simply-swords-659887:5639538")
-    //modImplementation ("curse.maven:cloth-config-348521:5729105")
-//
-    //// little logistics
-    //modImplementation ("curse.maven:little-logistics-570050:4799459")
-//
-    //// exposure
-    //modImplementation ("curse.maven:exposure-871755:6655718")
-//
-    //// scorched guns
-    //modImplementation ("curse.maven:scorched-guns-802940:6966430")
-    //modImplementation ("curse.maven:curios-309927:6418456")
-    //modImplementation ("curse.maven:framework-549225:6531428")
-    //modImplementation ("curse.maven:geckolib-388172:6920925")
-//
-    //modImplementation ("curse.maven:modernfix-790626:6837713")
-//
-    //modImplementation ("curse.maven:companions-mod-1300341:6930503")
-    //modImplementation ("curse.maven:knight-lib-1105855:6821911")
-//
-    //modImplementation ("curse.maven:equipment-compare-502561:4650073")
-    //modImplementation ("curse.maven:iceberg-520110:5838149")
-//
-    //modImplementation ("curse.maven:itemzoom-261725:5043628")
-//
-    //modImplementation ("curse.maven:biomancy-492939:5886758")
-//
-    //modImplementation ("curse.maven:celestisynth-872712:6900952")
-    //modImplementation ("curse.maven:playeranimator-658587:4587214")
-//
-    //modImplementation ("curse.maven:born-in-chaos-686437:6833957")
-//
-    //modImplementation ("curse.maven:flerovium-1142875:6790332")
-    //modImplementation ("curse.maven:embeddium-908741:5681725")
-//
-    //modImplementation ("curse.maven:lethality-a-terramity-addon-1282036:6800522")
-    //modImplementation ("curse.maven:caelus-308989:5281700")
-    //modImplementation ("curse.maven:terramity-1084134:6054971")
-//
-    //modImplementation ("curse.maven:tetra-289712:6912921")
-    //modImplementation ("curse.maven:mutil-351914:6418901")
-//
-    //modImplementation ("curse.maven:alexs-caves-924854:5848216")
-    //modImplementation ("curse.maven:citadel-331936:6702068")
-//
-    //modImplementation ("curse.maven:clean-tooltips-855017:4703388")
-    //modImplementation ("curse.maven:enchantment-descriptions-250419:5855251")
-    //modImplementation ("curse.maven:bookshelf-228525:5423987")
+modImplementation ("curse.maven:draconic-evolution-223565:6793843")
+modImplementation ("curse.maven:brandons-core-231382:5422013")
+modImplementation ("curse.maven:codechicken-lib-1-8-242818:5753868")
 
-    //compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
-    //runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
+// waystones
+modImplementation ("curse.maven:waystones-245755:6856603")
+modImplementation ("curse.maven:balm-531761:6841886")
+
+// apotheosis
+modImplementation ("curse.maven:patchouli-306770:6164575")
+modImplementation ("curse.maven:placebo-283644:6274231")
+modImplementation ("curse.maven:apothic-attributes-898963:5634071")
+modImplementation ("curse.maven:apotheosis-313970:6461960")
+
+// ftb quests
+//modImplementation ("curse.maven:ftb-quests-forge-289412:6829212")
+//modImplementation ("curse.maven:ftb-teams-forge-404468:6130786")
+//modImplementation ("curse.maven:ftb-library-forge-404465:6807424")
+modImplementation ("curse.maven:architectury-api-419699:5137938")
+
+// macaws bridges
+modImplementation ("curse.maven:macaws-bridges-351725:6528751")
+
+// simply swords
+modImplementation ("curse.maven:simply-swords-659887:5639538")
+modImplementation ("curse.maven:cloth-config-348521:5729105")
+
+// little logistics
+modImplementation ("curse.maven:little-logistics-570050:4799459")
+
+// exposure
+modImplementation ("curse.maven:exposure-871755:6655718")
+
+// scorched guns
+modImplementation ("curse.maven:scorched-guns-802940:6966430")
+modImplementation ("curse.maven:curios-309927:6418456")
+modImplementation ("curse.maven:framework-549225:6531428")
+modImplementation ("curse.maven:geckolib-388172:6920925")
+
+modImplementation ("curse.maven:modernfix-790626:6837713")
+
+modImplementation ("curse.maven:companions-mod-1300341:6930503")
+modImplementation ("curse.maven:knight-lib-1105855:6821911")
+
+modImplementation ("curse.maven:equipment-compare-502561:4650073")
+modImplementation ("curse.maven:iceberg-520110:5838149")
+
+modImplementation ("curse.maven:itemzoom-261725:5043628")
+
+modImplementation ("curse.maven:biomancy-492939:5886758")
+
+modImplementation ("curse.maven:celestisynth-872712:6900952")
+modImplementation ("curse.maven:playeranimator-658587:4587214")
+
+modImplementation ("curse.maven:born-in-chaos-686437:6833957")
+
+modImplementation ("curse.maven:flerovium-1142875:6790332")
+modImplementation ("curse.maven:embeddium-908741:5681725")
+
+modImplementation ("curse.maven:lethality-a-terramity-addon-1282036:6800522")
+modImplementation ("curse.maven:caelus-308989:5281700")
+modImplementation ("curse.maven:terramity-1084134:6054971")
+
+modImplementation ("curse.maven:tetra-289712:6912921")
+modImplementation ("curse.maven:mutil-351914:6418901")
+
+modImplementation ("curse.maven:alexs-caves-924854:5848216")
+modImplementation ("curse.maven:citadel-331936:6702068")
+
+modImplementation ("curse.maven:clean-tooltips-855017:4703388")
+modImplementation ("curse.maven:enchantment-descriptions-250419:5855251")
+modImplementation ("curse.maven:bookshelf-228525:5423987")
+
+modImplementation("curse.maven:configured-457570:5180900")
+
+//compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
+//runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
 }
 
