@@ -121,8 +121,8 @@ public class StyleFactory {
 
         // Inner overlay
         switch (RenderUtils.getInnerOverlayType(context)) {
-            case "glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
-            case "static" -> layers.add(new StaticInnerOverlay(colors[0]));
+            case "glint", "auto_glint" -> layers.add(new GradientInnerOverlay(colors[0], colors[1], 0x0));
+            case "static", "auto_static" -> layers.add(new StaticInnerOverlay(colors[0]));
             default -> layers.add(new GradientInnerOverlay(colors[0], colors[1], colors[2]));
         }
 
