@@ -41,16 +41,17 @@ public class IconAnimationFactory {
     }
 
     private static void animateRotate(TooltipContext context, float progress, float scale) {
-        context.multiply(Axis.YP, 180);
+        context.multiply(Axis.YP, 180f * progress);
         context.scale(scale, scale, scale);
     }
 
     private static void animateRotateFast(TooltipContext context, float progress, float scale) {
+        context.multiply(Axis.YP, 360f * progress);
         context.scale(scale, scale, scale);
     }
 
     private static void animateRotateZoom(TooltipContext context, float progress, float scale) {
-        context.multiply(Axis.YP, 180);
+        context.multiply(Axis.YP, 180f * progress);
         animateZoom(context, progress, scale);
     }
 
