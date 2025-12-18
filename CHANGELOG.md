@@ -1,4 +1,7 @@
 # 1.4.0
+
+- Thanks for the million downloads!
+
 - Complete internal rewrite. The mod is now structured in a more modular and maintainable way.
 - Fixed all alignment issues, so the tooltip components now correctly adapt to the tooltip’s proportions when elements are moved, removed, or disabled.
 - Fixed scrolling misalignment and now the text is properly clipped while scrolling (instead of whole lines disappearing).
@@ -7,7 +10,7 @@
 - Added `/tooltipoverhaul reload` command to reload `custom_frames.json` files without restarting the game.
 - Added an in-game config screen. On Fabric, ModMenu is required to open it, but it’s not required to run the mod.
 - Added 7 new effects: `magic_orbs`, `echo`, `speed_lines`, `galaxy`, `nebula`, `spiral`, `white_dust`.
-- Added 8 new frames: `draconic_fire_frame.png`, `medieval_crossroads_frame.png`, `plasma_lamp_frame.png`, `neon_fire_frame.png`, `garden_frame.png`, `construction_punk_frame.png`, `cavemen_frame.png`, `nuclear_alarm_frame.png`.
+- Added 12 new frames: `draconic_fire_frame.png`, `medieval_crossroads_frame.png`, `plasma_lamp_frame.png`, `neon_fire_frame.png`, `garden_frame.png`, `construction_punk_frame.png`, `cavemen_frame.png`, `nuclear_alarm_frame.png`, `gummy_bear_frame.png`, `greek_temple_frame.png`, `pure_alchemy_frame.png`, `skyland_frame.png`.
 - Added 2 new divider line types: `static` and `linear` (divider type is now configurable).
 - Added a config option to change the default position of the main tooltip.
 - Added a new icon background type: `glow` (dynamic, it matches the inner frame color).
