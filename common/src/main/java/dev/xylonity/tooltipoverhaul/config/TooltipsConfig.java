@@ -191,6 +191,16 @@ public final class TooltipsConfig {
     public static String DIVIDER_LINE_TYPE = "gradient";
 
     @ConfigEntry(
+            comment = "Preview model to render in the second panel. Options: armor_stand, player_skin."
+    )
+    public static String PREVIEW_PANEL_MODEL = "player_skin";
+
+    @ConfigEntry(
+            comment = "If PREVIEW_PANEL_MODEL is set to player_skin, renders the current player skin (true) or a placeholder skin (false)."
+    )
+    public static boolean USE_PLAYER_SKIN_IN_PREVIEW = true;
+
+    @ConfigEntry(
             comment = "Color palette for tooltips without a stack. Must specify exactly 3 ARGB colors."
     )
     public static String NO_STACK_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";

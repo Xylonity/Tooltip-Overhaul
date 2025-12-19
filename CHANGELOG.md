@@ -19,6 +19,8 @@
 - Added a config option to change the preview panel (second panel) size.
 - Added a config option to change the main panel position.
 - Added a config option to enable tooltip drop shadow.
+- Added a config option to change the preview model from a couple options: armor_stand or player_skin.
+- Added a config option to enable whether the skin of the preview player skin model should be the local player skin or a dummy skin.
 - Effects can now be set globally via config.
 - Effects can now be chained together.
 - The preview panel now automatically repositions itself when there isn’t enough space to the left (configurable).
@@ -50,6 +52,7 @@
 + New config entry to apply custom frames to specific rarities
 + Weapon/Tool comparison
 + Visual rework of the tooltips
++ Templates for custom_frames.json files, in order to predefine styles and reduce redundancy
 
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.

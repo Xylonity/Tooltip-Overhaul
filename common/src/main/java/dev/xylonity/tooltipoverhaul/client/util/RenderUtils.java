@@ -114,6 +114,14 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getEffect).orElse(TooltipsConfig.EFFECTS);
     }
 
+    public static boolean usePlayerSkinInPreview(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getUsePlayerSkinInPreview).orElse(TooltipsConfig.USE_PLAYER_SKIN_IN_PREVIEW);
+    }
+
+    public static String getPreviewPanelModel(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getPreviewPanelModel).orElse(TooltipsConfig.PREVIEW_PANEL_MODEL);
+    }
+
     public static int calculatePadding(TooltipContext context, TextAxis axis) {
         if (context.getStack().isEmpty()) {
             if (axis == TextAxis.X) {

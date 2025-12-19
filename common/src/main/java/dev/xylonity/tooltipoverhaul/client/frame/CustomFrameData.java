@@ -49,6 +49,8 @@ public record CustomFrameData(
         Optional<String> specialEffect,
         List<String> vignettes,
         Optional<String> iconBackgroundType,
+        Optional<Boolean> usePlayerSkinInPreview,
+        Optional<String> previewPanelModel,
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
         Optional<Boolean> showShadow,
@@ -135,8 +137,16 @@ public record CustomFrameData(
         return iconRotatingSpeed.orElse(TooltipsConfig.ICON_ROTATING_SPEED);
     }
 
+    public boolean getUsePlayerSkinInPreview() {
+        return usePlayerSkinInPreview.orElse(TooltipsConfig.USE_PLAYER_SKIN_IN_PREVIEW);
+    }
+
     public String getDividerLineType() {
         return dividerLineType.orElse(TooltipsConfig.DIVIDER_LINE_TYPE);
+    }
+
+    public String getPreviewPanelModel() {
+        return previewPanelModel.orElse(TooltipsConfig.PREVIEW_PANEL_MODEL);
     }
 
     public int getDividerLineTopPadding() {

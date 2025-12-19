@@ -17,6 +17,7 @@ import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.preview.inner.DefaultPreviewGradientInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewArmorStand;
+import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewPlayerRenderer;
 import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewStackRenderer;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
@@ -161,7 +162,12 @@ public class StyleFactory {
                 layers.add(new DefaultPreviewStackRenderer());
             }
             else {
-                layers.add(new DefaultPreviewArmorStand());
+                if (RenderUtils.getPreviewPanelModel(context).equals("armor_stand")) {
+                    layers.add(new DefaultPreviewArmorStand());
+                }
+                else {
+                    layers.add(new DefaultPreviewPlayerRenderer());
+                }
             }
 
         }
