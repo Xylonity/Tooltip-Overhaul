@@ -15,6 +15,7 @@ import net.minecraft.client.player.RemotePlayer;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
@@ -24,7 +25,7 @@ import java.util.UUID;
 
 public class DefaultPreviewPlayerRenderer implements PreviewRendererLayer {
 
-    private static final GameProfile DEFAULT_PROFILE = new GameProfile(new UUID(0L, 0L), "Preview");
+    private static final GameProfile DEFAULT_PROFILE = new GameProfile(new UUID(0L, 0L), "");
     private static final ResourceLocation DEFAULT_SKIN = TooltipOverhaul.pathOf("textures/preview/dummy.png");
 
     @Override
@@ -90,6 +91,16 @@ public class DefaultPreviewPlayerRenderer implements PreviewRendererLayer {
 
                 return "default";
             }
+
+            @Override
+            public boolean isModelPartShown(@NotNull PlayerModelPart part) {
+                if (localPlayer != null && usePlayerSkin) {
+                    return localPlayer.isModelPartShown(part);
+                }
+
+                return super.isModelPartShown(part);
+            }
+
 
         };
 
