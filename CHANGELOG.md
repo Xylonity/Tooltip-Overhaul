@@ -49,9 +49,9 @@
 - Temporarily disabled `iconSize` config option (will be re-added in a future version).
 
 + IN UPCOMING UPDATES:
++ Visual rework of the tooltips
 + New config entry to apply custom frames to specific rarities
 + Weapon/Tool comparison
-+ Visual rework of the tooltips
 + Templates for custom_frames.json files, in order to predefine styles and reduce redundancy
 
 # 1.3.0
