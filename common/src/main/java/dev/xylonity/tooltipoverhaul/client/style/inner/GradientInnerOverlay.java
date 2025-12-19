@@ -1,14 +1,11 @@
 package dev.xylonity.tooltipoverhaul.client.style.inner;
 
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipFrame;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.InnerOverlayLayer;
+import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.phys.Vec2;
 
-import java.awt.*;
-
-public class GradientInnerOverlay implements ITooltipFrame {
+public class GradientInnerOverlay implements InnerOverlayLayer {
 
     private final int color1;
     private final int color2;
@@ -21,26 +18,29 @@ public class GradientInnerOverlay implements ITooltipFrame {
     }
 
     @Override
-    public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
-        int x0 = (int) pos.x - 3;
-        int y0 = (int) pos.y - 3;
-        int width = size.x + 6;
-        int height = size.y + 6;
+    public void render(TooltipContext context, Vec2 position) {
+        int x0 = (int) (context.getTooltipPosition().x - 3);
+        int y0 = (int) (context.getTooltipPosition().y - 2);
+        int width = (int) (context.getTooltipSize().x + 5);
+        int height = (int) (context.getTooltipSize().y + 4);
 
-        renderFrameGradient(ctx.graphics(), x0, y0 + 1, width, height - 2, depth.getZ(), color1, color2, color3);
+        renderFrameGradient(context.getGraphics(), x0, y0 + 1, width, height - 2, color1, color2, color3);
 
         // Top and bottom lines
-        ctx.graphics().fill(x0, y0, x0 + width, y0 + 1, depth.getZ(), color1);
-        ctx.graphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, depth.getZ(), color3);
+        context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, color1);
+        context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, color3);
     }
 
-    private static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int z, int c1, int c2, int c3) {
+    private static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int c1, int c2, int c3) {
         int mid = height / 2;
+
         // Left border (top and bottom sections)
-        graphics.fillGradient(x, y, x + 1, y + mid, z, c1, c2);
-        graphics.fillGradient(x, y + mid, x + 1, y + height, z, c2, c3);
+        graphics.fillGradient(x, y, x + 1, y + mid, c1, c2);
+        graphics.fillGradient(x, y + mid, x + 1, y + height, c2, c3);
+
         // Right border (top and bottom sections)
-        graphics.fillGradient(x + width - 1, y, x + width, y + mid, z, c1, c2);
-        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, z, c2, c3);
+        graphics.fillGradient(x + width - 1, y, x + width, y + mid, c1, c2);
+        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, c2, c3);
     }
+
 }

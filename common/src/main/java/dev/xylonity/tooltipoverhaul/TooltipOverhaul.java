@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul;
 
 import dev.xylonity.tooltipoverhaul.platform.TooltipPlatform;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,5 +13,13 @@ public class TooltipOverhaul {
     public static final Logger LOGGER = LoggerFactory.getLogger("Tooltip Overhaul");
 
     public static final TooltipPlatform PLATFORM = ServiceLoader.load(TooltipPlatform.class).findFirst().orElseThrow();
+
+    public static ResourceLocation rawPathOf(String path) {
+        return ResourceLocation.tryParse(path);
+    }
+
+    public static ResourceLocation pathOf(String path) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    }
 
 }

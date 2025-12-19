@@ -3,41 +3,40 @@ package dev.xylonity.tooltipoverhaul.client.style.effect;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipEffect;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
+import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
+import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
-import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Random;
 
-public class StarsEffect implements ITooltipEffect {
+public class StarsEffect implements EffectLayer {
 
-    private static final int STARS_CAP = 3;
-    private static final long SPAWN_INTERVAL = 620L;
-    private static final int MIN_LIFE = 420;
-    private static final int MAX_LIFE = 680;
+    private static final int STARS_CAP = 1;
+    private static final long SPAWN_INTERVAL = 3500L;
+    private static final int MIN_LIFE = 550;
+    private static final int MAX_LIFE = 800;
 
-    private static final float MIN_SIZE = 28f;
-    private static final float MAX_SIZE = 68f;
-    private static final float CORe_SIZE = 6.5f;
-    private static final float GLOW_SIZE = 2.4f;
-    private static final float OFFSET = 0.8f;
-
-    private final Deque<Star> stars = new ArrayDeque<>();
-    private final int[] colors;
-    private long lastSpawn = 0;
+    private static final float MIN_SIZE = 20f;
+    private static final float MAX_SIZE = 50f;
+    private static final float CORE_SIZE = 11f;
+    private static final float GLOW_SIZE = 2f;
+    private static final float OFFSET = 0f;
 
     private static final int[] DEFAULT_COLORS = {
-            0x88A0D8FF,
-            0x88FFCFE7,
-            0x88FFFFFF
+            0x88ffffff,
+            0x88ffffff,
+            0x88ffffff
     };
+
+    private static final Deque<Star> stars = new ArrayDeque<>();
+    private final int[] colors;
+    private long lastSpawn = 0L;
 
     public StarsEffect() {
         this(DEFAULT_COLORS);
@@ -48,23 +47,28 @@ public class StarsEffect implements ITooltipEffect {
     }
 
     @Override
-    public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
-        int x = (int) pos.x;
-        int y = (int) pos.y;
-        int w = size.x;
-        int h = size.y;
-
-        if (w <= 2 || h <= 2) return;
+    public void render(TooltipContext context, Vec2 position) {
+        int positionX = (int) position.x;
+        int positionY = (int) position.y;
+        int tooltipWidth = (int) context.getTooltipSize().x;
+        int tooltipHeight = (int) context.getTooltipSize().y;
 
         long now = System.currentTimeMillis();
+
         if (now - lastSpawn >= SPAWN_INTERVAL && stars.size() < STARS_CAP) {
-            spawnStar(x, y, w, h, now);
+            spawnStar(tooltipWidth, tooltipHeight, now);
             lastSpawn = now;
         }
 
-        ctx.push(() -> {
-            ctx.graphics().enableScissor(x - 3, y - 3, x + w + 3, y + h + 3);
-            ctx.translate(0, 0, depth.getZ());
+        context.push(() -> {
+            context.getGraphics().enableScissor(
+                    positionX - context.getPaddingX() - 1,
+                    positionY - context.getPaddingY(),
+                    positionX + tooltipWidth + context.getPaddingX(),
+                    positionY + tooltipHeight + context.getPaddingY()
+            );
+
+            //context.translate(0, 0, context.getLayerDepth().getZ());
 
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(
@@ -73,32 +77,48 @@ public class StarsEffect implements ITooltipEffect {
                     GlStateManager.SourceFactor.ONE,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
+
+            RenderSystem.disableDepthTest();
+            RenderSystem.depthMask(false);
+            RenderSystem.disableCull();
+
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            Matrix4f pose = ctx.pose().last().pose();
-            stars.removeIf(s -> !s.updateAndRender(pose, now));
+            Matrix4f pose = context.getPose().last().pose();
 
-            // reset
+            stars.removeIf(star -> !star.updateAndRender(pose, now, positionX, positionY));
+
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
             RenderSystem.blendFunc(
                     GlStateManager.SourceFactor.SRC_ALPHA,
                     GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
             );
-            RenderSystem.disableBlend();
 
-            ctx.graphics().disableScissor();
+            RenderSystem.disableBlend();
+            RenderSystem.enableCull();
+
+            context.getGraphics().disableScissor();
         });
+
     }
 
-    private void spawnStar(int x, int y, int w, int h, long now) {
+    private void spawnStar(int width, int height, long now) {
         Random random = new Random();
+        float margin = 10f;
 
-        float margin = 10;
-
-        float cx = x + margin + random.nextFloat() * Math.max(1f, w - 2 * margin);
-        float cy = y + margin + random.nextFloat() * Math.max(1f, h - 2 * margin);
+        float localX = margin + random.nextFloat() * Math.max(1f, width - 2f * margin);
+        float localY = margin + random.nextFloat() * Math.max(1f, height - 2f * margin);
 
         float rot = random.nextFloat() * (float) Math.PI;
-        stars.addLast(new Star(cx, cy, lerp(random.nextFloat()), now, randomBetween(), colors[random.nextInt(colors.length)], rot));
+        float maxLength = AnimationUtils.lerp(MIN_SIZE, MAX_SIZE, random.nextFloat());
+        int life = AnimationUtils.randomBetween(random, MIN_LIFE, MAX_LIFE);
+        int color = colors[random.nextInt(colors.length)];
+
+        float coreScale = 0.9f + 0.2f * random.nextFloat();
+        float twinklePhase = random.nextFloat() * (float) (Math.PI * 2.0);
+
+        stars.addLast(new Star(localX, localY, maxLength, now, life, color, rot, coreScale, twinklePhase));
 
         if (stars.size() > STARS_CAP) {
             stars.pollFirst();
@@ -109,85 +129,77 @@ public class StarsEffect implements ITooltipEffect {
     private static void draw(Matrix4f pose, float x1, float y1, float x2, float y2, float tStart, float tEnd, int r, int g, int b, int a) {
         float dx = x2 - x1;
         float dy = y2 - y1;
-
         float len = (float) Math.max(0.001, Math.hypot(dx, dy));
 
-        float x = -dy / len;
-        float y = dx / len;
+        float nx = -dy / len;
+        float ny = dx / len;
 
+        Tesselator tesselator = Tesselator.getInstance();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        Tesselator tess = Tesselator.getInstance();
-        BufferBuilder buf = tess.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-        buf.addVertex(pose, x1 - (x * tStart * 0.5f), y1 - (y * tStart * 0.5f), 0).setColor(r, g, b, a);
-        buf.addVertex(pose, x1 + (x * tStart * 0.5f), y1 + (y * tStart * 0.5f), 0).setColor(r, g, b, a);
-        buf.addVertex(pose, x2 - (x * tEnd * 0.5f), y2 - (y * tEnd * 0.5f), 0).setColor(r, g, b, a);
-        buf.addVertex(pose, x2 + (x * tEnd * 0.5f), y2 + (y * tEnd * 0.5f), 0).setColor(r, g, b, a);
+        BufferBuilder buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        buf.addVertex(pose, x1 - (nx * tStart * 0.5f), y1 - (ny * tStart * 0.5f), 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x1 + (nx * tStart * 0.5f), y1 + (ny * tStart * 0.5f), 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x2 - (nx * tEnd * 0.5f), y2 - (ny * tEnd * 0.5f), 0).setColor(r, g, b, a);
+        buf.addVertex(pose, x2 + (nx * tEnd * 0.5f), y2 + (ny * tEnd * 0.5f), 0).setColor(r, g, b, a);
 
         try (MeshData data = buf.buildOrThrow()) {
             BufferUploader.drawWithShader(data);
         }
     }
 
-    private static int randomBetween() {
-        return StarsEffect.MIN_LIFE + (int) Math.floor(Math.random() * (StarsEffect.MAX_LIFE - StarsEffect.MIN_LIFE + 1));
-    }
+    private record Star(float localX, float localY, float maxLen, long birth, int lifetime, int argb, float baseRot, float coreScale, float twinklePhase) {
 
-    private static float lerp(float t) {
-        return StarsEffect.MIN_SIZE + (StarsEffect.MAX_SIZE - StarsEffect.MIN_SIZE) * t;
-    }
-
-    private static float clamp(float v) {
-        return Math.max(0f, Math.min(1f, v));
-    }
-
-    private static final class Star {
-
-        private final float cx;
-        private final float cy;
-        private final float maxLen;
-        private final float baseRot;
-        private final long birth;
-        private final int lifetime;
-        private final int argb;
-
-        public Star(float cx, float cy, float maxLen, long birth, int life, int color, float baseRot) {
-            this.cx = cx; this.cy = cy; this.maxLen = maxLen;
-            this.birth = birth; this.lifetime = life; this.argb = color; this.baseRot = baseRot;
-        }
-
-        boolean updateAndRender(Matrix4f pose, long now) {
+        boolean updateAndRender(Matrix4f pose, long now, float nowX, float nowY) {
             float time = (now - birth) / (float) lifetime;
             if (time >= 1f) return false;
 
-            float s = (float) Math.sin(Math.PI * clamp(time));
-            float rot = baseRot + (float) Math.sin((now + birth) * 0.0023) * 0.08f;
+            float centerX = nowX + localX;
+            float centerY = nowY + localY;
 
-            float alpha = (float) Math.pow(1f - time, 1.15f);
-            int red = (argb >>> 16) & 0xFF;
-            int green = (argb >>> 8) & 0xFF;
-            int blue = argb & 0xFF;
+            float s = (float) Math.sin(Math.PI * AnimationUtils.clamp(time, 0, 1));
 
-            float len = 4f + s * maxLen;
-            float tco = CORe_SIZE * (0.9f + 0.2f * new Random().nextFloat());
-            float tti  = (0.8f + 0.4f * (1f - s));
+            float rot = baseRot + (float) Math.sin((now - birth) * 0.0023f) * 0.08f;
+
+            float alphaFactor = (float) Math.pow(1f - time, 1.15f);
+
+            int red = ColorUtils.red(argb);
+            int green = ColorUtils.green(argb);
+            int blue = ColorUtils.blue(argb);
+
+            float length = 4f + s * maxLen;
+
+            float twinkle = 0.85f + 0.15f * (float) Math.sin((now - birth) * 0.006f + twinklePhase);
+
+            float tCoreBase = CORE_SIZE * coreScale * twinkle;
+            float tInner = (0.8f + 0.4f * (1f - s));
+
             for (int i = 0; i < 4; i++) {
-                float ax = (float) Math.cos(rot + i * (float)(Math.PI * 0.5));
-                float ay = (float) Math.sin(rot + i * (float)(Math.PI * 0.5));
-                float x2 = cx + ax * len;
-                float y2 = cy + ay * len;
+                float angle = rot + i * (float) (Math.PI * 0.5);
+                float ax = (float) Math.cos(angle);
+                float ay = (float) Math.sin(angle);
+                float x2 = centerX + ax * length;
+                float y2 = centerY + ay * length;
 
                 // halo
-                draw(pose, cx, cy, x2, y2, tco * GLOW_SIZE, tti * GLOW_SIZE, red, green, blue, (int)(90 * alpha));
+                float haloStart = tCoreBase * GLOW_SIZE * 0.7f;
+                float haloEnd = tInner * GLOW_SIZE * 0.7f;
+                draw(pose, centerX, centerY, x2, y2, haloStart, haloEnd, red, green, blue, (int) (90 * alphaFactor));
 
                 // core
-                draw(pose, cx, cy, x2, y2, tco, tti, red, green, blue, (int) (200 * alpha));
+                float coreStart = tCoreBase * 0.7f;
+                float coreEnd = tInner * 0.9f;
+                draw(pose, centerX, centerY, x2, y2, coreStart, coreEnd, red, green, blue, (int) (200 * alphaFactor));
 
-                // external border
                 float nx = -ay * OFFSET;
                 float ny = ax * OFFSET;
-                draw(pose, cx + nx, cy + ny, x2 + nx, y2 + ny, tco * 0.9f, tti * 0.9f, 255, 80, 80, (int)(110 * alpha));
-                draw(pose, cx - nx, cy - ny, x2 - nx, y2 - ny, tco * 0.9f, tti * 0.9f, 80, 120, 255, (int)(110 * alpha));
+
+                float borderStart = tCoreBase * 0.6f;
+                float borderEnd = tInner * 0.8f;
+
+                draw(pose, centerX + nx, centerY + ny, x2 + nx, y2 + ny, borderStart, borderEnd, 255, 80, 80, (int) (110 * alphaFactor));
+
+                draw(pose, centerX - nx, centerY - ny, x2 - nx, y2 - ny, borderStart, borderEnd, 80, 120, 255, (int) (110 * alphaFactor));
             }
 
             return true;

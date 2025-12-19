@@ -1,13 +1,10 @@
 package dev.xylonity.tooltipoverhaul.client.style.inner;
 
-import dev.xylonity.tooltipoverhaul.client.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
-import dev.xylonity.tooltipoverhaul.client.layer.bridge.ITooltipFrame;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.InnerOverlayLayer;
+import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import net.minecraft.world.phys.Vec2;
 
-import java.awt.*;
-
-public class StaticInnerOverlay implements ITooltipFrame {
+public class StaticInnerOverlay implements InnerOverlayLayer {
 
     private final int color;
 
@@ -16,20 +13,23 @@ public class StaticInnerOverlay implements ITooltipFrame {
     }
 
     @Override
-    public void render(LayerDepth depth, TooltipContext ctx, Vec2 pos, Point size) {
-        int x0 = (int) pos.x - 3;
-        int y0 = (int) pos.y - 3;
-        int width = size.x + 6;
-        int height = size.y + 6;
+    public void render(TooltipContext context, Vec2 position) {
+        int x0 = (int) (context.getTooltipPosition().x - 3);
+        int y0 = (int) (context.getTooltipPosition().y - 2);
+        int width = (int) (context.getTooltipSize().x + 5);
+        int height = (int) (context.getTooltipSize().y + 4);
 
         // Top
-        ctx.graphics().fill(x0, y0, x0 + width, y0 + 1, depth.getZ(), color);
+        context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, color);
+
         // Bottom
-        ctx.graphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, depth.getZ(), color);
+        context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, color);
+
         // Left
-        ctx.graphics().fill(x0, y0, x0 + 1, y0 + height, depth.getZ(), color);
+        context.getGraphics().fill(x0, y0, x0 + 1, y0 + height, color);
+
         // Right
-        ctx.graphics().fill(x0 + width - 1, y0, x0 + width, y0 + height, depth.getZ(), color);
+        context.getGraphics().fill(x0 + width - 1, y0, x0 + width, y0 + height, color);
     }
 
 }

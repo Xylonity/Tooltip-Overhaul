@@ -1,3 +1,59 @@
+# 1.4.0
+
+- Thanks for the million downloads!
+
+- Complete internal rewrite. The mod is now structured in a more modular and maintainable way.
+- Fixed all alignment issues, so the tooltip components now correctly adapt to the tooltip’s proportions when elements are moved, removed, or disabled.
+- Fixed scrolling misalignment and now the text is properly clipped while scrolling (instead of whole lines disappearing).
+- The entire code base has been optimized, reducing computational power.
+- Added a new style: `vignette` (2 variants: "circular" and "circular_hole").
+- Added `/tooltipoverhaul reload` command to reload `custom_frames.json` files without restarting the game.
+- Added an in-game config screen. On Fabric, ModMenu is required to open it, but it’s not required to run the mod.
+- Added 7 new effects: `magic_orbs`, `echo`, `speed_lines`, `galaxy`, `nebula`, `spiral`, `white_dust`.
+- Added 12 new frames: `draconic_fire_frame.png`, `medieval_crossroads_frame.png`, `plasma_lamp_frame.png`, `neon_fire_frame.png`, `garden_frame.png`, `construction_punk_frame.png`, `cavemen_frame.png`, `nuclear_alarm_frame.png`, `gummy_bear_frame.png`, `greek_temple_frame.png`, `pure_alchemy_frame.png`, `skyland_frame.png`.
+- Added 2 new divider line types: `static` and `linear` (divider type is now configurable).
+- Added a config option to change the default position of the main tooltip.
+- Added a new icon background type: `glow` (dynamic, it matches the inner frame color).
+- Added config options to change padding and background color for empty tooltips (normal tooltips without an item stack).
+- Added a config option to change the divider line’s top and bottom padding.
+- Added a config option to change the preview panel (second panel) size.
+- Added a config option to change the main panel position.
+- Added a config option to enable tooltip drop shadow.
+- Added a config option to change the preview model from a couple options: armor_stand or player_skin.
+- Added a config option to enable whether the skin of the preview player skin model should be the local player skin or a dummy skin.
+- Effects can now be set globally via config.
+- Effects can now be chained together.
+- The preview panel now automatically repositions itself when there isn’t enough space to the left (configurable).
+- Preview panel renderers now auto-scale to the panel bounds and always adapt to the preview panel size.
+- `ripples` effect now spawns ripples continuously. Their lifetime scales with the tooltip size.
+- Enhanced the color approximator algorithm when using the "auto_" inner frame color predicate
+- The color approximator algorithm now computes colors per frame instead of the whole frame file
+- Now config entries that no longer exist are automatically purged
+- Enhanced the line wrapper feature.
+- Fixed a case where the line wrapping utility would double indent certain wrapped lines.
+- Fixed the preview panel renderer rotation anchor point not correctly positioned.
+- Fixed tooltip position issues when moving the cursor, including size miscalculations with the equipment comparison feature.
+- Fixed overlay textures not scaling correctly when the padding is modified.
+- Fixed background color parsing, now uses hex strings (e.g. `"#FFFFFF"`) instead of numeric values (e.g. `-684233`).
+- Fixed GL state error log spam after unbinding the equipment comparison keybind.
+- Fixed inner frame colors not updating correctly based on the hovered stack information.
+- Fixed non-working `colorItemRating` entry in `custom_frames.json`.
+- Fixed “stack bleeding” on Forge where raw tooltips inherited the hovered stack info.
+- Fixed `stars` effect anchoring to the screen instead of the tooltip position.
+- Fixed incoherent speed of the cinders in the `cinder` effect.
+- Fixed divider line color not adapting correctly to the inner frame
+- Fixed a case where the title of some items was vertically misaligned
+- Changed `guns_and_wires.png` overlay name to `guns_and_wires_frame.png`
+- Removed: `titlePositionX`, `titlePositionY`, `ratingPositionX`, `ratingPositionY`, `tooltipDescriptionPositionX`, `tooltipDescriptionY` (not needed for the common use-case. Ask me if you need them back).
+- Removed: `secondPanelRendererSize` (preview renderers now scale to the preview panel. Ask me if you need this entry back).
+- Temporarily disabled `iconSize` config option (will be re-added in a future version).
+
++ IN UPCOMING UPDATES:
++ Visual rework of the tooltips
++ New config entry to apply custom frames to specific rarities
++ Weapon/Tool comparison
++ Templates for custom_frames.json files, in order to predefine styles and reduce redundancy
+
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.
 - Fixed divider line not adapting correctly its color with certain items with a custom frame defined

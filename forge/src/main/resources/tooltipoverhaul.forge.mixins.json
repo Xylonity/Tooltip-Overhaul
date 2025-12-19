@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_18",
   "mixins": [],
   "client": [
+    "GuiGraphicsAccessor"
   ],
   "server": [],
   "injectors": {

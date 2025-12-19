@@ -1,25 +1,35 @@
 package dev.xylonity.tooltipoverhaul;
 
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.screen.TooltipOverhaulConfigScreen;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.gui.ConfigurationScreen;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 @Mod(TooltipOverhaul.MOD_ID)
 public class TooltipOverhaulNeoForge {
 
     public TooltipOverhaulNeoForge(IEventBus eventBus) {
+        ModLoadingContext.get().registerExtensionPoint(
+                IConfigScreenFactory.class,
+                () -> (mc, parent) -> new TooltipOverhaulConfigScreen(parent)
+        );
+
         if (FMLLoader.getDist().isClient()) {
             ClientEntrypoint.init(eventBus);
-        } else {
+        }
+        else {
             TooltipOverhaul.LOGGER.warn("Won't load as the mod should be initialized on the client side.");
         }
 

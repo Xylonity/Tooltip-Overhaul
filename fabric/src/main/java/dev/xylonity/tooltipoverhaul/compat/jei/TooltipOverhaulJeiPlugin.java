@@ -1,0 +1,24 @@
+package dev.xylonity.tooltipoverhaul.compat.jei;
+
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
+import mezz.jei.api.IModPlugin;
+import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.runtime.IJeiRuntime;
+import net.minecraft.resources.ResourceLocation;
+
+@JeiPlugin
+public final class TooltipOverhaulJeiPlugin implements IModPlugin {
+
+    private static final ResourceLocation UID = ResourceLocation.fromNamespaceAndPath(TooltipOverhaul.MOD_ID, "jei_plugin");
+
+    @Override
+    public ResourceLocation getPluginUid() {
+        return UID;
+    }
+
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime runtime) {
+        JeiHoverHolder.init(runtime);
+    }
+
+}

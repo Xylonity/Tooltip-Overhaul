@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.config;
 
+import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.toml.TomlFormat;
 import dev.xylonity.tooltipoverhaul.config.wrapper.AutoConfig;
@@ -58,10 +59,14 @@ public final class ConfigManager {
     }
 
     private static void loadOrCreate(Class<?> clazz) {
-        if (!REGISTERED.add(clazz)) return;
+        if (!REGISTERED.add(clazz)) {
+            return;
+        }
 
         AutoConfig meta = clazz.getAnnotation(AutoConfig.class);
-        if (meta == null) return;
+        if (meta == null) {
+            return;
+        }
 
         String fileName = meta.file();
         Path subDir = CONFIG_DIR.resolve(fileName);
@@ -94,6 +99,7 @@ public final class ConfigManager {
 
     private static void apply(Class<?> clazz, CommentedFileConfig cfg, boolean init) {
         Set<String> seenCats = new HashSet<>();
+        Set<String> validPaths = new HashSet<>();
 
         for (Field field : clazz.getDeclaredFields()) {
             ConfigEntry e = field.getAnnotation(ConfigEntry.class);
@@ -104,6 +110,8 @@ public final class ConfigManager {
             String entry = field.getName();
             String path = category.isEmpty() ? entry : category + "." + entry;
             String target = category.isEmpty() ? entry : category;
+
+            validPaths.add(path);
 
             Object def;
             try {
@@ -136,6 +144,38 @@ public final class ConfigManager {
             }
             catch (Exception ignored) {
                 ;;
+            }
+
+        }
+
+        removeNonExistent(cfg, validPaths);
+    }
+
+    private static void removeNonExistent(CommentedFileConfig cfg, Set<String> validPaths) {
+        removeNonExistent(cfg, "", validPaths);
+    }
+
+    private static void removeNonExistent(CommentedConfig node, String prefix, Set<String> validPaths) {
+        Set<String> keys = new HashSet<>(node.valueMap().keySet());
+
+        for (String key : keys) {
+            String fullPath = prefix.isEmpty() ? key : prefix + "." + key;
+
+            Object value = node.get(key);
+
+            if (value instanceof CommentedConfig nested) {
+                removeNonExistent(nested, fullPath, validPaths);
+
+                boolean hasAnyValidChild = validPaths.stream().anyMatch(p -> p.equals(fullPath) || p.startsWith(fullPath + "."));
+
+                if (nested.valueMap().isEmpty() && !hasAnyValidChild) {
+                    node.remove(key);
+                }
+            }
+            else {
+                if (!validPaths.contains(fullPath)) {
+                    node.remove(key);
+                }
             }
 
         }
@@ -355,6 +395,53 @@ public final class ConfigManager {
             case "double" -> f.setDouble(null, (Double) v);
             case "boolean" -> f.setBoolean(null, (Boolean) v);
             default -> f.set(null, v);
+        }
+
+    }
+
+    public static void save(Class<?> clazz) {
+        CommentedFileConfig config = OPEN.get(clazz);
+        if (config == null) {
+            return;
+        }
+
+        AutoConfig meta = clazz.getAnnotation(AutoConfig.class);
+        if (meta == null) {
+            return;
+        }
+
+        String fileName = meta.file();
+        Path tomlPath = CONFIG_DIR.resolve(fileName).resolve(fileName + ".toml");
+
+        IGNORE_UNTIL.put(tomlPath, System.currentTimeMillis() + 800L);
+
+        for (Field field : clazz.getDeclaredFields()) {
+            ConfigEntry rawEntry = field.getAnnotation(ConfigEntry.class);
+            if (rawEntry == null) {
+                continue;
+            }
+
+            field.setAccessible(true);
+
+            String category = rawEntry.category();
+            String entry = field.getName();
+            String path = category.isEmpty() ? entry : category + "." + entry;
+
+            try {
+                Object value = field.get(null);
+                config.set(path, value);
+            }
+            catch (Exception ignored) {
+                ;;
+            }
+
+        }
+
+        try {
+            config.save();
+        }
+        catch (Throwable ignored) {
+            ;;
         }
 
     }

@@ -19,7 +19,10 @@
             "dev.xylonity.tooltipoverhaul.TooltipOverhaulFabric"
         ],
         "jei_mod_plugin": [
-            "dev.xylonity.tooltipoverhaul.compat.TooltipOverhaulJeiPlugin"
+          "dev.xylonity.tooltipoverhaul.compat.jei.TooltipOverhaulJeiPlugin"
+        ],
+        "modmenu": [
+          "dev.xylonity.tooltipoverhaul.compat.modmenu.TooltipOverhaulModMenu"
         ]
     },
     "mixins": [

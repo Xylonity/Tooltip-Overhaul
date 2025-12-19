@@ -36,7 +36,7 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Horizontal offset (in pixels) for the second panel when a 3D preview is shown. Negative = left, positive = right."
     )
-    public static int SECOND_PANEL_X = -5;
+    public static int SECOND_PANEL_X = 0;
 
     @ConfigEntry(
             comment = "Vertical offset (in pixels) for the second panel when a 3D preview is shown. Negative = up, positive = down."
@@ -44,14 +44,50 @@ public final class TooltipsConfig {
     public static int SECOND_PANEL_Y = 0;
 
     @ConfigEntry(
+            comment = "Size (in pixels) of the second panel in the X axis when a 3D preview is shown."
+    )
+    public static int SECOND_PANEL_SIZE_X = 30;
+
+    @ConfigEntry(
+            comment = "Size (in pixels) of the second panel in the Y axis when a 3D preview is shown."
+    )
+    public static int SECOND_PANEL_SIZE_Y = 60;
+
+    @ConfigEntry(
+            comment = "Automatically reposition the preview panel (second panel) to the right side when there " +
+                    "is insufficient space on the left. If set to false, the panel will always remain on the left."
+    )
+    public static boolean AUTO_REPOSITION_PREVIEW_PANEL = true;
+
+    @ConfigEntry(
+            comment = "Horizontal offset (in pixels) for the tooltip. Negative = left, positive = right."
+    )
+    public static int TOOLTIP_POSITION_X = 0;
+
+    @ConfigEntry(
+            comment = "Vertical offset (in pixels) for the tooltip. Negative = up, positive = down."
+    )
+    public static int TOOLTIP_POSITION_Y = 0;
+
+    @ConfigEntry(
+            comment = "Extra padding above the divider line"
+    )
+    public static int DIVIDER_LINE_TOP_PADDING = 0;
+
+    @ConfigEntry(
+            comment = "Extra padding below the divider line"
+    )
+    public static int DIVIDER_LINE_BOTTOM_PADDING = 0;
+
+    @ConfigEntry(
             comment = "Default inner overlay style for tooltips. Options: glint, solid (monochrome), gradient."
     )
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
 
     @ConfigEntry(
-            comment = "Default tooltip background color in ARGB format (0xAARRGGBB). Example: 0xF0010110."
+            comment = "Default tooltip background color in ARGB format (#AARRGGBB). Example: #F0010110."
     )
-    public static int DEFAULT_BACKGROUND_COLOR = 0xF0000000;
+    public static String DEFAULT_BACKGROUND_COLOR = "#F0000000";
 
     @ConfigEntry(
             comment = "Override vanilla tooltips even when no ItemStack is present (e.g., JEI category buttons or unsupported stacks). "
@@ -63,12 +99,22 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Horizontal padding for the main panel."
     )
-    public static int MAIN_PANEL_PADDING_X = 4;
+    public static int MAIN_PANEL_PADDING_X = 2;
 
     @ConfigEntry(
             comment = "Vertical padding for the main panel."
     )
     public static int MAIN_PANEL_PADDING_Y = 2;
+
+    @ConfigEntry(
+            comment = "Horizontal padding for the main panel when there isn't a stack present."
+    )
+    public static int NO_STACK_TOOLTIP_PADDING_X = 1;
+
+    @ConfigEntry(
+            comment = "Vertical padding for the main panel when there isn't a stack present."
+    )
+    public static int NO_STACK_TOOLTIP_PADDING_Y = 1;
 
     @ConfigEntry(
             comment = "Title alignment. Options: left, middle, right."
@@ -81,39 +127,14 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
-            comment = "Icon background type. Options: focus, void, slot and slot_border"
+            comment = "Effects. Options: cinder, echo, galaxy, magic_orbs, speed_lines, nebula, spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars. You can chain effects together, for example: 'white_dust, nebula'"
+    )
+    public static String EFFECTS = "";
+
+    @ConfigEntry(
+            comment = "Icon background type. Options: focus, void, slot, slot_border and glow"
     )
     public static String ICON_BACKGROUND_TYPE = "slot_border";
-
-    @ConfigEntry(
-            comment = "Horizontal position offset for the title."
-    )
-    public static int TITLE_POSITION_X = 1;
-
-    @ConfigEntry(
-            comment = "Vertical position offset for the title."
-    )
-    public static int TITLE_POSITION_Y = 0;
-
-    @ConfigEntry(
-            comment = "Horizontal position offset for the rating text."
-    )
-    public static int RATING_POSITION_X = 1;
-
-    @ConfigEntry(
-            comment = "Vertical position offset for the rating text."
-    )
-    public static int RATING_POSITION_Y = 0;
-
-    @ConfigEntry(
-            comment = "Horizontal position offset for the tooltip description (the main content text)."
-    )
-    public static int TOOLTIP_DESCRIPTION_POSITION_X = 0;
-
-    @ConfigEntry(
-            comment = "Vertical position offset for the tooltip description (the main content text)."
-    )
-    public static int TOOLTIP_DESCRIPTION_POSITION_Y = 0;
 
     @ConfigEntry(
             comment = "Show rating text."
@@ -126,6 +147,25 @@ public final class TooltipsConfig {
     public static boolean DISABLE_ICON = false;
 
     @ConfigEntry(
+            comment = "Enable the tooltip shadow."
+    )
+    public static boolean SHOW_TOOLTIP_SHADOW = false;
+
+    @ConfigEntry(
+            comment = "Vignette entries for gradient overlays around the tooltip background. " +
+                    "Each vignette must be written in parentheses in this exact order: " +
+                    "(type, position, color, radius, extraPositionX, extraPositionY). " +
+                    "Example: (circular, top_left, #FF567823, 0.4, 0, 0). " +
+                    "You can define multiple vignettes by separating them with commas: " +
+                    "(...), (...), (...). " +
+                    "type = vignette shape (options: circular, hole). position = anchor on the tooltip " +
+                    "(e.g. top_left, top_right, middle, right, bottom_left). color = ARGB hex in #AARRGGBB. " +
+                    "radius = relative size factor (e.g. radius 0.4). extraPositionX / extraPositionY = " +
+                    "additional pixel offset from the chosen position."
+    )
+    public static String VIGNETTES = "";
+
+    @ConfigEntry(
             comment = "Animation style for the icon appearance."
     )
     public static String ICON_APPEAR_ANIMATION = "skew";
@@ -136,16 +176,6 @@ public final class TooltipsConfig {
     public static float ICON_ROTATING_SPEED = 0f;
 
     @ConfigEntry(
-            comment = "Size of the icon."
-    )
-    public static float ICON_SIZE = 1.35f;
-
-    @ConfigEntry(
-            comment = "Size of the second panel renderer."
-    )
-    public static float SECOND_PANEL_RENDERER_SIZE = 2.75f;
-
-    @ConfigEntry(
             comment = "Rotation speed multiplier for the tiered item preview in the second panel."
     )
     public static float SECOND_PANEL_RENDERER_SPEED = 1f;
@@ -154,6 +184,26 @@ public final class TooltipsConfig {
             comment = "Divider line color. Options: 'match_inner_frame_color', 'match_item_name_color' or a hex ARGB color (e.g., 0xA0EFEFEF)."
     )
     public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
+
+    @ConfigEntry(
+            comment = "Divider line type. Options: 'gradient', 'static', 'linear'"
+    )
+    public static String DIVIDER_LINE_TYPE = "gradient";
+
+    @ConfigEntry(
+            comment = "Preview model to render in the second panel. Options: armor_stand, player_skin."
+    )
+    public static String PREVIEW_PANEL_MODEL = "player_skin";
+
+    @ConfigEntry(
+            comment = "If PREVIEW_PANEL_MODEL is set to player_skin, renders the current player skin (true) or a placeholder skin (false)."
+    )
+    public static boolean USE_PLAYER_SKIN_IN_PREVIEW = true;
+
+    @ConfigEntry(
+            comment = "Color palette for tooltips without a stack. Must specify exactly 3 ARGB colors."
+    )
+    public static String NO_STACK_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";
 
     @ConfigEntry(
             comment = "Color palette for COMMON rarity (bright to dark). Must specify exactly 3 ARGB colors."
