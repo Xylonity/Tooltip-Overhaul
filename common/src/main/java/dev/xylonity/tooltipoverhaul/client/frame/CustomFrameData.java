@@ -270,7 +270,7 @@ public record CustomFrameData(
     }
 
     public boolean shouldDisableIcon() {
-        return disableIcon.isPresent() && disableIcon.get();
+        return disableIcon.orElse(TooltipsConfig.DISABLE_ICON);
     }
 
     public boolean shouldShowSecondPanel(TooltipContext context) {
