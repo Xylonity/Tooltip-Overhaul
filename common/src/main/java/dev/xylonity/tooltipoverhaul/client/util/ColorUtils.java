@@ -5,11 +5,11 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
-import dev.xylonity.tooltipoverhaul.util.ColorTest;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Rarity;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -33,7 +33,7 @@ public class ColorUtils {
             }
             else {
                 if (data.getBorderType().startsWith("auto") && data.hasCustomTexture()) {
-                    colors = ColorTest.getOverlayGradient(TooltipOverhaul.rawPathOf(data.getTextureLocation()));
+                    colors = ColorExtractor.getOverlayGradient(TooltipOverhaul.rawPathOf(data.getTextureLocation()));
                 }
                 else {
                     int[] configuredColors = data.getGradientColors(context);
@@ -130,6 +130,29 @@ public class ColorUtils {
         int blue = (int) (ColorUtils.blue(c0) + (ColorUtils.blue(c1) - ColorUtils.blue(c0)) * time);
 
         return (AnimationUtils.clamp255(alpha) << 24) | (AnimationUtils.clamp255(red) << 16) | (AnimationUtils.clamp255(green) << 8) | AnimationUtils.clamp255(blue);
+    }
+
+    public static double srgbToLinear(double value) {
+        return value <= 0.04045 ? value / 12.92 : Math.pow((value + 0.055) / 1.055, 2.4);
+    }
+
+    public static double linearToSrgb(double value) {
+        return value <= 0.0031308 ? value * 12.92 : 1.055 * Math.pow(value, 1f / 2.4) - 0.055;
+    }
+
+    public static int tweakHSV(int argb, float saturationMul, float valueMul) {
+        int red = (argb >>> 16) & 0xFF;
+        int green = (argb >>> 8) & 0xFF;
+        int blue = (argb) & 0xFF;
+
+        float[] hsv = Color.RGBtoHSB(red, green, blue, null);
+
+        float h = hsv[0];
+        float s = AnimationUtils.clamp01(hsv[1] * saturationMul);
+        float v = AnimationUtils.clamp01(hsv[2] * valueMul);
+
+        int rgb = Color.HSBtoRGB(h, s, v) & 0x00FFFFFF;
+        return 0xFF000000 | rgb;
     }
 
 }

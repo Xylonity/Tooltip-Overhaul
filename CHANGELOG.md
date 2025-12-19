@@ -25,6 +25,8 @@
 - Preview panel renderers now auto-scale to the panel bounds and always adapt to the preview panel size.
 - `ripples` effect now spawns ripples continuously. Their lifetime scales with the tooltip size.
 - Enhanced the color approximator algorithm when using the "auto_" inner frame color predicate
+- The color approximator algorithm now computes colors per frame instead of the whole frame file
+- Now config entries that no longer exist are automatically purged
 - Enhanced the line wrapper feature.
 - Fixed a case where the line wrapping utility would double indent certain wrapped lines. 
 - Fixed the preview panel renderer rotation anchor point not correctly positioned.
@@ -38,6 +40,7 @@
 - Fixed `stars` effect anchoring to the screen instead of the tooltip position.
 - Fixed incoherent speed of the cinders in the `cinder` effect.
 - Fixed divider line color not adapting correctly to the inner frame
+- Fixed a case where the title of some items was vertically misaligned
 - Changed `guns_and_wires.png` overlay name to `guns_and_wires_frame.png`
 - Removed: `titlePositionX`, `titlePositionY`, `ratingPositionX`, `ratingPositionY`, `tooltipDescriptionPositionX`, `tooltipDescriptionY` (not needed for the common use-case. Ask me if you need them back).
 - Removed: `secondPanelRendererSize` (preview renderers now scale to the preview panel. Ask me if you need this entry back).
@@ -46,6 +49,7 @@
 + IN UPCOMING UPDATES:
 + New config entry to apply custom frames to specific rarities
 + Weapon/Tool comparison
++ Visual rework of the tooltips
 
 # 1.3.0
 - Added an experimental equipment compare feature. The key mapping can be changed through the in-game controls menu.

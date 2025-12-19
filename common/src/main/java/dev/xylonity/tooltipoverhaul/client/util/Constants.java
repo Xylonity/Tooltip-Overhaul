@@ -28,4 +28,12 @@ public class Constants {
         return 3;
     }
 
+    public static int getOverlayFrameDimension() {
+        return 132;
+    }
+
+    public static int getOverlayFrameTime() {
+        return 120;
+    }
+
 }

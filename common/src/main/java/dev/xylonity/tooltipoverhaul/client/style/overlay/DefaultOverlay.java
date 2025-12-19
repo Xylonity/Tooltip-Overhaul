@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.OverlayLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.Constants;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -17,8 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultOverlay implements OverlayLayer {
 
-    private static final int FRAME_DIMENSION = 132;
-    private static final int FRAME_TIME = 120;
     private static final int BLOCK_DIMENSION = 44;
 
     private static final Map<ResourceLocation, TextureMetadata> TEXTURES = new ConcurrentHashMap<>();
@@ -38,8 +37,8 @@ public class DefaultOverlay implements OverlayLayer {
         int textureHeight = textureMetadata.height();
         int frameAmount = textureMetadata.frames();
 
-        int idx = frameAmount > 1 ? (int) ((System.currentTimeMillis() / FRAME_TIME) % frameAmount) : 0;
-        int frameOffset = idx * FRAME_DIMENSION;
+        int idx = frameAmount > 1 ? (int) ((System.currentTimeMillis() / Constants.getOverlayFrameTime()) % frameAmount) : 0;
+        int frameOffset = idx * Constants.getOverlayFrameDimension();
 
         int x = (int) position.x;
         int y = (int) position.y;
@@ -83,32 +82,33 @@ public class DefaultOverlay implements OverlayLayer {
     }
 
     private static TextureMetadata getTextureMetadata(ResourceLocation texture) {
+        int frameDimension = Constants.getOverlayFrameDimension();
         return TEXTURES.computeIfAbsent(texture, tex -> {
             try {
                 Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(tex);
                 if (resource.isEmpty()) {
-                    return new TextureMetadata(FRAME_DIMENSION, FRAME_DIMENSION, 1);
+                    return new TextureMetadata(frameDimension, frameDimension, 1);
                 }
 
                 try (InputStream inputStream = resource.get().open(); NativeImage img = NativeImage.read(inputStream)) {
                     int width = img.getWidth();
                     int heigth = img.getHeight();
 
-                    if (width < FRAME_DIMENSION) {
-                        TooltipOverhaul.LOGGER.warn("Texture width {} is smaller than expected {} for {}", width, FRAME_DIMENSION, tex);
+                    if (width < frameDimension) {
+                        TooltipOverhaul.LOGGER.warn("Texture width {} is smaller than expected {} for {}", width, frameDimension, tex);
                     }
 
-                    if (heigth % FRAME_DIMENSION != 0) {
-                        TooltipOverhaul.LOGGER.warn("Texture height {} is not a multiple of {} for {} (animation may look off)", heigth, FRAME_DIMENSION, tex);
+                    if (heigth % frameDimension != 0) {
+                        TooltipOverhaul.LOGGER.warn("Texture height {} is not a multiple of {} for {} (animation may look off)", heigth, frameDimension, tex);
                     }
 
-                    return new TextureMetadata(width, heigth, Math.max(1, heigth / FRAME_DIMENSION));
+                    return new TextureMetadata(width, heigth, Math.max(1, heigth / frameDimension));
                 }
 
             }
             catch (Exception exception) {
                 TooltipOverhaul.LOGGER.error("Failed to read texture {}: {}", tex, exception.toString());
-                return new TextureMetadata(FRAME_DIMENSION, FRAME_DIMENSION, 1);
+                return new TextureMetadata(frameDimension, frameDimension, 1);
             }
 
         });
