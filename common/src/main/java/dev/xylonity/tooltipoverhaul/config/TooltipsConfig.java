@@ -193,7 +193,7 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Preview model to render in the second panel. Options: armor_stand, player_skin."
     )
-    public static String PREVIEW_PANEL_MODEL = "player_skin";
+    public static String PREVIEW_PANEL_MODEL = "armor_stand";
 
     @ConfigEntry(
             comment = "If PREVIEW_PANEL_MODEL is set to player_skin, renders the current player skin (true) or a placeholder skin (false)."
