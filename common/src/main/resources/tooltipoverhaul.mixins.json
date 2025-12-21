@@ -11,6 +11,7 @@
     "BypassHoverGuiCullingMixin",
     "ClientTextTooltipAccessor",
     "GuiGraphicsItemMixin",
+    "GuiGraphicsItemTooltipMixin",
     "GuiGraphicsMixin",
     "ItemRendererCacheMixin",
     "KeyMappingAccessor",

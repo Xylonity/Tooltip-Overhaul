@@ -132,6 +132,8 @@ modImplementation ("curse.maven:bookshelf-228525:5423987")
 
 modImplementation("curse.maven:configured-457570:5180900")
 
+modImplementation("curse.maven:lendercataclysm-551586:6906993")
+modImplementation("curse.maven:lionfish-api-1001614:5922047")
 //compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
 //runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
