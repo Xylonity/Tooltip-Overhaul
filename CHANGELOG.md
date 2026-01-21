@@ -1,6 +1,6 @@
 # 1.4.1
 - Fixed vignette style not working when applied by custom_frames.json files
-- Fixed text renderer treating the first line as mandatory text line (fixing Origins tooltips not showing up)
+- Fixed text renderer treating the first line as mandatory text line (fixing some Origins tooltips not showing up)
 - Fixed typo in the inner overlay type config entry comment
 - Fixed forge not detecting the EMI hovered stack if the mod was present
 
