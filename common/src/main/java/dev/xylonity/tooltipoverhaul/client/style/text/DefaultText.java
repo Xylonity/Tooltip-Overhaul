@@ -8,6 +8,7 @@ import dev.xylonity.tooltipoverhaul.client.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTextTooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.Vec2;
@@ -35,58 +36,67 @@ public class DefaultText implements TextLayer {
         int x = (int) (position.x + paddingX);
         int y = (int) (position.y + paddingY + 1);
 
+        // Some tooltips (Origins recipe badges, info icons, etc.) may provide a single non-text component as the tooltip content.
+        // In those cases, treating the first component as a "title" would skip it (because the content loop starts at index 1),
+        // causing the tooltip to appear blank. So we only treat the first component as a title if it's actually a text component
+        boolean treatFirstAsTitle = !components.isEmpty() && (components.get(0) instanceof ClientTextTooltip);
+        int startIndex = treatFirstAsTitle ? 1 : 0;
+
         // Rendering the title first (along with the rating text if present)
-        ClientTooltipComponent titleComponent = components.get(0);
-        if (titleComponent != null) {
-            // If the icon is present, move the content to the side
-            int extraX = 0;
-            // Alignment to the center of the icon background (if present)
-            int extraY = 0;
-            // Extra alignment if there is a rating text present
-            int titleAlignY = 0;
-            int ratingAlignY = 0;
-            if (hasIcon) {
-                extraX = Constants.getIconSize(context) + Constants.getIconTitleSeparation(context);
-                extraY = (Constants.getIconSize(context) / 2);
-                titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.getIconSize(context) / 4);
-            }
-            else {
-                // Don't apply extra rating alignment when the icon is enabled
-                ratingAlignY = titleComponent.getHeight();
-            }
+        if (treatFirstAsTitle) {
+            final ClientTooltipComponent titleComponent = components.get(0);
+            if (titleComponent != null) {
+                // If the icon is present, move the content to the side
+                int extraX = 0;
+                // Alignment to the center of the icon background (if present)
+                int extraY = 0;
+                // Extra alignment if there is a rating text present
+                int titleAlignY = 0;
+                int ratingAlignY = 0;
+                if (hasIcon) {
+                    extraX = Constants.getIconSize(context) + Constants.getIconTitleSeparation(context);
+                    extraY = (Constants.getIconSize(context) / 2);
+                    titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.getIconSize(context) / 4);
+                }
+                else {
+                    // Don't apply extra rating alignment when the icon is enabled
+                    ratingAlignY = titleComponent.getHeight();
+                }
 
-            int titleAlignment = computeTitleAlignment(context, titleComponent, x + extraX);
+                int titleAlignment = computeTitleAlignment(context, titleComponent, x + extraX);
 
-            // Title text
-            titleComponent.renderText(font, x + extraX + titleAlignment, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
+                // Title text
+                titleComponent.renderText(font, x + extraX + titleAlignment, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
 
-            // Rating text. If there is no rating but there is an icon present, the padding between the content and the title is the same
-            if (hasRating) {
-                Component rating = TextUtils.getRatingText(context);
+                // Rating text. If there is no rating but there is an icon present, the padding between the content and the title is the same
+                if (hasRating) {
+                    Component rating = TextUtils.getRatingText(context);
 
-                int ratingAlignment = computeRatingAlignment(context, rating, x + extraX);
+                    int ratingAlignment = computeRatingAlignment(context, rating, x + extraX);
 
-                context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX + ratingAlignment, y + extraY + ratingAlignY, 0xEDDE76, false);
-                y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
-            }
-            else if (hasIcon) {
+                    context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX + ratingAlignment, y + extraY + ratingAlignY, 0xEDDE76, false);
+                    y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
+                }
+                else if (hasIcon) {
+                    y += titleComponent.getHeight();
+                }
+
                 y += titleComponent.getHeight();
             }
 
-            y += titleComponent.getHeight();
-        }
-
-        // Extra space after the icon
-        if (hasIcon) {
-            y += Constants.getIconTitleSeparation(context);
-        }
-
-        if (hasDividerLine && components.size() > 1) {
+            // Extra space after the icon
             if (hasIcon) {
-                y += Constants.getDividerLineFullPadding(context);
+                y += Constants.getIconTitleSeparation(context);
             }
-            else {
-                y += Constants.getDividerLineFullPadding(context);
+
+            if (hasDividerLine && components.size() > 1) {
+                if (hasIcon) {
+                    y += Constants.getDividerLineFullPadding(context);
+                }
+                else {
+                    y += Constants.getDividerLineFullPadding(context);
+                }
+
             }
 
         }
@@ -118,7 +128,7 @@ public class DefaultText implements TextLayer {
         }
 
         // Renders the content of the tooltip (scrollable or not)
-        for (int i = 1; i < components.size(); i++) {
+        for (int i = startIndex; i < components.size(); i++) {
             ClientTooltipComponent component = components.get(i);
 
             // Renders the lines if they're available in the viewport
@@ -127,6 +137,11 @@ public class DefaultText implements TextLayer {
                             y <= (int)(position.y + context.getTooltipSize().y - paddingY))) {
 
                 component.renderText(font, x, y, poseStack.last().pose(), graphics.bufferSource());
+
+                // Some custom components rely on buffered text being flushed before their image pass, so when the scissor is disabled,
+                // a flush may not happen otherwise
+                graphics.flush();
+
                 component.renderImage(font, x, y, graphics);
             }
 
