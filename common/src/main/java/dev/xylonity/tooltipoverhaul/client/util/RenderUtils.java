@@ -42,7 +42,7 @@ public class RenderUtils {
     }
 
     public static boolean hasVignette(TooltipContext context) {
-        return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(TooltipsConfig.VIGNETTES.isBlank());
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(TooltipsConfig.VIGNETTES.isBlank());
     }
 
     public static boolean shouldRender(TooltipContext context) {
