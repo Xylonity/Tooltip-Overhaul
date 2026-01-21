@@ -1,5 +1,7 @@
 package dev.xylonity.tooltipoverhaul.platform;
 
+import dev.xylonity.tooltipoverhaul.compat.emi.EmiStackContext;
+import dev.xylonity.tooltipoverhaul.compat.proxy.EmiProxy;
 import dev.xylonity.tooltipoverhaul.mixin.GuiGraphicsAccessor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -29,7 +31,26 @@ public class TooltipPlatformNeoForge implements TooltipPlatform {
 
     @Override
     public ItemStack getHoveredItem(GuiGraphics graphics, List<ClientTooltipComponent> components, int mouseX, int mouseY) {
-        return ((GuiGraphicsAccessor) graphics).tooltipoverhaul$getTooltipStack();
+
+        ItemStack stack = ((GuiGraphicsAccessor) graphics).tooltipoverhaul$getTooltipStack();
+        if (stack != null && !stack.isEmpty()) {
+            return stack;
+        }
+
+        stack = EmiStackContext.get();
+        if (!stack.isEmpty()) {
+            return stack;
+        }
+
+        if (isModLoaded("emi") && EmiProxy.isEmiTooltip(components)) {
+            ItemStack emi = EmiProxy.getItemStack(mouseX, mouseY);
+            if (emi != null && !emi.isEmpty()) {
+                return emi;
+            }
+
+        }
+
+        return ItemStack.EMPTY;
     }
 
 }
