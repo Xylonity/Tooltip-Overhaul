@@ -80,7 +80,7 @@ public final class TooltipsConfig {
     public static int DIVIDER_LINE_BOTTOM_PADDING = 0;
 
     @ConfigEntry(
-            comment = "Default inner overlay style for tooltips. Options: glint, solid (monochrome), gradient."
+            comment = "Default inner overlay style for tooltips. Options: glint, static (monochrome), gradient."
     )
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
 
