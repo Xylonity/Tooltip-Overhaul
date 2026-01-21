@@ -1,3 +1,6 @@
+# 1.4.1
+- Fixed vignette style not working when applied by custom_frames.json files
+
 # 1.4.0
 
 - Thanks for the million downloads!
