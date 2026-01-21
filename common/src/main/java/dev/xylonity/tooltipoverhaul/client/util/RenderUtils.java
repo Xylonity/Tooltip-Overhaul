@@ -185,11 +185,11 @@ public class RenderUtils {
 
         // Left border (top and bottom sections)
         graphics.fillGradient(x, y, x + 1, y + mid, c1, c2);
-        graphics.fillGradient(x, y + mid, x + 1, y + height - 1, c2, c3);
+        graphics.fillGradient(x, y + mid, x + 1, y + height, c2, c3);
 
         // Right border (top and bottom sections)
         graphics.fillGradient(x + width - 1, y, x + width, y + mid, c1, c2);
-        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height - 1, c2, c3);
+        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, c2, c3);
     }
 
 }
