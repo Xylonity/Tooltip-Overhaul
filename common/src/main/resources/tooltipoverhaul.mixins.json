@@ -15,6 +15,7 @@
     "GuiGraphicsMixin",
     "ItemRendererCacheMixin",
     "KeyMappingAccessor",
+    "MinecraftMixin",
     "MouseHandlerMixin",
     "ScreenRecorderMixin"
   ],
