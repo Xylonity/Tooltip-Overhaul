@@ -53,6 +53,9 @@ dependencies {
     implementation "curse.maven:lendercataclysm-551586:6906997"
     implementation "curse.maven:curios-309927:6529130"
     implementation "curse.maven:lionfish-api-1001614:6168249"
+
+    implementation "curse.maven:metal-bundles-891325:6697871"
+    implementation "curse.maven:puzzles-lib-495476:7140307"
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }

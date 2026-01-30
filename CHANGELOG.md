@@ -1,3 +1,6 @@
+# 1.4.2
+- Attempt to fix mouse scroll getting stuck on certain cases
+
 # 1.4.1
 - Fixed vignette style not working when applied by custom_frames.json files
 - Fixed text renderer treating the first line as mandatory text line (fixing some Origins tooltips not showing up)
