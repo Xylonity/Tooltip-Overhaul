@@ -1,3 +1,6 @@
+# 1.4.3
+- Fixed a crash that could occur when rendering an armor stand in any tooltip, caused by yyzsbackpack
+
 # 1.4.2
 - Attempt to fix mouse scroll getting stuck on certain cases
 
