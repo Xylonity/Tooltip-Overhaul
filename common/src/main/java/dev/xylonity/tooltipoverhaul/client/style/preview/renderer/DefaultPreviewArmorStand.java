@@ -42,9 +42,6 @@ public class DefaultPreviewArmorStand implements PreviewRendererLayer {
             ArmorStand armorStand = new ArmorStand(EntityType.ARMOR_STAND, minecraft.level);
             armorStand.setNoBasePlate(true);
 
-            for (EquipmentSlot equipmentSlot : EquipmentSlot.values()) {
-                armorStand.setItemSlot(equipmentSlot, ItemStack.EMPTY);
-            }
             armorStand.setItemSlot(armorItem.getEquipmentSlot(), context.getStack());
 
             Lighting.setupForEntityInInventory();
