@@ -1,3 +1,6 @@
+# 1.4.4
+- Fixed an issue where Oracle Index tooltip lines wouldn't show with Tooltip Overhaul present in the same pack (if any other issues arise, please contact me asap)
+
 # 1.4.3
 - Fixed a crash that could occur when rendering an armor stand in any tooltip, caused by yyzsbackpack
 
