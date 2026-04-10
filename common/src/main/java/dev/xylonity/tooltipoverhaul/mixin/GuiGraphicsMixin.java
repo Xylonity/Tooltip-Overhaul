@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 
-@Mixin(value = GuiGraphics.class, priority = 1)
+@Mixin(value = GuiGraphics.class, priority = 1500)
 public class GuiGraphicsMixin {
 
     @Unique
