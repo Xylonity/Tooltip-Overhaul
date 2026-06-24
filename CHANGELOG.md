@@ -1,3 +1,6 @@
+# 1.5.0
+- Added weapon/tool compare to the existing equipment compare functionality
+
 # 1.4.3
 - Fixed a crash that could occur when rendering an armor stand in any tooltip, caused by yyzsbackpack
 

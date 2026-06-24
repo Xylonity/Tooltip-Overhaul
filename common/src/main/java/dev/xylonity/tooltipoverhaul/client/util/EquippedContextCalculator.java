@@ -12,6 +12,7 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositione
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TieredItem;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -30,21 +31,36 @@ public class EquippedContextCalculator {
             return null;
         }
 
-        Minecraft minecraft = Minecraft.getInstance();
-        Player player = minecraft.player;
+        final Minecraft minecraft = Minecraft.getInstance();
+        final Player player = minecraft.player;
 
-        if (!(fromStack.getItem() instanceof Equipable equippableStack) || player == null) {
+        if (player == null) {
             return null;
         }
 
-        ItemStack equippedArmorStack = player.getInventory().getArmor(equippableStack.getEquipmentSlot().getIndex());
-        if (equippedArmorStack.isEmpty() || ItemStack.isSameItemSameTags(fromStack, equippedArmorStack)) {
+        // Armor is compared against the piece currently worn in the matching slot, and weapons and tools (any tiered item, such as swords or axes) are
+        // compared against the mainhand item, but only when it is itself a tiered item so the comparison stays weapon-weapon
+        ItemStack equippedStack;
+        if (fromStack.getItem() instanceof Equipable equippableStack) {
+            equippedStack = player.getInventory().getArmor(equippableStack.getEquipmentSlot().getIndex());
+        }
+        else if (fromStack.getItem() instanceof TieredItem) {
+            equippedStack = player.getMainHandItem();
+            if (!(equippedStack.getItem() instanceof TieredItem)) {
+                return null;
+            }
+
+        }
+        else {
             return null;
         }
 
-        List<ClientTooltipComponent> componentList = TextUtils.getTooltipComponentsFrom(equippedArmorStack, font, screenWidth, 2.2f);
+        if (equippedStack.isEmpty() || ItemStack.isSameItemSameTags(fromStack, equippedStack)) {
+            return null;
+        }
 
-        return new TooltipContext(graphics, font, componentList, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, equippedArmorStack, false);
+        final List<ClientTooltipComponent> componentList = TextUtils.getTooltipComponentsFrom(equippedStack, font, screenWidth, 2.2f);
+        return new TooltipContext(graphics, font, componentList, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, equippedStack, false);
     }
 
 }
