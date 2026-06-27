@@ -24,7 +24,7 @@ public class DefaultPreviewGradientInnerOverlay implements PreviewInnerOverlayLa
         int x1 = (int) endPosition.x;
         int y1 = (int) endPosition.y;
 
-        RenderUtils.renderFrameGradient(context.getGraphics(), x1, y0 + 1, x0 - x1, y1 - y0, color1, color2, color3);
+        RenderUtils.renderFrameGradient(context.getGraphics(), x1, y0 + 1, x0 - x1, y1 - y0 - 1, color1, color2, color3);
 
         // Top and bottom lines
         context.getGraphics().fill(x1, y0, x0, y0 + 1, color1);
