@@ -23,6 +23,8 @@ public record CustomFrameData(
         Optional<String> texture,
         Optional<Integer> backgroundColor,
         Optional<String> borderType,
+        Optional<String> innerFrameCornerType,
+        Optional<String> backgroundCornerType,
         Optional<GradientType> gradientType,
         Optional<List<String>> gradientColors,
         Optional<String> itemRating,
@@ -66,6 +68,14 @@ public record CustomFrameData(
 
     public String getBorderType() {
         return borderType.orElse(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE);
+    }
+
+    public String getInnerFrameCornerType() {
+        return innerFrameCornerType.orElse(TooltipsConfig.INNER_FRAME_CORNER_TYPE);
+    }
+
+    public String getBackgroundCornerType() {
+        return backgroundCornerType.orElse(TooltipsConfig.BACKGROUND_CORNER_TYPE);
     }
 
     public GradientType getGradientType() {

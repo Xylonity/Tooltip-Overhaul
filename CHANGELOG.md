@@ -1,5 +1,7 @@
 # 1.5.0
+- Tweaked the default color palette colors, to make them more visually appeal
 - Added weapon/tool compare to the existing equipment compare functionality
+- Added two config options (with `innerFrameCornerType` / `backgroundCornerType` custom_frames.json overrides) to choose the tooltip corner style separately for the inner frame (`default`, `rounded`, `bevel`, `inner`, `cut`, `thick`, `bracket`, `block`, `notch`, `weld`, `gem`) and the outer background border (`default`, `square`, `rounded`, `notch`)
 
 # 1.4.3
 - Fixed a crash that could occur when rendering an armor stand in any tooltip, caused by yyzsbackpack

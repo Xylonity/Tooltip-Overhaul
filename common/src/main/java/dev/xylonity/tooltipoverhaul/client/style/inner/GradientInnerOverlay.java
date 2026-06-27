@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client.style.inner;
 
 import dev.xylonity.tooltipoverhaul.client.layer.impl.InnerOverlayLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import net.minecraft.world.phys.Vec2;
 
@@ -31,6 +32,8 @@ public class GradientInnerOverlay implements InnerOverlayLayer {
         // Top and bottom lines
         context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, color1);
         context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, color3);
+
+        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color1, color3, ColorUtils.getBackgroundColor(context), RenderUtils.getInnerFrameCornerType(context));
     }
 
 }

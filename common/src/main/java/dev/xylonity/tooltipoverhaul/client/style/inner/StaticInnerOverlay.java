@@ -2,7 +2,8 @@ package dev.xylonity.tooltipoverhaul.client.style.inner;
 
 import dev.xylonity.tooltipoverhaul.client.layer.impl.InnerOverlayLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import net.minecraft.client.gui.GuiGraphics;
+import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
+import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import net.minecraft.world.phys.Vec2;
 
 public class StaticInnerOverlay implements InnerOverlayLayer {
@@ -31,6 +32,8 @@ public class StaticInnerOverlay implements InnerOverlayLayer {
 
         // Right
         context.getGraphics().fill(x0 + width - 1, y0, x0 + width, y0 + height, color);
+
+        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color, color, ColorUtils.getBackgroundColor(context), RenderUtils.getInnerFrameCornerType(context));
     }
 
 }

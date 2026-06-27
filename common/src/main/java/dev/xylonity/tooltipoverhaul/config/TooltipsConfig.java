@@ -85,6 +85,22 @@ public final class TooltipsConfig {
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
 
     @ConfigEntry(
+            comment = "Corner style for the inner frame of the tooltip. Options: default (square), rounded (corner " +
+                    "pixel removed), bevel (45 degree diagonal cut), inner (extra pixel in the inner corner), cut (2px " +
+                    "chamfer), thick (solid triangular corner, top-right only), bracket (inner corner bracket), " +
+                    "block (2x2 solid block corner), notch (rectangular inner offset), weld (reinforced inner " +
+                    "corner), gem (hollow triangle). The notch style pairs with the matching notch background corner style."
+    )
+    public static String INNER_FRAME_CORNER_TYPE = "default";
+
+    @ConfigEntry(
+            comment = "Corner style for the outer background border of the tooltip. Options: default (vanilla notch), " +
+                    "square (sharp 90 degree), rounded, notch (rectangular inner offset, matches the " +
+                    "inner frame notch style)."
+    )
+    public static String BACKGROUND_CORNER_TYPE = "default";
+
+    @ConfigEntry(
             comment = "Default tooltip background color in ARGB format (#AARRGGBB). Example: #F0010110."
     )
     public static String DEFAULT_BACKGROUND_COLOR = "#F0000000";
@@ -171,6 +187,17 @@ public final class TooltipsConfig {
     public static String ICON_APPEAR_ANIMATION = "skew";
 
     @ConfigEntry(
+            comment = "Animation played when a tooltip appears (on hover) and disappears. Options: none, fade, pop, " +
+                    "rise, unfold, zoom, slide, swing, emerge, squash, card."
+    )
+    public static String TOOLTIP_APPEAR_ANIMATION = "pop";
+
+    @ConfigEntry(
+            comment = "Duration (in seconds) of the tooltip appear/disappear animation. Lower values are snappier."
+    )
+    public static float TOOLTIP_ANIMATION_DURATION = 0.15f;
+
+    @ConfigEntry(
             comment = "Rotation speed of the icon."
     )
     public static float ICON_ROTATING_SPEED = 0f;
@@ -203,36 +230,36 @@ public final class TooltipsConfig {
     @ConfigEntry(
             comment = "Color palette for tooltips without a stack. Must specify exactly 3 ARGB colors."
     )
-    public static String NO_STACK_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";
+    public static String NO_STACK_PALETTE_COLORS = "0xFF8C909A, 0xFF4E515A, 0xFF282A30";
 
     @ConfigEntry(
             comment = "Color palette for COMMON rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
-    public static String COMMON_PALETTE_COLORS = "0xFF969696, 0xFF575757, 0xFF3C3C3C";
+    public static String COMMON_PALETTE_COLORS = "0xFF8C909A, 0xFF4E515A, 0xFF282A30";
 
     @ConfigEntry(
             comment = "Color palette for UNCOMMON rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
-    public static String UNCOMMON_PALETTE_COLORS = "0xFF9CA028, 0xFF6A6D18, 0xFF4B4D0E";
+    public static String UNCOMMON_PALETTE_COLORS = "0xFFC8CE3A, 0xFF8E931F, 0xFF53560E";
 
     @ConfigEntry(
             comment = "Color palette for RARE rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
-    public static String RARE_PALETTE_COLORS = "0xFF335FA0, 0xFF193A6D, 0xFF0A1D38";
+    public static String RARE_PALETTE_COLORS = "0xFF4D9BE8, 0xFF2B66B5, 0xFF123A6B";
 
     @ConfigEntry(
             comment = "Color palette for EPIC rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
-    public static String EPIC_PALETTE_COLORS = "0xFFA02283, 0xFF691356, 0xFF3C0730";
+    public static String EPIC_PALETTE_COLORS = "0xFFB14BE0, 0xFF7A28A8, 0xFF431463";
 
     @ConfigEntry(
             comment = "Color palette for LEGENDARY rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
-    public static String LEGENDARY_PALETTE_COLORS = "0xFFA0803C, 0xFF815F19, 0xFF372808";
+    public static String LEGENDARY_PALETTE_COLORS = "0xFFE8B84A, 0xFFB5832A, 0xFF6B4A12";
 
     @ConfigEntry(
             comment = "Color palette for CHAOS rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
-    public static String CHAOS_PALETTE_COLORS = "0xFF9F373A, 0xFF81191B, 0xFF370809";
+    public static String CHAOS_PALETTE_COLORS = "0xFFE8483F, 0xFFB5251F, 0xFF5E0F0C";
 
 }
