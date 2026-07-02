@@ -1,3 +1,6 @@
+# 1.4.5
+- [DEV] Fixed sided package mixin config using an outdated required version of java 
+
 # 1.4.4
 - Fixed an issue where Oracle Index tooltip lines wouldn't show with Tooltip Overhaul present in the same pack (if any other issues arise, please contact me asap)
 
