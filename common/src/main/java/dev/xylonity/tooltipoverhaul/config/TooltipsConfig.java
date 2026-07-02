@@ -60,6 +60,13 @@ public final class TooltipsConfig {
     public static boolean AUTO_REPOSITION_PREVIEW_PANEL = true;
 
     @ConfigEntry(
+            comment = "Bedrock-like centering. When the tooltip fits neither to the right nor to the left of the cursor, " +
+                    "centers it horizontally on the screen and places it above the cursor (or below if there is no room " +
+                    "above), so it doesn't cover the hovered item."
+    )
+    public static boolean BEDROCK_CENTERING = false;
+
+    @ConfigEntry(
             comment = "Horizontal offset (in pixels) for the tooltip. Negative = left, positive = right."
     )
     public static int TOOLTIP_POSITION_X = 0;
@@ -156,6 +163,12 @@ public final class TooltipsConfig {
             comment = "Show rating text."
     )
     public static boolean SHOW_RATING = false;
+
+    @ConfigEntry(
+            comment = "Appends the display name of the mod that adds the hovered item as the last tooltip line " +
+                    "(blue italic), always visible in both survival and creative (previously visible only in creative mode)."
+    )
+    public static boolean SHOW_MOD_NAME = false;
 
     @ConfigEntry(
             comment = "Disable the item icon."
@@ -261,5 +274,12 @@ public final class TooltipsConfig {
             comment = "Color palette for CHAOS rarity (bright to dark). Must specify exactly 3 ARGB colors."
     )
     public static String CHAOS_PALETTE_COLORS = "0xFFE8483F, 0xFFB5251F, 0xFF5E0F0C";
+
+    @ConfigEntry(
+            comment = "Default color palette for items whose rarity is not a vanilla one " +
+                    "(COMMON/UNCOMMON/RARE/EPIC), such as custom rarities added by other mods. Must specify exactly " +
+                    "3 ARGB colors. Defaults to the same colors as the legendary palette."
+    )
+    public static String CUSTOM_RARITY_PALETTE_COLORS = "0xFFE8B84A, 0xFFB5832A, 0xFF6B4A12";
 
 }

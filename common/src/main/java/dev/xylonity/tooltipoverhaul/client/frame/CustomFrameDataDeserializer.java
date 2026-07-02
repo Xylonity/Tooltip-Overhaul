@@ -21,6 +21,10 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         List<String> items = parseStringList(entry, "items");
         List<String> tags = parseStringList(entry, "tags");
         Optional<String> namespace = parseString(entry, "namespace");
+        List<String> rarities = parseStringOrList(entry, "rarity");
+        if (rarities.isEmpty()) {
+            rarities = parseStringOrList(entry, "rarities");
+        }
 
         Optional<String> texture = parseString(entry, "texture");
         Optional<Integer> backgroundColor = parseInt(entry, "backgroundColor");
@@ -74,6 +78,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 items,
                 tags,
                 namespace,
+                rarities,
                 texture,
                 backgroundColor,
                 borderType,
@@ -127,6 +132,20 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
         }
 
         return List.of();
+    }
+
+    private List<String> parseStringOrList(JsonObject content, String field) {
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return List.of();
+        }
+
+        JsonElement element = content.get(field);
+        if (element.isJsonPrimitive()) {
+            final String value = element.getAsString().trim();
+            return value.isEmpty() ? List.of() : List.of(value);
+        }
+
+        return parseStringList(content, field);
     }
 
     private Optional<Boolean> parseBool(JsonObject content, String field) {

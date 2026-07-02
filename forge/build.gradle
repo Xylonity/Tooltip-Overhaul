@@ -72,9 +72,9 @@ modImplementation ("curse.maven:apothic-attributes-898963:5634071")
 modImplementation ("curse.maven:apotheosis-313970:6461960")
 
 // ftb quests
-//modImplementation ("curse.maven:ftb-quests-forge-289412:6829212")
-//modImplementation ("curse.maven:ftb-teams-forge-404468:6130786")
-//modImplementation ("curse.maven:ftb-library-forge-404465:6807424")
+modImplementation ("curse.maven:ftb-quests-forge-289412:6829212")
+modImplementation ("curse.maven:ftb-teams-forge-404468:6130786")
+modImplementation ("curse.maven:ftb-library-forge-404465:6807424")
 modImplementation ("curse.maven:architectury-api-419699:5137938")
 
 // macaws bridges
@@ -101,8 +101,8 @@ modImplementation ("curse.maven:modernfix-790626:6837713")
 modImplementation ("curse.maven:companions-mod-1300341:6930503")
 modImplementation ("curse.maven:knight-lib-1105855:6821911")
 
-modImplementation ("curse.maven:equipment-compare-502561:4650073")
-modImplementation ("curse.maven:iceberg-520110:5838149")
+//modImplementation ("curse.maven:equipment-compare-502561:4650073")
+//modImplementation ("curse.maven:iceberg-520110:5838149")
 
 modImplementation ("curse.maven:itemzoom-261725:5043628")
 
@@ -132,8 +132,13 @@ modImplementation ("curse.maven:bookshelf-228525:5423987")
 
 modImplementation("curse.maven:configured-457570:5180900")
 
+modImplementation("curse.maven:just-enough-effect-descriptions-jeed-532286:6172935")
+
 modImplementation("curse.maven:lendercataclysm-551586:6906993")
 modImplementation("curse.maven:lionfish-api-1001614:5922047")
+
+modImplementation("curse.maven:tough-as-nails-246391:5815863")
+modImplementation("curse.maven:glitchcore-955399:5787839")
 //compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
 //runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")

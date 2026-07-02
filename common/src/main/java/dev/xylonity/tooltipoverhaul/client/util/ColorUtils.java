@@ -101,7 +101,7 @@ public class ColorUtils {
 
     public static int[] getColorsPerRarity(TooltipContext context) {
         Rarity rarity = context.getStack().getRarity();
-        int[] colors = Palette.LEGENDARY;
+        int[] colors = Palette.CUSTOM_RARITY;
 
         if (rarity == Rarity.COMMON) colors = Palette.COMMON;
         if (rarity == Rarity.UNCOMMON) colors = Palette.UNCOMMON;

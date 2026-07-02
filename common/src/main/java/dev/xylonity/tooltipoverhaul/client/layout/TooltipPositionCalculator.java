@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.layout;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.world.phys.Vec2;
 
 import java.awt.*;
@@ -38,9 +39,33 @@ public class TooltipPositionCalculator {
 
             // Just if the equipped stack is not available
             if (!hasEquippedContext) {
+                boolean bedrockCentered = false;
+
+                // Bedrock-like centering (if the tooltip fits on neither side of the cursor, centers it horizontally
+                // and places it above (or below) the cursor so the hovered item stays visible)
+                if (TooltipsConfig.BEDROCK_CENTERING) {
+                    final boolean fitsRight = mouseX + 12 + tooltipWidth <= screenWidth;
+                    final boolean fitsLeft = mouseX - 12 - tooltipWidth >= paddingX;
+
+                    if (!fitsRight && !fitsLeft) {
+                        posX = (screenWidth - tooltipWidth) / 2f + PositionUtils.getMainPanelPosition(context, TextAxis.X);
+
+                        final float offsetY = PositionUtils.getMainPanelPosition(context, TextAxis.Y);
+                        if (mouseY - 12 - tooltipHeight >= paddingY) {
+                            posY = mouseY - 12 - tooltipHeight + offsetY;
+                        }
+                        else {
+                            posY = mouseY + 12 + offsetY;
+                        }
+
+                        bedrockCentered = true;
+                    }
+
+                }
+
                 // If it exceeds the right border, put the tooltip to the left
                 // Not adding the padding here so the vanilla's wrapper doesn't flicker
-                if (posX + tooltipWidth > screenWidth) {
+                if (!bedrockCentered && posX + tooltipWidth > screenWidth) {
                     posX = mouseX - tooltipWidth - 12;
                 }
 

@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.platform;
 
 import dev.xylonity.tooltipoverhaul.compat.emi.EmiStackContext;
 import dev.xylonity.tooltipoverhaul.compat.proxy.EmiProxy;
+import dev.xylonity.tooltipoverhaul.compat.proxy.FtbLibraryProxy;
 import dev.xylonity.tooltipoverhaul.mixin.GuiGraphicsAccessor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -11,6 +12,7 @@ import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 public class TooltipPlatformForge implements TooltipPlatform {
 
@@ -27,6 +29,11 @@ public class TooltipPlatformForge implements TooltipPlatform {
     @Override
     public Path getConfigPath() {
         return FMLPaths.CONFIGDIR.get();
+    }
+
+    @Override
+    public Optional<String> getModDisplayName(String namespace) {
+        return ModList.get().getModContainerById(namespace).map(container -> container.getModInfo().getDisplayName());
     }
 
     @Override
@@ -48,6 +55,12 @@ public class TooltipPlatformForge implements TooltipPlatform {
                 return emi;
             }
 
+        }
+
+        // Ftb Library compat
+        final ItemStack ftbStack = FtbLibraryProxy.getItemStack();
+        if (!ftbStack.isEmpty()) {
+            return ftbStack;
         }
 
         return ItemStack.EMPTY;

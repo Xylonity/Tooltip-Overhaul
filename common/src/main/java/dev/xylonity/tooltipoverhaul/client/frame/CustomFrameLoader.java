@@ -228,6 +228,15 @@ public class CustomFrameLoader {
                 TooltipOverhaul.LOGGER.debug("Registered namespace-only entry {} for namespace '{}'", key, currNamespace);
             }
 
+            // Caches rarity-only entries as well (rarities cant be used as keys as they may include illegal chars)
+            if (itemLocations.isEmpty() && frameData.tags().isEmpty() && frameData.namespace().map(s -> s.trim().isEmpty()).orElse(true) && !frameData.rarities().isEmpty()) {
+                final ResourceLocation key = new ResourceLocation(namespace, "rarity_only/" + Integer.toUnsignedString(System.identityHashCode(frameData), 36));
+
+                frames.put(key, frameData);
+
+                TooltipOverhaul.LOGGER.debug("Registered rarity-only entry {} for rarities {}", key, frameData.rarities());
+            }
+
         }
 
     }

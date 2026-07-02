@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
@@ -66,7 +67,7 @@ public class GuiGraphicsMixin {
             componentList = TextUtils.getTooltipComponentsFrom(stack, font, screenWidth, 2.2f);
         }
         else {
-            componentList = components;
+            componentList = TooltipOverhaul.PLATFORM.gatherTooltipComponents((GuiGraphics) (Object) this, stack, components, font, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner);
         }
 
         // Then, the main renderer is computed here

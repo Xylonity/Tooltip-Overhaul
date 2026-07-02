@@ -62,12 +62,30 @@ public class CustomFrameManager {
     }
 
     /**
-     * Returns the custom frame data for the specified stack (if it's present anywhere)
+     * Returns the custom frame data for the specified stack (if it's present anywhere). The most specific match wins (item > tag > namespace > rarity)
      */
     public static Optional<CustomFrameData> of(ItemStack stack) {
-        if (!INIT) initialize();
+        if (!INIT) {
+            initialize();
+        }
 
-        return customFrames.values().stream().filter(cfg -> cfg.matches(stack)).findFirst();
+        CustomFrameData best = null;
+        int bestScore = 0;
+        for (final CustomFrameData customFrameData : customFrames.values()) {
+            final int score = customFrameData.matchScore(stack);
+            if (score > bestScore) {
+                bestScore = score;
+                best = customFrameData;
+                // An explicit item match can't be beaten
+                if (score == 4) {
+                    break;
+                }
+
+            }
+
+        }
+
+        return Optional.ofNullable(best);
     }
 
 }

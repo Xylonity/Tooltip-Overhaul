@@ -8,6 +8,7 @@ import dev.xylonity.tooltipoverhaul.client.layout.TooltipPositionCalculator;
 import dev.xylonity.tooltipoverhaul.client.layout.TooltipSizeCalculator;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.util.ModNameUtils;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
 import net.minecraft.client.gui.Font;
@@ -63,7 +64,7 @@ public class TooltipContext {
     public TooltipContext(GuiGraphics graphics, Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, int screenWidth, int screenHeight, ClientTooltipPositioner tooltipPositioner, @NotNull ItemStack stack, boolean isMainTooltip) {
         this.graphics = graphics;
         this.font = font;
-        this.components = components;
+        this.components = ModNameUtils.appendModName(components, stack);
         this.mouseX = mouseX;
         this.mouseY = mouseY;
         this.screenWidth = screenWidth;

@@ -25,6 +25,8 @@ public final class Palette {
 
     public static final int[] CHAOS = ConfigColorParser.parsePalette(TooltipsConfig.CHAOS_PALETTE_COLORS);
 
+    public static final int[] CUSTOM_RARITY = ConfigColorParser.parsePalette(TooltipsConfig.CUSTOM_RARITY_PALETTE_COLORS);
+
     public static int[] of(CustomFrameData.GradientType type) {
         return switch (type) {
             case UNCOMMON -> UNCOMMON;
@@ -32,6 +34,7 @@ public final class Palette {
             case EPIC -> EPIC;
             case LEGENDARY -> LEGENDARY;
             case CHAOS -> CHAOS;
+            case CUSTOM_RARITY -> CUSTOM_RARITY;
             default -> COMMON;
         };
     }
