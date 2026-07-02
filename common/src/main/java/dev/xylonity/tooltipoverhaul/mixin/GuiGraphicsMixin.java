@@ -91,6 +91,13 @@ public class GuiGraphicsMixin {
             renderer.adjustLayout();
         }
 
+        // Cancelling renderTooltipInternal at head also skips the loader's pre-render tooltip event, so it's replayed here.
+        // Only fired when the renderer is going to take over
+        if (renderer.canRender() && TooltipOverhaul.PLATFORM.fireRenderTooltipPre((GuiGraphics) (Object) this, stack, componentList, font, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner)) {
+            ci.cancel();
+            return;
+        }
+
         // If the rendering is correct, the rest of the call is canceled
         if (renderer.render()) {
             if (equippedStackContext != null) {

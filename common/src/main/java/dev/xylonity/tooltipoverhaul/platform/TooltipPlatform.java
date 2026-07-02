@@ -33,4 +33,12 @@ public interface TooltipPlatform {
         return components;
     }
 
+    /**
+     * Replays the loader-specific pre-render tooltip event, which normally fires inside {@code renderTooltipInternal} but is
+     * skipped since I cancel it on the GUI graphics mixin
+     */
+    default boolean fireRenderTooltipPre(GuiGraphics graphics, ItemStack stack, List<ClientTooltipComponent> components, Font font, int mouseX, int mouseY, int screenWidth, int screenHeight, ClientTooltipPositioner positioner) {
+        return false;
+    }
+
 }

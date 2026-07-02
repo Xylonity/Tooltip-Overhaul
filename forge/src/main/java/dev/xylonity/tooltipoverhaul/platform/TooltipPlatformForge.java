@@ -4,9 +4,13 @@ import dev.xylonity.tooltipoverhaul.compat.emi.EmiStackContext;
 import dev.xylonity.tooltipoverhaul.compat.proxy.EmiProxy;
 import dev.xylonity.tooltipoverhaul.compat.proxy.FtbLibraryProxy;
 import dev.xylonity.tooltipoverhaul.mixin.GuiGraphicsAccessor;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLPaths;
 
@@ -64,6 +68,12 @@ public class TooltipPlatformForge implements TooltipPlatform {
         }
 
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public boolean fireRenderTooltipPre(GuiGraphics graphics, ItemStack stack, List<ClientTooltipComponent> components, Font font, int mouseX, int mouseY, int screenWidth, int screenHeight, ClientTooltipPositioner positioner) {
+        RenderTooltipEvent.Pre event = ForgeHooksClient.onRenderTooltipPre(stack, graphics, mouseX, mouseY, screenWidth, screenHeight, components, font, positioner);
+        return event.isCanceled();
     }
 
 }

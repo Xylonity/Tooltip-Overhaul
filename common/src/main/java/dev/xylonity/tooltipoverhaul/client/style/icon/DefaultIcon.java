@@ -71,21 +71,10 @@ public class DefaultIcon implements IconLayer {
 
         float rotationSpeed = RenderUtils.getIconRotatingSpeed(context);
         if (rotationSpeed > 0) {
-            float finalRotation = computeFinalDegrees(type);
             float additionalRotation = (elapsed - ANIMATION_DURATION) * (360f / (6.0f / rotationSpeed));
-            context.multiply(Axis.YP, (finalRotation + additionalRotation) % 360);
+            context.multiply(Axis.YP, additionalRotation % 360);
         }
 
-    }
-
-    private float computeFinalDegrees(IconAnimation type) {
-        int factor = switch (type) {
-            case ROTATE_FAST -> 10;
-            case ROTATE, ROTATE_ZOOM -> 5;
-            default -> 0;
-        };
-
-        return (ANIMATION_DURATION * factor * (360f / 6f)) % 360;
     }
 
 }

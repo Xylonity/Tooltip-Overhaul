@@ -6,8 +6,12 @@
 - Added a `rarity` option to custom_frames.json entries (a string or list of strings) to apply a frame to every item of the given rarity, including rarities added by other mods. More specific entries take precedence, in the following sequence -> item > tag > namespace > rarity
 - Added a `CUSTOM_RARITY_PALETTE_COLORS` config entry, and is now the default palette for non-vanilla rarities (previously using the legendary palette), added along with a matching `custom_rarity` gradientType option for custom_frames.json
 - Added a config option (`SHOW_MOD_NAME`, off by default) to append the name of the mod that adds the hovered item as the last tooltip line, in both survival and creative (previously only visible on creative mode)
-- Fixed the thirst droplet icons from the mod Tough As Nails not showing in tooltips
+- Fixed the thirst droplet icons (along with other icons) from the mod Tough As Nails not showing in tooltips
 - Fixed FTB Quests tooltips rendering in the stackless style, now the hovered reward item is properly detected
+- Fixed the icon flipping 180 degrees once the `rotate` / `rotate_zoom` appear animation ends
+- Fixed a crash when a malformed color is set in any config entry, now it falls back to white and logs a warning instead
+- Fixed the mod ItemZoom not working with tooltipoverhaul present
+- Fixed tooltips extending off screen in Packed Up UIs
 
 # 1.4.3
 - Fixed a crash that could occur when rendering an armor stand in any tooltip, caused by yyzsbackpack
