@@ -192,7 +192,10 @@ public class StyleFactory {
     private void assignEffects(TooltipContext context, List<ITooltipLayer> layers, int[] colors) {
         for (String part : RenderUtils.getEffect(context).split("\\s*[;,]\\s*")) {
             switch (part.trim().toLowerCase()) {
+                case "bubbles" -> layers.add(new BubblesEffect());
                 case "cinder" -> layers.add(new CinderEffect());
+                case "crystals" -> layers.add(new CrystalsEffect());
+                case "fireflies" -> layers.add(new FirefliesEffect());
                 case "echo" -> layers.add(new EchoEffect());
                 case "galaxy" -> layers.add(new GalaxyEffect());
                 case "magic_orbs" -> layers.add(new MagicOrbsEffect());
