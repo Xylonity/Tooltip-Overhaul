@@ -1,11 +1,14 @@
 # 1.5.0
 - Tweaked the default color palette colors, to make them more visually appeal
+- Added 3 new effects: `fireflies`, `bubbles` and `crystals`
+- Added tooltip appear/disappear hover animations (`TOOLTIP_APPEAR_ANIMATION` and `TOOLTIP_ANIMATION_DURATION` config entries), with 11 options: fade, pop, rise, unfold, zoom, slide, swing, emerge, squash, card and shake
 - Added weapon/tool compare to the existing equipment compare functionality
 - Added two config options (with `innerFrameCornerType` / `backgroundCornerType` custom_frames.json overrides) to choose the tooltip corner style separately for the inner frame (`default`, `rounded`, `bevel`, `inner`, `cut`, `thick`, `bracket`, `block`, `notch`, `weld`, `gem`) and the outer background border (`default`, `square`, `rounded`, `notch`)
 - Added Bedrock-like tooltip centering (`BEDROCK_CENTERING`, off by default). When the tooltip fits on neither side of the cursor, it is centered horizontally and placed above/below the cursor instead of covering the hovered item
 - Added a `rarity` option to custom_frames.json entries (a string or list of strings) to apply a frame to every item of the given rarity, including rarities added by other mods. More specific entries take precedence, in the following sequence -> item > tag > namespace > rarity
 - Added a `CUSTOM_RARITY_PALETTE_COLORS` config entry, and is now the default palette for non-vanilla rarities (previously using the legendary palette), added along with a matching `custom_rarity` gradientType option for custom_frames.json
 - Added a config option (`SHOW_MOD_NAME`, off by default) to append the name of the mod that adds the hovered item as the last tooltip line, in both survival and creative (previously only visible on creative mode)
+- Added some micro-optimizations to some caching functions
 - Fixed the thirst droplet icons (along with other icons) from the mod Tough As Nails not showing in tooltips
 - Fixed FTB Quests tooltips rendering in the stackless style, now the hovered reward item is properly detected
 - Fixed the icon flipping 180 degrees once the `rotate` / `rotate_zoom` appear animation ends

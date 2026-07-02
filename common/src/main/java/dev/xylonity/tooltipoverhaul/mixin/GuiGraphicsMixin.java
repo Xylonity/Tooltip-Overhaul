@@ -47,8 +47,6 @@ public class GuiGraphicsMixin {
 
         tooltipoverhaul$calculateCounterValue(stack);
 
-        tooltipoverhaul$cachedMainStack = stack.copy();
-
         // We create the context and the renderer for the equipped stack here, as this is the highest priority when computing certain values a posteriori
         TooltipContext equippedStackContext = EquippedContextCalculator.from((GuiGraphics) (Object) this, font, mouseX, mouseY, tooltipPositioner, stack, screenWidth, screenHeight);
         TooltipRenderer equippedStackRenderer = new TooltipRenderer(equippedStackContext);
@@ -116,6 +114,8 @@ public class GuiGraphicsMixin {
             TooltipRenderer.COUNTER = elapsed / 1000f;
         }
         else {
+            // Only copied when the hovered stack changes, as copy() clones the whole NBT tree and this runs every frame
+            tooltipoverhaul$cachedMainStack = of.copy();
             tooltipoverhaul$hoverStartTime = System.currentTimeMillis();
             TooltipRenderer.COUNTER = 0;
         }
