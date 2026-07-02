@@ -12,6 +12,7 @@
 - Fixed a crash when a malformed color is set in any config entry, now it falls back to white and logs a warning instead
 - Fixed the mod ItemZoom not working with tooltipoverhaul present
 - Fixed tooltips extending off screen in Packed Up UIs
+- Fixed shields being compared against the equipped leggings when holding the compare key
 
 # 1.4.3
 - Fixed a crash that could occur when rendering an armor stand in any tooltip, caused by yyzsbackpack

@@ -9,6 +9,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +43,15 @@ public class EquippedContextCalculator {
         // compared against the mainhand item, but only when it is itself a tiered item so the comparison stays weapon-weapon
         ItemStack equippedStack;
         if (fromStack.getItem() instanceof Equipable equippableStack) {
-            equippedStack = player.getInventory().getArmor(equippableStack.getEquipmentSlot().getIndex());
+            EquipmentSlot slot = equippableStack.getEquipmentSlot();
+            // offhand index collides with the leggings armor index lmao
+            if (slot.getType() == EquipmentSlot.Type.ARMOR) {
+                equippedStack = player.getInventory().getArmor(slot.getIndex());
+            }
+            else {
+                equippedStack = player.getItemBySlot(slot);
+            }
+
         }
         else if (fromStack.getItem() instanceof TieredItem) {
             equippedStack = player.getMainHandItem();
