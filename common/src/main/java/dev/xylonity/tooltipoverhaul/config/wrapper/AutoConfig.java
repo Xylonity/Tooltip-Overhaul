@@ -14,5 +14,11 @@ public @interface AutoConfig {
 
     // Extra comment above the category indicating its own existence (lol)
     boolean categoryBanner() default false;
+
+    String title() default "";
+
+    String description() default "";
+
+    int accentColor() default 0xFF4A9EFF;
 }
 

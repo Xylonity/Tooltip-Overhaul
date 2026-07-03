@@ -22,4 +22,11 @@ public @interface ConfigEntry {
     double min() default Double.NEGATIVE_INFINITY;
     double max() default Double.POSITIVE_INFINITY;
 
+    boolean color() default false;
+
+    // Renders numeric entries as a slider in the config screen
+    boolean slider() default false;
+
+    boolean requiresRestart() default false;
+
 }
