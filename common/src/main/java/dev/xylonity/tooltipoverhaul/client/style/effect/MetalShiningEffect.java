@@ -15,7 +15,7 @@ public class MetalShiningEffect implements EffectLayer {
         int tooltipHeight = (int) context.getTooltipSize().y;
 
         context.push(() -> {
-            context.getGraphics().enableScissor(
+            context.enableScissor(
                     positionX - context.getPaddingX() - 1,
                     positionY - context.getPaddingY(),
                     positionX + tooltipWidth + context.getPaddingX(),

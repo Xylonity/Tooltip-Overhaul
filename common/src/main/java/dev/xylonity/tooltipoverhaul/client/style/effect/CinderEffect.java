@@ -44,7 +44,7 @@ public class CinderEffect implements EffectLayer {
         }
 
         context.push(() -> {
-            context.getGraphics().enableScissor(
+            context.enableScissor(
                     positionX - context.getPaddingX() - 1,
                     positionY - context.getPaddingY(),
                     positionX + tooltipWidth + context.getPaddingX(),

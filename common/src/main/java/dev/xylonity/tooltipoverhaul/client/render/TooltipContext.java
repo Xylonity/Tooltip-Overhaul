@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -220,6 +221,25 @@ public class TooltipContext {
         finally {
             getPose().popPose();
         }
+
+    }
+
+    /**
+     * Scissor helper that runs the rectangle through the current pose translation/scale before applying it
+     */
+    public void enableScissor(int x0, int y0, int x1, int y1) {
+        final Matrix4f pose = getPose().last().pose();
+        final float px0 = pose.m00() * x0 + pose.m30();
+        final float py0 = pose.m11() * y0 + pose.m31();
+        final float px1 = pose.m00() * x1 + pose.m30();
+        final float py1 = pose.m11() * y1 + pose.m31();
+
+        graphics.enableScissor(
+                Math.round(Math.min(px0, px1)),
+                Math.round(Math.min(py0, py1)),
+                Math.round(Math.max(px0, px1)),
+                Math.round(Math.max(py0, py1))
+        );
 
     }
 

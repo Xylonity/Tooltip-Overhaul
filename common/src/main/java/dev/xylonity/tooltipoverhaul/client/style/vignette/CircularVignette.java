@@ -39,14 +39,14 @@ public class CircularVignette implements VignetteLayer {
 
         int color = vignetteEntry.color();
 
-        context.translate(anchorPositionX, anchorPositionY, 0);
-
-        context.getGraphics().enableScissor(
+        context.enableScissor(
                 positionX - paddingX - 1,
                 positionY - paddingY,
                 positionX + tooltipWidth + paddingX,
                 positionY + tooltipHeight + paddingY
         );
+
+        context.translate(anchorPositionX, anchorPositionY, 0);
 
         RenderSystem.enableBlend();
 

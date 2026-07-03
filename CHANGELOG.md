@@ -1,4 +1,7 @@
 # 1.5.0
+- Reworked the in-game config screen
+- Added a visual editor for the Tooltip Overhaul's custom_frames.json file (open it from the config screen), where you can also see a live tooltip preview that reacts as you type
+- Config entries are now grouped in categories inside the TOML file, and existing values are migrated automatically
 - Tweaked the default color palette colors, to make them more visually appeal
 - Added 3 new effects: `fireflies`, `bubbles` and `crystals`
 - Added tooltip appear/disappear hover animations (`TOOLTIP_APPEAR_ANIMATION` and `TOOLTIP_ANIMATION_DURATION` config entries), with 11 options: fade, pop, rise, unfold, zoom, slide, swing, emerge, squash, card and shake
