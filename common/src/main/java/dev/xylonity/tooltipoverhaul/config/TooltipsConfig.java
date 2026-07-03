@@ -150,7 +150,7 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
-            comment = "Effects. Options: cinder, echo, galaxy, magic_orbs, speed_lines, nebula, spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars. You can chain effects together, for example: 'white_dust, nebula'"
+            comment = "Effects. Options: bubbles, cinder, crystals, echo, fireflies, galaxy, magic_orbs, speed_lines, nebula, spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars. You can chain effects together, for example: 'white_dust, nebula'"
     )
     public static String EFFECTS = "";
 
@@ -201,9 +201,9 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             comment = "Animation played when a tooltip appears (on hover) and disappears. Options: none, fade, pop, " +
-                    "rise, unfold, zoom, slide, swing, emerge, squash, card."
+                    "rise, unfold, zoom, slide, swing, emerge, squash, card, shake."
     )
-    public static String TOOLTIP_APPEAR_ANIMATION = "pop";
+    public static String TOOLTIP_APPEAR_ANIMATION = "none";
 
     @ConfigEntry(
             comment = "Duration (in seconds) of the tooltip appear/disappear animation. Lower values are snappier."

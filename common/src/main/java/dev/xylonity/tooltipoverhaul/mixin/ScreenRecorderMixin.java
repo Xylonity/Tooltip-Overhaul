@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
+import dev.xylonity.tooltipoverhaul.client.render.TooltipAnimationState;
 import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.compat.emi.EmiDeferredHover;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,27 +21,38 @@ abstract class ScreenRecorderMixin {
     private void to$emiRecord(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, CallbackInfo ci) {
         Object self = this;
         try {
-            ClassLoader classL = self.getClass().getClassLoader();
-            Class<?> recipeScreenInst = Class.forName("dev.emi.emi.screen.RecipeScreen", false, classL);
-            if (!recipeScreenInst.isInstance(self)) return;
+            ClassLoader classLoader = self.getClass().getClassLoader();
+            Class<?> recipeScreenInstance = Class.forName("dev.emi.emi.screen.RecipeScreen", false, classLoader);
+            if (!recipeScreenInstance.isInstance(self)) {
+                return;
+            }
 
-            Method getStack = recipeScreenInst.getMethod("getHoveredStack");
+            Method getStack = recipeScreenInstance.getMethod("getHoveredStack");
             Object emiIngredient = getStack.invoke(self);
-            if (emiIngredient == null) return;
+            if (emiIngredient == null) {
+                return;
+            }
 
             Method emiStacks = emiIngredient.getClass().getMethod("getEmiStacks");
             Object listt = emiStacks.invoke(emiIngredient);
-            if (!(listt instanceof List<?> list) || list.isEmpty()) return;
+            if (!(listt instanceof List<?> list) || list.isEmpty()) {
+                return;
+            }
 
-            for (Object object : list) {
-                if (object == null) continue;
+            for (final Object object : list) {
+                if (object == null) {
+                    continue;
+                }
+
                 Method realItemStack = object.getClass().getMethod("getItemStack");
                 Object is = realItemStack.invoke(object);
                 if (is instanceof ItemStack stack && !stack.isEmpty()) {
                     EmiDeferredHover.set(stack);
                     break;
                 }
+
             }
+
         }
         catch (Throwable ignored) {
             ;;
@@ -51,6 +63,7 @@ abstract class ScreenRecorderMixin {
     @Inject(method = "removed", at = @At("HEAD"))
     private void onScreenRemoved(CallbackInfo ci) {
         TooltipScrollState.reset();
+        TooltipAnimationState.clear();
     }
 
 }
