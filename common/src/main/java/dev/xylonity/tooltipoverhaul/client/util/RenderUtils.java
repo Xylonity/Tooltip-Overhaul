@@ -2,7 +2,9 @@ package dev.xylonity.tooltipoverhaul.client.util;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.render.FadeRenderType;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.mixin.KeyMappingAccessor;
@@ -13,6 +15,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.LivingEntity;
@@ -255,7 +258,15 @@ public class RenderUtils {
                     Lighting.setupForFlatItems();
                 }
 
-                Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.GUI, false, context.getPose(), context.getBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
+                // Cutout/solid item render types don't blend, so the fade of the in/out animation (applied
+                // through the shader color alpha) has no visible effect on them
+                MultiBufferSource bufferSource = context.getBuffer();
+                if (RenderSystem.getShaderColor()[3] < 1.0f) {
+                    final MultiBufferSource delegate = bufferSource;
+                    bufferSource = type -> delegate.getBuffer(FadeRenderType.remap(type));
+                }
+
+                Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.GUI, false, context.getPose(), bufferSource, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
                 context.flush();
                 if (flag) {
                     Lighting.setupFor3DItems();
