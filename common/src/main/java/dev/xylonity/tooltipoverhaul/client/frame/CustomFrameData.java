@@ -41,6 +41,8 @@ public record CustomFrameData(
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<String> iconAppearAnimation,
+        Optional<String> tooltipAppearAnimation,
+        Optional<Float> tooltipAnimationDuration,
         Optional<Integer> secondPanelX,
         Optional<Integer> secondPanelY,
         Optional<Integer> secondPanelSizeX,
@@ -134,6 +136,14 @@ public record CustomFrameData(
 
     public String getIconAppearAnimation() {
         return iconAppearAnimation.orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
+    }
+
+    public String getTooltipAppearAnimation() {
+        return tooltipAppearAnimation.orElse(TooltipsConfig.TOOLTIP_APPEAR_ANIMATION);
+    }
+
+    public float getTooltipAnimationDuration() {
+        return tooltipAnimationDuration.orElse(TooltipsConfig.TOOLTIP_ANIMATION_DURATION);
     }
 
     public String getIconBackground() {

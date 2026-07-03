@@ -1,7 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.render;
 
-import dev.xylonity.tooltipoverhaul.client.style.animation.TooltipAnimation;
-import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
+import dev.xylonity.tooltipoverhaul.client.style.animation.TooltipAnimator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -35,10 +35,23 @@ public final class TooltipAnimationState {
     private static long frameCounter;
     private static long lastAliveFrame;
 
+    private static boolean suppressCapture = false;
+
+    /**
+     * Used by the live preview
+     */
+    public static void setSuppressCapture(boolean suppress) {
+        suppressCapture = suppress;
+    }
+
     /**
      * Stores the data needed to replay the given (main) tooltip
      */
     public static void capture(TooltipContext context) {
+        if (suppressCapture) {
+            return;
+        }
+
         font = context.getFont();
         components = context.getComponents();
         stack = context.getStack();
@@ -68,22 +81,31 @@ public final class TooltipAnimationState {
             return;
         }
 
-        final TooltipAnimation animation = TooltipAnimation.fromString(TooltipsConfig.TOOLTIP_APPEAR_ANIMATION);
-        if (!animation.isAnimated()) {
-            return;
-        }
-
-        final float duration = Math.max(TooltipsConfig.TOOLTIP_ANIMATION_DURATION, 0.0001f);
         final float elapsed = (System.nanoTime() - lastAliveNano) / 1_000_000_000f;
-        if (elapsed >= duration) {
+
+        try {
+            // The context resolves the stack's custom frame, so the replay honors per-frame appear anims
+            final TooltipContext context = new TooltipContext(graphics, font, components, mouseX, mouseY, screenWidth, screenHeight, positioner, stack, true);
+            if (!TooltipAnimator.animation(context).isAnimated()) {
+                clear();
+                return;
+            }
+
+            final float duration = TooltipAnimator.duration(context);
+            if (elapsed >= duration) {
+                clear();
+                return;
+            }
+
+            final TooltipRenderer renderer = new TooltipRenderer(context);
+            renderer.init();
+            renderer.renderOut(elapsed / duration);
+        }
+        catch (Throwable throwable) {
+            TooltipOverhaul.LOGGER.warn("Dropped tooltip out-animation replay for {}: {}", stack, throwable.toString());
             clear();
-            return;
         }
 
-        final TooltipContext context = new TooltipContext(graphics, font, components, mouseX, mouseY, screenWidth, screenHeight, positioner, stack, true);
-        final TooltipRenderer renderer = new TooltipRenderer(context);
-        renderer.init();
-        renderer.renderOut(elapsed / duration);
     }
 
 }

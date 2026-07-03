@@ -2,13 +2,14 @@ package dev.xylonity.tooltipoverhaul.compat;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import dev.xylonity.tooltipoverhaul.client.screen.TooltipOverhaulConfigScreen;
+import dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigScreen;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 
 public class TooltipOverhaulModMenu implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return TooltipOverhaulConfigScreen::new;
+        return parent -> new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class);
     }
 
 }

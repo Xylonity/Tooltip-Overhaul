@@ -8,6 +8,8 @@ import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.world.phys.Vec2;
 
+import javax.annotation.Nullable;
+
 /**
  * Plays the configured in/out animation while drawing a tooltip's layers. The animation is expressed as a single affine
  * transform applied around the tooltip center
@@ -27,15 +29,27 @@ public final class TooltipAnimator {
     private static final float CARD_DOWN_ANGLE = 12f;
     private static final float SHAKE_AMPLITUDE = 4f;
 
-    public static float duration() {
-        return Math.max(TooltipsConfig.TOOLTIP_ANIMATION_DURATION, 0.0001f);
+    public static float duration(@Nullable TooltipContext context) {
+        final float duration = context != null && context.getFrameData() != null
+                ? context.getFrameData().getTooltipAnimationDuration()
+                : TooltipsConfig.TOOLTIP_ANIMATION_DURATION;
+
+        return Math.max(duration, 0.0001f);
+    }
+
+    public static TooltipAnimation animation(@Nullable TooltipContext context) {
+        final String name = context != null && context.getFrameData() != null
+                ? context.getFrameData().getTooltipAppearAnimation()
+                : TooltipsConfig.TOOLTIP_APPEAR_ANIMATION;
+
+        return TooltipAnimation.fromString(name);
     }
 
     /**
      * Draws the context's layers wrapped in the configured animation
      */
     public static void render(TooltipContext context, boolean out, float progress) {
-        final TooltipAnimation animation = TooltipAnimation.fromString(TooltipsConfig.TOOLTIP_APPEAR_ANIMATION);
+        final TooltipAnimation animation = animation(context);
         final Transform transform = computeTransform(animation, out, AnimationUtils.clamp01(progress));
 
         final boolean faded = transform.alpha < 1f;

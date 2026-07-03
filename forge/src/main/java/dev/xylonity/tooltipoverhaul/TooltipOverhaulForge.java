@@ -1,6 +1,6 @@
 package dev.xylonity.tooltipoverhaul;
 
-import dev.xylonity.tooltipoverhaul.client.screen.TooltipOverhaulConfigScreen;
+import dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigScreen;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
@@ -24,7 +24,7 @@ public class TooltipOverhaulForge {
         ModLoadingContext.get().registerExtensionPoint(
                 ConfigScreenHandler.ConfigScreenFactory.class,
                 () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) ->
-                        new TooltipOverhaulConfigScreen(parent)
+                        new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class)
                 )
 
         );

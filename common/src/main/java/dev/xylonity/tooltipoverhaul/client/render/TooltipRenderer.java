@@ -99,7 +99,7 @@ public class TooltipRenderer {
             TooltipAnimationState.capture(context);
         }
 
-        final float progress = AnimationUtils.clamp01(COUNTER / TooltipAnimator.duration());
+        final float progress = AnimationUtils.clamp01(COUNTER / TooltipAnimator.duration(context));
         TooltipAnimator.render(context, false, progress);
 
         return true;

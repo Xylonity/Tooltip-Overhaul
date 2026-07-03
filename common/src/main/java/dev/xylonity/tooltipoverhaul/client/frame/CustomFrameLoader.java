@@ -33,6 +33,20 @@ public class CustomFrameLoader {
             .create();
 
     /**
+     * Parses a single frame entry object, used by the frame editor screen for its live preview
+     */
+    public static CustomFrameData parseFrame(com.google.gson.JsonObject entry) {
+        return GSON.fromJson(entry, CustomFrameData.class);
+    }
+
+    /**
+     * Path of the TO's custom_frames.json inside the config dir
+     */
+    public static Path getUserConfigFile(Path configDir) {
+        return configDir.resolve(CONFIG_SUBDIR).resolve(CONFIG_PATH);
+    }
+
+    /**
      * Loads every single json file from every single mod that defines it,
      * plus the config file from Tooltip Overhaul itself
      */
