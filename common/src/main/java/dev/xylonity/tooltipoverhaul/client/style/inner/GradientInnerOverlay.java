@@ -27,13 +27,16 @@ public class GradientInnerOverlay implements InnerOverlayLayer {
         int width = (int) (context.getTooltipSize().x + 5);
         int height = (int) (context.getTooltipSize().y + 4);
 
+        // The notch background leaves the corner pixels of the inner rect transparent
+        final int trim = RenderUtils.getBackgroundCornerType(context).equals("notch") ? 1 : 0;
+
         RenderUtils.renderFrameGradient(context.getGraphics(), x0, y0 + 1, width, height - 2, color1, color2, color3);
 
         // Top and bottom lines
-        context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, color1);
-        context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, color3);
+        context.getGraphics().fill(x0 + trim, y0, x0 + width - trim, y0 + 1, color1);
+        context.getGraphics().fill(x0 + trim, y0 + height - 1, x0 + width - trim, y0 + height, color3);
 
-        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color1, color3, ColorUtils.getBackgroundColor(context), RenderUtils.getInnerFrameCornerType(context));
+        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color1, color3, ColorUtils.getBackgroundColor(context), RenderUtils.getInnerFrameCornerType(context), trim == 1);
     }
 
 }

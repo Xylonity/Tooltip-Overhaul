@@ -21,7 +21,7 @@ public class DefaultBackground implements BackgroundLayer {
 
         final String corner = RenderUtils.getBackgroundCornerType(context);
         if (corner.equals("notch")) {
-            final int pixelOffset = 2;
+            final int pixelOffset = 1;
             context.getGraphics().fill(x0, y0 + pixelOffset, x1, y1 - pixelOffset, backgroundColor);
             context.getGraphics().fill(x0 + pixelOffset, y0, x1 - pixelOffset, y1, backgroundColor);
             context.getGraphics().fill(x0 + pixelOffset, y0 - 1, x1 - pixelOffset, y0, backgroundColor);

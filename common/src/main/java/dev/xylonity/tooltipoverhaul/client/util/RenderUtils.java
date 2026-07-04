@@ -153,7 +153,7 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBackgroundCornerType).orElse(TooltipsConfig.BACKGROUND_CORNER_TYPE);
     }
 
-    public static void applyFrameCorners(GuiGraphics graphics, int x0, int y0, int width, int height, int topColor, int bottomColor, int bgColor, String type) {
+    public static void applyFrameCorners(GuiGraphics graphics, int x0, int y0, int width, int height, int topColor, int bottomColor, int bgColor, String type, boolean cornerCut) {
         final int[][] erase;
         final int[][] add;
         // Which corners the style is applied to, as indices into the corners array below (in order: top left, top right, bottom left, bottom right)
@@ -227,6 +227,10 @@ public class RenderUtils {
             final int color = cornerY == y0 ? topColor : bottomColor;
 
             for (final int[] pixel : erase) {
+                if (cornerCut && pixel[0] == 0 && pixel[1] == 0) {
+                    continue;
+                }
+
                 fillPixel(graphics, cornerX + pixel[0] * stepX, cornerY + pixel[1] * stepY, bgColor);
             }
             for (final int[] pixel : add) {
