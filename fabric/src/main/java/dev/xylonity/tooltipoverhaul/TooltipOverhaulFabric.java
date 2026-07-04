@@ -5,6 +5,7 @@ import dev.xylonity.tooltipoverhaul.client.command.ReloadCommand;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -24,6 +25,7 @@ public class TooltipOverhaulFabric implements ClientModInitializer {
 
         // Loads a simplex wrapper of nightconfig, impl derived from knightlib
         ConfigManager.init(FabricLoader.getInstance().getConfigDir(), TooltipsConfig.class);
+        ConfigManager.onReload(TooltipsConfig.class, Palette::reload);
 
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
             CustomFrameManager.initialize();

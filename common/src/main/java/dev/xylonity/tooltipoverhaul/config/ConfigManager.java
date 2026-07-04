@@ -52,6 +52,34 @@ public final class ConfigManager {
     private static final Map<Path, ScheduledFuture<?>> PENDING = new ConcurrentHashMap<>();
     private static final Map<Path, Long> IGNORE_UNTIL = new ConcurrentHashMap<>();
 
+    private static final Map<Class<?>, CopyOnWriteArrayList<Runnable>> RELOAD_LISTENERS = new ConcurrentHashMap<>();
+
+    public static void onReload(Class<?> clazz, Runnable listener) {
+        RELOAD_LISTENERS.computeIfAbsent(clazz, c -> new CopyOnWriteArrayList<>()).add(listener);
+        if (REGISTERED.contains(clazz)) {
+            listener.run();
+        }
+
+    }
+
+    private static void fireReload(Class<?> clazz) {
+        final CopyOnWriteArrayList<Runnable> listeners = RELOAD_LISTENERS.get(clazz);
+        if (listeners == null) {
+            return;
+        }
+
+        for (final Runnable listener : listeners) {
+            try {
+                listener.run();
+            }
+            catch (Throwable ignored) {
+                ;;
+            }
+
+        }
+
+    }
+
     public static void init(Path configDir, Class<?>... configs) {
         CONFIG_DIR = configDir;
         for (Class<?> clazz : configs) {
@@ -96,6 +124,7 @@ public final class ConfigManager {
         FILE2CLASS.put(tomlPath, clazz);
 
         apply(clazz, cfg, true);
+        fireReload(clazz);
 
         cfg.save();
     }
@@ -256,6 +285,7 @@ public final class ConfigManager {
                             try {
                                 cfg.load();
                                 apply(clazz, cfg, false);
+                                fireReload(clazz);
                             }
                             catch (Throwable ignored) {
                                 ;;
@@ -458,6 +488,7 @@ public final class ConfigManager {
             ;;
         }
 
+        fireReload(clazz);
     }
 
 }
