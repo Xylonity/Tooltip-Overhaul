@@ -10,6 +10,7 @@
     "AbstractContainerScreenMixin",
     "BypassHoverGuiCullingMixin",
     "ClientTextTooltipAccessor",
+    "EditBoxScrollFixMixin",
     "GuiGraphicsItemMixin",
     "GuiGraphicsItemTooltipMixin",
     "GuiGraphicsMixin",
