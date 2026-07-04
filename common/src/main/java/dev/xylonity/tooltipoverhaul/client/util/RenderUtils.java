@@ -2,7 +2,9 @@ package dev.xylonity.tooltipoverhaul.client.util;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Lighting;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
+import dev.xylonity.tooltipoverhaul.client.render.FadeRenderType;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.mixin.KeyMappingAccessor;
@@ -13,6 +15,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.world.entity.LivingEntity;
@@ -139,6 +142,106 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBorderType).orElse(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE);
     }
 
+    public static String getInnerFrameCornerType(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getInnerFrameCornerType).orElse(TooltipsConfig.INNER_FRAME_CORNER_TYPE);
+    }
+
+    public static String getBackgroundCornerType(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBackgroundCornerType).orElse(TooltipsConfig.BACKGROUND_CORNER_TYPE);
+    }
+
+    public static void applyFrameCorners(GuiGraphics graphics, int x0, int y0, int width, int height, int topColor, int bottomColor, int bgColor, String type, boolean cornerCut) {
+        final int[][] erase;
+        final int[][] add;
+        // Which corners the style is applied to, as indices into the corners array below (in order: top left, top right, bottom left, bottom right)
+        int[] cornersToApply = {0, 1, 2, 3};
+
+        switch (type) {
+            case "rounded" -> {
+                erase = new int[][]{{0, 0}};
+                add = new int[][]{};
+            }
+            case "bevel" -> {
+                erase = new int[][]{{0, 0}};
+                add = new int[][]{{1, 1}};
+            }
+            case "inner" -> {
+                erase = new int[][]{};
+                add = new int[][]{{1, 1}};
+            }
+            case "cut" -> {
+                erase = new int[][]{{0, 0}, {1, 0}, {0, 1}};
+                add = new int[][]{{1, 1}};
+            }
+            case "thick" -> {
+                erase = new int[][]{};
+                add = new int[][]{{1, 1}, {2, 1}, {3, 1}, {1, 2}, {2, 2}, {1, 3}};
+                cornersToApply = new int[]{1};
+            }
+            case "bracket" -> {
+                erase = new int[][]{};
+                add = new int[][]{{2, 2}, {3, 2}, {2, 3}};
+            }
+            case "block" -> {
+                erase = new int[][]{};
+                add = new int[][]{{1, 1}, {2, 1}, {1, 2}, {2, 2}};
+            }
+            case "notch" -> {
+                erase = new int[][]{{0, 0}, {1, 0}, {0, 1}};
+                add = new int[][]{{2, 1}, {1, 2}, {2, 2}};
+            }
+            case "weld" -> {
+                erase = new int[][]{};
+                add = new int[][]{{1, 1}, {2, 1}, {1, 2}};
+            }
+            case "gem" -> {
+                erase = new int[][]{};
+                add = new int[][]{{2, 1}, {4, 1}, {1, 2}, {3, 2}, {2, 3}, {1, 4}};
+            }
+            default -> {
+                return;
+            }
+
+        }
+
+        final int xr = x0 + width - 1;
+        final int yb = y0 + height - 1;
+
+        // (cornerX, cornerY, inward X step, inward Y step) for each of the four corners
+        int[][] corners = {
+                {x0, y0, 1, 1},
+                {xr, y0, -1, 1},
+                {x0, yb, 1, -1},
+                {xr, yb, -1, -1}
+        };
+
+        for (final int idx : cornersToApply) {
+            final int[] corner = corners[idx];
+            final int cornerX = corner[0];
+            final int cornerY = corner[1];
+            final int stepX = corner[2];
+            final int stepY = corner[3];
+            final int color = cornerY == y0 ? topColor : bottomColor;
+
+            for (final int[] pixel : erase) {
+                if (cornerCut && pixel[0] == 0 && pixel[1] == 0) {
+                    continue;
+                }
+
+                fillPixel(graphics, cornerX + pixel[0] * stepX, cornerY + pixel[1] * stepY, bgColor);
+            }
+            for (final int[] pixel : add) {
+                fillPixel(graphics, cornerX + pixel[0] * stepX, cornerY + pixel[1] * stepY, color);
+            }
+
+        }
+
+    }
+
+    private static void fillPixel(GuiGraphics graphics, int x, int y, int color) {
+        graphics.fill(x, y, x + 1, y + 1, color);
+    }
+
     public static String getOverlayLocation(TooltipContext context) {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getTextureLocation).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
     }
@@ -155,7 +258,15 @@ public class RenderUtils {
                     Lighting.setupForFlatItems();
                 }
 
-                Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.GUI, false, context.getPose(), context.getBuffer(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
+                // Cutout/solid item render types don't blend, so the fade of the in/out animation (applied
+                // through the shader color alpha) has no visible effect on them
+                MultiBufferSource bufferSource = context.getBuffer();
+                if (RenderSystem.getShaderColor()[3] < 1.0f) {
+                    final MultiBufferSource delegate = bufferSource;
+                    bufferSource = type -> delegate.getBuffer(FadeRenderType.remap(type));
+                }
+
+                Minecraft.getInstance().getItemRenderer().render(stack, ItemDisplayContext.GUI, false, context.getPose(), bufferSource, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, bakedmodel);
                 context.flush();
                 if (flag) {
                     Lighting.setupFor3DItems();
@@ -180,11 +291,11 @@ public class RenderUtils {
 
         // Left border (top and bottom sections)
         graphics.fillGradient(x, y, x + 1, y + mid, c1, c2);
-        graphics.fillGradient(x, y + mid, x + 1, y + height - 1, c2, c3);
+        graphics.fillGradient(x, y + mid, x + 1, y + height, c2, c3);
 
         // Right border (top and bottom sections)
         graphics.fillGradient(x + width - 1, y, x + width, y + mid, c1, c2);
-        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height - 1, c2, c3);
+        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, c2, c3);
     }
 
 }

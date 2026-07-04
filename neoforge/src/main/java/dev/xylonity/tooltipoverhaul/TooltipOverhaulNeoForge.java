@@ -1,7 +1,8 @@
 package dev.xylonity.tooltipoverhaul;
 
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
-import dev.xylonity.tooltipoverhaul.client.screen.TooltipOverhaulConfigScreen;
+import dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigScreen;
+import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -23,7 +24,7 @@ public class TooltipOverhaulNeoForge {
     public TooltipOverhaulNeoForge(IEventBus eventBus) {
         ModLoadingContext.get().registerExtensionPoint(
                 IConfigScreenFactory.class,
-                () -> (mc, parent) -> new TooltipOverhaulConfigScreen(parent)
+                () -> (mc, parent) -> new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class)
         );
 
         if (FMLLoader.getDist().isClient()) {
@@ -45,6 +46,7 @@ public class TooltipOverhaulNeoForge {
         private static void onClientSetup(final FMLClientSetupEvent event) {
             // Loads a simplex wrapper of nightconfig, impl derived from knightlib
             ConfigManager.init(FMLPaths.CONFIGDIR.get(), TooltipsConfig.class);
+            ConfigManager.onReload(TooltipsConfig.class, Palette::reload);
             event.enqueueWork(() -> CustomFrameManager.initialize());
         }
 

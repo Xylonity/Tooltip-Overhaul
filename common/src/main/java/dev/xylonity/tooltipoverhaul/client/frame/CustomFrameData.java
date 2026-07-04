@@ -12,6 +12,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.TieredItem;
 
 import java.util.Arrays;
@@ -23,9 +24,12 @@ public record CustomFrameData(
         List<String> items,
         List<String> tags,
         Optional<String> namespace,
+        List<String> rarities,
         Optional<String> texture,
         Optional<Integer> backgroundColor,
         Optional<String> borderType,
+        Optional<String> innerFrameCornerType,
+        Optional<String> backgroundCornerType,
         Optional<GradientType> gradientType,
         Optional<List<String>> gradientColors,
         Optional<String> itemRating,
@@ -41,6 +45,8 @@ public record CustomFrameData(
         Optional<Float> iconSize,
         Optional<Float> iconRotatingSpeed,
         Optional<String> iconAppearAnimation,
+        Optional<String> tooltipAppearAnimation,
+        Optional<Float> tooltipAnimationDuration,
         Optional<Integer> secondPanelX,
         Optional<Integer> secondPanelY,
         Optional<Integer> secondPanelSizeX,
@@ -69,6 +75,14 @@ public record CustomFrameData(
 
     public String getBorderType() {
         return borderType.orElse(TooltipsConfig.DEFAULT_INNER_OVERLAY_TYPE);
+    }
+
+    public String getInnerFrameCornerType() {
+        return innerFrameCornerType.orElse(TooltipsConfig.INNER_FRAME_CORNER_TYPE);
+    }
+
+    public String getBackgroundCornerType() {
+        return backgroundCornerType.orElse(TooltipsConfig.BACKGROUND_CORNER_TYPE);
     }
 
     public GradientType getGradientType() {
@@ -126,6 +140,14 @@ public record CustomFrameData(
 
     public String getIconAppearAnimation() {
         return iconAppearAnimation.orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
+    }
+
+    public String getTooltipAppearAnimation() {
+        return tooltipAppearAnimation.orElse(TooltipsConfig.TOOLTIP_APPEAR_ANIMATION);
+    }
+
+    public float getTooltipAnimationDuration() {
+        return tooltipAnimationDuration.orElse(TooltipsConfig.TOOLTIP_ANIMATION_DURATION);
     }
 
     public String getIconBackground() {
@@ -221,28 +243,68 @@ public record CustomFrameData(
     }
 
     public boolean matches(ItemStack stack) {
+        return matchScore(stack) > 0;
+    }
+
+    /**
+     * Specificity of the match.
+     * 0 no match, and the higher wins: 4 item, 3 tag, 2 namespace (including *), 1 rarity
+     */
+    public int matchScore(ItemStack stack) {
         ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (items.contains(key.toString())) {
-            return true;
+            return 4;
+        }
+
+        for (TagKey<Item> tagKey : getTagKeys()) {
+            if (stack.is(tagKey)) {
+                return 3;
+            }
+
         }
 
         if (namespace.isPresent()) {
             String namespace = this.namespace.get().trim();
             if (!namespace.isEmpty()) {
                 if (namespace.equals("*") || namespace.equalsIgnoreCase("all")) {
-                    return true;
+                    return 2;
                 }
                 if (key.getNamespace().equals(namespace)) {
-                    return true;
+                    return 2;
                 }
+
             }
 
         }
 
-        for (TagKey<Item> tagKey : getTagKeys()) {
-            if (stack.is(tagKey)) {
-                return true;
+        return matchesRarity(stack) ? 1 : 0;
+    }
+
+    private boolean matchesRarity(ItemStack stack) {
+        if (rarities.isEmpty()) {
+            return false;
+        }
+
+        try {
+            final Rarity rarity = stack.getRarity();
+            // Compares by string instead of enum as it may crash on certain enum injections (as it has happened before)
+            final String name = rarity.name().trim();
+            final String rawName = rarity.toString().trim();
+            for (final String candidate : rarities) {
+                final String trimmedCandidate = candidate.trim();
+                if (trimmedCandidate.isEmpty()) {
+                    continue;
+                }
+
+                if (name.equalsIgnoreCase(trimmedCandidate) || rawName.equalsIgnoreCase(trimmedCandidate)) {
+                    return true;
+                }
+
             }
+
+        }
+        catch (Throwable ignored) {
+            ;;
         }
 
         return false;
@@ -298,6 +360,7 @@ public record CustomFrameData(
         EPIC,
         LEGENDARY,
         CHAOS,
+        CUSTOM_RARITY,
         CUSTOM
     }
 

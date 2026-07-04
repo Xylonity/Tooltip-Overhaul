@@ -27,6 +27,22 @@ public class AnimationUtils {
         return t < 0.5f ? 4f * t * t * t : 1f - (float) Math.pow(-2f * t + 2f, 3) / 2f;
     }
 
+    public static float easeOutQuad(float t) {
+        final float inv = 1f - t;
+        return 1f - inv * inv;
+    }
+
+    public static float easeInQuad(float t) {
+        return t * t;
+    }
+
+    public static float easeOutBack(float t) {
+        float c1 = 1.70158f;
+        float c3 = c1 + 1f;
+        float inv = t - 1f;
+        return 1f + c3 * inv * inv * inv + c1 * inv * inv;
+    }
+
     public static float smoothstep(float a, float b, float x) {
         float step = clamp((x - a) / (b - a), 0f, 1f);
         return step * step * (3f - 2f * step);

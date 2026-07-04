@@ -1,10 +1,17 @@
 package dev.xylonity.tooltipoverhaul.config.parser;
 
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class ConfigColorParser {
 
+    private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
+
     public static int[] parsePalette(String key) {
-        String[] rawColors = key.split("[,;\\s]+");
-        int[] colors = new int[3];
+        final String[] rawColors = key.split("[,;\\s]+");
+        final int[] colors = new int[3];
 
         int length = Math.min(3, rawColors.length);
         int lastColor = 0xFFFFFFFF;
@@ -22,19 +29,29 @@ public class ConfigColorParser {
     }
 
     public static int parseColor(String rawKey) {
-        String key = rawKey.trim();
-        if (key.startsWith("#")) {
-            return parseHex(key.substring(1));
+        try {
+            final String key = rawKey.trim();
+            if (key.startsWith("#")) {
+                return parseHex(key.substring(1));
+            }
+
+            if (key.startsWith("0x") || key.startsWith("0X")) {
+                return parseHex(key.substring(2));
+            }
+
+            // If it's normal RGB, injects 0xFF alpha
+            long value = Long.parseLong(key);
+            long argb = (value <= 0x00FF_FFFFL) ? (0xFF00_0000L | value ) : value;
+            return (int) (argb & 0xFFFF_FFFFL);
+        }
+        catch (Exception exception) {
+            if (WARNED.add(rawKey)) {
+                TooltipOverhaul.LOGGER.warn("Invalid color '{}' found in a config value, falling back to white", rawKey);
+            }
+
+            return 0xFFFFFFFF;
         }
 
-        if (key.startsWith("0x") || key.startsWith("0X")) {
-            return parseHex(key.substring(2));
-        }
-
-        // If it's normal RGB, injects 0xFF alpha
-        long value = Long.parseLong(key);
-        long argb = (value <= 0x00FF_FFFFL) ? (0xFF00_0000L | value ) : value;
-        return (int) (argb & 0xFFFF_FFFFL);
     }
 
     private static int parseHex(String rawHex) {

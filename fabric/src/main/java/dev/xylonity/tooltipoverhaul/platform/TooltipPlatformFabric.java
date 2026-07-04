@@ -1,6 +1,8 @@
 package dev.xylonity.tooltipoverhaul.platform;
 
+import dev.xylonity.tooltipoverhaul.compat.emi.EmiStackContext;
 import dev.xylonity.tooltipoverhaul.compat.proxy.EmiProxy;
+import dev.xylonity.tooltipoverhaul.compat.proxy.FtbLibraryProxy;
 import dev.xylonity.tooltipoverhaul.compat.proxy.JeiProxy;
 import dev.xylonity.tooltipoverhaul.compat.proxy.ScreenTypeProxy;
 import dev.xylonity.tooltipoverhaul.mixin.AbstractContainerScreenMixin;
@@ -16,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 public class TooltipPlatformFabric implements TooltipPlatform {
 
@@ -34,17 +37,27 @@ public class TooltipPlatformFabric implements TooltipPlatform {
         return FabricLoader.getInstance().getConfigDir();
     }
 
+    @Override
+    public Optional<String> getModDisplayName(String namespace) {
+        return FabricLoader.getInstance().getModContainer(namespace).map(container -> container.getMetadata().getName());
+    }
+
     /**
      * Hovered ItemStack locator. For dedicated mod compatibility, proxies (reflection) are used
      */
     @Override
     public ItemStack getHoveredItem(GuiGraphics graphics, List<ClientTooltipComponent> components, int mouseX, int mouseY) {
 
-        Screen screen = Minecraft.getInstance().screen;
+        final Screen screen = Minecraft.getInstance().screen;
 
+        // Stack stashed by the renderTooltip hook
+        ItemStack contextStack = EmiStackContext.get();
+        if (!contextStack.isEmpty()) {
+            return contextStack;
+        }
 
-
-        boolean isContainerLike = (screen instanceof AbstractContainerScreen<?>) || (screen instanceof CreativeModeInventoryScreen) || ScreenTypeProxy.isContainerLikeOrJeiEmi();
+        boolean isContainerLike = (screen instanceof AbstractContainerScreen<?>) || (screen instanceof CreativeModeInventoryScreen) || ScreenTypeProxy.isContainerLikeOrJeiEmi()
+                || ScreenTypeProxy.isFtbQuests(screen) || ScreenTypeProxy.isFtbLibrary(screen);
         if (!isContainerLike) {
             return ItemStack.EMPTY;
         }
@@ -77,6 +90,12 @@ public class TooltipPlatformFabric implements TooltipPlatform {
         ItemStack jeiStack = JeiProxy.getItemStack();
         if (!jeiStack.isEmpty()) {
             return jeiStack;
+        }
+
+        // Ftb Library compat
+        ItemStack ftbStack = FtbLibraryProxy.getItemStack();
+        if (!ftbStack.isEmpty()) {
+            return ftbStack;
         }
 
         return ItemStack.EMPTY;

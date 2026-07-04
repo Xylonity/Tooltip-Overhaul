@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
@@ -45,8 +46,6 @@ public class GuiGraphicsMixin {
 
         tooltipoverhaul$calculateCounterValue(stack);
 
-        tooltipoverhaul$cachedMainStack = stack.copy();
-
         // We create the context and the renderer for the equipped stack here, as this is the highest priority when computing certain values a posteriori
         TooltipContext equippedStackContext = EquippedContextCalculator.from((GuiGraphics) (Object) this, font, mouseX, mouseY, tooltipPositioner, stack, screenWidth, screenHeight);
         TooltipRenderer equippedStackRenderer = new TooltipRenderer(equippedStackContext);
@@ -65,7 +64,7 @@ public class GuiGraphicsMixin {
             componentList = TextUtils.getTooltipComponentsFrom(stack, font, screenWidth, 2.2f);
         }
         else {
-            componentList = components;
+            componentList = TooltipOverhaul.PLATFORM.gatherTooltipComponents((GuiGraphics) (Object) this, stack, components, font, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner);
         }
 
         // Then, the main renderer is computed here
@@ -89,6 +88,13 @@ public class GuiGraphicsMixin {
             renderer.adjustLayout();
         }
 
+        // Cancelling renderTooltipInternal at head also skips the loader's pre-render tooltip event, so it's replayed here.
+        // Only fired when the renderer is going to take over
+        if (renderer.canRender() && TooltipOverhaul.PLATFORM.fireRenderTooltipPre((GuiGraphics) (Object) this, stack, componentList, font, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner)) {
+            ci.cancel();
+            return;
+        }
+
         // If the rendering is correct, the rest of the call is canceled
         if (renderer.render()) {
             if (equippedStackContext != null) {
@@ -107,6 +113,8 @@ public class GuiGraphicsMixin {
             TooltipRenderer.COUNTER = elapsed / 1000f;
         }
         else {
+            // Only copied when the hovered stack changes, as copy() clones the whole NBT tree and this runs every frame
+            tooltipoverhaul$cachedMainStack = of.copy();
             tooltipoverhaul$hoverStartTime = System.currentTimeMillis();
             TooltipRenderer.COUNTER = 0;
         }

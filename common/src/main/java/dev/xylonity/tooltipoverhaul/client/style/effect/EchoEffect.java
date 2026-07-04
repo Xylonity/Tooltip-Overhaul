@@ -36,7 +36,7 @@ public class EchoEffect implements EffectLayer {
         float maxRadius = (float) Math.hypot(tooltipWidth, tooltipHeight) * 0.95f;
 
         context.push(() -> {
-            context.getGraphics().enableScissor(
+            context.enableScissor(
                     positionX - context.getPaddingX() - 1,
                     positionY - context.getPaddingY(),
                     positionX + tooltipWidth + context.getPaddingX(),

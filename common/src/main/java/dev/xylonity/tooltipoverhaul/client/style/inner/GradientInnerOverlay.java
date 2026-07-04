@@ -2,8 +2,11 @@ package dev.xylonity.tooltipoverhaul.client.style.inner;
 
 import dev.xylonity.tooltipoverhaul.client.layer.impl.InnerOverlayLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import net.minecraft.client.gui.GuiGraphics;
+import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
+import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import net.minecraft.world.phys.Vec2;
+
+import java.awt.*;
 
 public class GradientInnerOverlay implements InnerOverlayLayer {
 
@@ -24,23 +27,16 @@ public class GradientInnerOverlay implements InnerOverlayLayer {
         int width = (int) (context.getTooltipSize().x + 5);
         int height = (int) (context.getTooltipSize().y + 4);
 
-        renderFrameGradient(context.getGraphics(), x0, y0 + 1, width, height - 2, color1, color2, color3);
+        // The notch background leaves the corner pixels of the inner rect transparent
+        final int trim = RenderUtils.getBackgroundCornerType(context).equals("notch") ? 1 : 0;
+
+        RenderUtils.renderFrameGradient(context.getGraphics(), x0, y0 + 1, width, height - 2, color1, color2, color3);
 
         // Top and bottom lines
-        context.getGraphics().fill(x0, y0, x0 + width, y0 + 1, color1);
-        context.getGraphics().fill(x0, y0 + height - 1, x0 + width, y0 + height, color3);
-    }
+        context.getGraphics().fill(x0 + trim, y0, x0 + width - trim, y0 + 1, color1);
+        context.getGraphics().fill(x0 + trim, y0 + height - 1, x0 + width - trim, y0 + height, color3);
 
-    private static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int c1, int c2, int c3) {
-        int mid = height / 2;
-
-        // Left border (top and bottom sections)
-        graphics.fillGradient(x, y, x + 1, y + mid, c1, c2);
-        graphics.fillGradient(x, y + mid, x + 1, y + height, c2, c3);
-
-        // Right border (top and bottom sections)
-        graphics.fillGradient(x + width - 1, y, x + width, y + mid, c1, c2);
-        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, c2, c3);
+        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color1, color3, ColorUtils.getBackgroundColor(context), RenderUtils.getInnerFrameCornerType(context), trim == 1);
     }
 
 }

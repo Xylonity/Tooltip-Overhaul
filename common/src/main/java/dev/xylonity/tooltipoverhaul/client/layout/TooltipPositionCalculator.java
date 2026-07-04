@@ -1,9 +1,12 @@
 package dev.xylonity.tooltipoverhaul.client.layout;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.world.phys.Vec2;
+import org.joml.Matrix4f;
 
 public class TooltipPositionCalculator {
 
@@ -19,12 +22,19 @@ public class TooltipPositionCalculator {
 
         int paddingX = context.getPaddingX();
         int paddingY = context.getPaddingY();
-        int mouseX = context.getMouseX();
-        int mouseY = context.getMouseY();
         int tooltipWidth = (int) context.getTooltipSize().x;
         int tooltipHeight = (int) context.getTooltipSize().y;
         int screenWidth = context.getScreenWidth();
         int screenHeight = context.getScreenHeight();
+
+        // Packed up translates the model-view stack and hands widget-local mouse coordinates to renderTooltipInternal,
+        // so all the math here is done in real screen space
+        final Matrix4f modelView = RenderSystem.getModelViewStack();
+        final int viewOffsetX = Math.round(modelView.m30());
+        final int viewOffsetY = Math.round(modelView.m31());
+
+        final int mouseX = context.getMouseX() + viewOffsetX;
+        final int mouseY = context.getMouseY() + viewOffsetY;
 
         // Initial position (with offset)
         float posX = mouseX + (isMainTooltip ? 12 : -12) + PositionUtils.getMainPanelPosition(context, TextAxis.X);
@@ -36,9 +46,33 @@ public class TooltipPositionCalculator {
 
             // Just if the equipped stack is not available
             if (!hasEquippedContext) {
+                boolean bedrockCentered = false;
+
+                // Bedrock-like centering (if the tooltip fits on neither side of the cursor, centers it horizontally
+                // and places it above (or below) the cursor so the hovered item stays visible)
+                if (TooltipsConfig.BEDROCK_CENTERING) {
+                    final boolean fitsRight = mouseX + 12 + tooltipWidth <= screenWidth;
+                    final boolean fitsLeft = mouseX - 12 - tooltipWidth >= paddingX;
+
+                    if (!fitsRight && !fitsLeft) {
+                        posX = (screenWidth - tooltipWidth) / 2f + PositionUtils.getMainPanelPosition(context, TextAxis.X);
+
+                        final float offsetY = PositionUtils.getMainPanelPosition(context, TextAxis.Y);
+                        if (mouseY - 12 - tooltipHeight >= paddingY) {
+                            posY = mouseY - 12 - tooltipHeight + offsetY;
+                        }
+                        else {
+                            posY = mouseY + 12 + offsetY;
+                        }
+
+                        bedrockCentered = true;
+                    }
+
+                }
+
                 // If it exceeds the right border, put the tooltip to the left
                 // Not adding the padding here so the vanilla's wrapper doesn't flicker
-                if (posX + tooltipWidth > screenWidth) {
+                if (!bedrockCentered && posX + tooltipWidth > screenWidth) {
                     posX = mouseX - tooltipWidth - 12;
                 }
 
@@ -72,7 +106,7 @@ public class TooltipPositionCalculator {
 
         }
 
-        return new Vec2(posX, posY);
+        return new Vec2(posX - viewOffsetX, posY - viewOffsetY);
     }
 
     /**

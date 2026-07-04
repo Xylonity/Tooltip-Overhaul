@@ -65,6 +65,11 @@ dependencies {
     implementation "curse.maven:athena-841890:6669522"
     implementation "curse.maven:geckolib-388172:7707149"
 
+    implementation "curse.maven:itemzoom-261725:5536959"
+    implementation "curse.maven:tough-as-nails-246391:5833252"
+    implementation "curse.maven:glitchcore-955399:8109792"
+    implementation "curse.maven:jei-238222:8358264"
+
     implementation "curse.maven:modernfix-790626:7509726"
 }
 

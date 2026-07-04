@@ -36,6 +36,20 @@ public class CustomFrameLoader {
             .create();
 
     /**
+     * Parses a single frame entry object, used by the frame editor screen for its live preview
+     */
+    public static CustomFrameData parseFrame(com.google.gson.JsonObject entry) {
+        return GSON.fromJson(entry, CustomFrameData.class);
+    }
+
+    /**
+     * Path of the TO's custom_frames.json inside the config dir
+     */
+    public static Path getUserConfigFile(Path configDir) {
+        return configDir.resolve(CONFIG_SUBDIR).resolve(CONFIG_PATH);
+    }
+
+    /**
      * Loads every single json file from every single mod that defines it,
      * plus the config file from Tooltip Overhaul itself
      */
@@ -229,6 +243,15 @@ public class CustomFrameLoader {
                 frames.put(key, frameData);
 
                 TooltipOverhaul.LOGGER.debug("Registered namespace-only entry {} for namespace '{}'", key, currNamespace);
+            }
+
+            // Caches rarity-only entries as well (rarities cant be used as keys as they may include illegal chars)
+            if (itemLocations.isEmpty() && frameData.tags().isEmpty() && frameData.namespace().map(s -> s.trim().isEmpty()).orElse(true) && !frameData.rarities().isEmpty()) {
+                final ResourceLocation key = ResourceLocation.fromNamespaceAndPath(namespace, "rarity_only/" + Integer.toUnsignedString(System.identityHashCode(frameData), 36));
+
+                frames.put(key, frameData);
+
+                TooltipOverhaul.LOGGER.debug("Registered rarity-only entry {} for rarities {}", key, frameData.rarities());
             }
 
         }

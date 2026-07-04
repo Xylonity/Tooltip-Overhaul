@@ -36,6 +36,17 @@ public class DefaultPreviewPlayerRenderer implements PreviewRendererLayer {
         int y0 = (int) startPosition.y;
         int x1 = (int) endPosition.x;
 
+        final Minecraft minecraft = Minecraft.getInstance();
+
+        // Without a loaded level the player doesnt exist, so the armor piece itself is drawn as a flat icon instead
+        if (minecraft.level == null && context.getStack().getItem() instanceof ArmorItem) {
+            final float iconScale = Math.min(sizeX, sizeY) / 20f;
+            context.translate(x1 + sizeX / 2f + 2 - 8 * iconScale, y0 + sizeY / 2f - 8 * iconScale, 0);
+            context.scale(iconScale, iconScale, 1f);
+            context.getGraphics().renderItem(context.getStack(), 0, 0);
+            return;
+        }
+
         context.translate((x1 + sizeX / 2f + 2), (y0 + sizeY / 1.15f) + 2, 0);
 
         context.multiply(Axis.XP, -30);
@@ -43,11 +54,10 @@ public class DefaultPreviewPlayerRenderer implements PreviewRendererLayer {
 
         context.multiply(Axis.YP, (((System.currentTimeMillis() - context.getStartTime()) / 20f) % 360) * AnimationUtils.getSecondPanelRendererSpeed(context));
 
-        float scale = Math.min(sizeX, sizeY / 2f) / 1.25f;
+        final float scale = Math.min(sizeX, sizeY / 2f) / 1.25f;
 
         context.scale(-scale, -scale, scale);
 
-        Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level != null && context.getStack().getItem() instanceof ArmorItem armorItem) {
             RemotePlayer player = getRemotePlayer(minecraft, context);
 

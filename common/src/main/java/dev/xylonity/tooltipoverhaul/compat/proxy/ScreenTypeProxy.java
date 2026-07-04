@@ -9,6 +9,10 @@ public final class ScreenTypeProxy {
         return nameOf(screen).contains("ftbquests");
     }
 
+    public static boolean isFtbLibrary(Screen screen) {
+        return nameOf(screen).contains("ftblibrary");
+    }
+
     public static boolean isJei(Screen screen) {
         return nameOf(screen).contains("mezz.jei");
     }
@@ -18,13 +22,16 @@ public final class ScreenTypeProxy {
     }
 
     public static boolean isContainerLikeOrJeiEmi() {
-        Screen screen = Minecraft.getInstance().screen;
-        if (screen == null) return false;
+        final Screen screen = Minecraft.getInstance().screen;
+        if (screen == null) {
+            return false;
+        }
+
         return isJei(screen) || isEmi(screen);
     }
 
-    private static String nameOf(Screen s) {
-        return (s == null ? "" : s.getClass().getName()).toLowerCase();
+    private static String nameOf(Screen screen) {
+        return (screen == null ? "" : screen.getClass().getName()).toLowerCase();
     }
 
 }

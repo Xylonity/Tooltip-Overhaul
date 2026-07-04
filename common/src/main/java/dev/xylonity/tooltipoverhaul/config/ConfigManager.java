@@ -23,8 +23,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class ConfigManager {
+
     private static Path CONFIG_DIR = Path.of("config");
     private static final Set<Class<?>> REGISTERED = new HashSet<>();
+
+    private static final Map<Field, Object> DEFAULT_VALUES = new ConcurrentHashMap<>();
 
     private static final Map<Class<?>, CommentedFileConfig> OPEN = new ConcurrentHashMap<>();
 
@@ -35,19 +38,47 @@ public final class ConfigManager {
     private static volatile boolean RUN_WATCHER;
 
     private static final ExecutorService WATCHER = Executors.newSingleThreadExecutor(r -> {
-        Thread t = new Thread(r, "TooltipOverhaul-Config");
-        t.setDaemon(true);
-        return t;
+        Thread thread = new Thread(r, "TooltipOverhaul-Config");
+        thread.setDaemon(true);
+        return thread;
     });
 
     private static final ScheduledExecutorService SCHEDULED = Executors.newScheduledThreadPool(1, r -> {
-        Thread t = new Thread(r, "TooltipOverhaul-ConfigSchedule");
-        t.setDaemon(true);
-        return t;
+        Thread thread = new Thread(r, "TooltipOverhaul-ConfigSchedule");
+        thread.setDaemon(true);
+        return thread;
     });
 
     private static final Map<Path, ScheduledFuture<?>> PENDING = new ConcurrentHashMap<>();
     private static final Map<Path, Long> IGNORE_UNTIL = new ConcurrentHashMap<>();
+
+    private static final Map<Class<?>, CopyOnWriteArrayList<Runnable>> RELOAD_LISTENERS = new ConcurrentHashMap<>();
+
+    public static void onReload(Class<?> clazz, Runnable listener) {
+        RELOAD_LISTENERS.computeIfAbsent(clazz, c -> new CopyOnWriteArrayList<>()).add(listener);
+        if (REGISTERED.contains(clazz)) {
+            listener.run();
+        }
+
+    }
+
+    private static void fireReload(Class<?> clazz) {
+        final CopyOnWriteArrayList<Runnable> listeners = RELOAD_LISTENERS.get(clazz);
+        if (listeners == null) {
+            return;
+        }
+
+        for (final Runnable listener : listeners) {
+            try {
+                listener.run();
+            }
+            catch (Throwable ignored) {
+                ;;
+            }
+
+        }
+
+    }
 
     public static void init(Path configDir, Class<?>... configs) {
         CONFIG_DIR = configDir;
@@ -93,11 +124,12 @@ public final class ConfigManager {
         FILE2CLASS.put(tomlPath, clazz);
 
         apply(clazz, cfg, true);
+        fireReload(clazz);
 
         cfg.save();
     }
 
-    private static void apply(Class<?> clazz, CommentedFileConfig cfg, boolean init) {
+    private static void apply(Class<?> clazz, CommentedFileConfig config, boolean init) {
         Set<String> seenCats = new HashSet<>();
         Set<String> validPaths = new HashSet<>();
 
@@ -113,9 +145,16 @@ public final class ConfigManager {
 
             validPaths.add(path);
 
+            // Migrates values saved under the old key to the categorized path
+            if (init && !category.isEmpty() && !config.contains(path) && config.contains(entry) && !(config.get(entry) instanceof CommentedConfig)) {
+                config.set(path, config.<Object>get(entry));
+                config.remove(entry);
+            }
+
             Object def;
             try {
                 def = field.get(null);
+                DEFAULT_VALUES.putIfAbsent(field, def);
             }
             catch (Exception ex) {
                 continue;
@@ -123,20 +162,20 @@ public final class ConfigManager {
 
             if (init) {
                 if (seenCats.add(category)) {
-                    cfg.setComment(target, wrapAndIndent(buildCategoryBanner(category)));
+                    config.setComment(target, wrapAndIndent(buildCategoryBanner(category)));
                 }
 
-                Object rawInit = cfg.get(path);
-                Object oldDefault = parseDefFromComment(cfg.getComment(path), field.getType());
+                Object rawInit = config.get(path);
+                Object oldDefault = parseDefFromComment(config.getComment(path), field.getType());
 
-                if (!cfg.contains(path) || (oldDefault != null && same(rawInit, oldDefault))) {
-                    cfg.set(path, def);
+                if (!config.contains(path) || (oldDefault != null && same(rawInit, oldDefault))) {
+                    config.set(path, def);
                 }
 
-                cfg.setComment(path, wrapAndIndent(buildEntryComment(e, def)));
+                config.setComment(path, wrapAndIndent(buildEntryComment(e, def)));
             }
 
-            Object raw = cfg.get(path);
+            Object raw = config.get(path);
             Object val = clamp(raw, e, field.getType());
             if (val == null) val = def;
             try {
@@ -148,7 +187,7 @@ public final class ConfigManager {
 
         }
 
-        removeNonExistent(cfg, validPaths);
+        removeNonExistent(config, validPaths);
     }
 
     private static void removeNonExistent(CommentedFileConfig cfg, Set<String> validPaths) {
@@ -246,6 +285,7 @@ public final class ConfigManager {
                             try {
                                 cfg.load();
                                 apply(clazz, cfg, false);
+                                fireReload(clazz);
                             }
                             catch (Throwable ignored) {
                                 ;;
@@ -387,16 +427,20 @@ public final class ConfigManager {
 
     }
 
-    private static void setPrimitive(Field f, Object v) throws Exception {
+    public static void setPrimitive(Field f, Object v) throws Exception {
         switch (f.getType().getName()) {
-            case "int" -> f.setInt(null, (Integer) v);
-            case "long" -> f.setLong(null, (Long) v);
-            case "float" -> f.setFloat(null, (Float) v);
-            case "double" -> f.setDouble(null, (Double) v);
+            case "int" -> f.setInt(null, ((Number) v).intValue());
+            case "long" -> f.setLong(null, ((Number) v).longValue());
+            case "float" -> f.setFloat(null, ((Number) v).floatValue());
+            case "double" -> f.setDouble(null, ((Number) v).doubleValue());
             case "boolean" -> f.setBoolean(null, (Boolean) v);
             default -> f.set(null, v);
         }
 
+    }
+
+    public static Object getCodeDefault(Field field) {
+        return DEFAULT_VALUES.get(field);
     }
 
     public static void save(Class<?> clazz) {
@@ -444,6 +488,7 @@ public final class ConfigManager {
             ;;
         }
 
+        fireReload(clazz);
     }
 
 }
