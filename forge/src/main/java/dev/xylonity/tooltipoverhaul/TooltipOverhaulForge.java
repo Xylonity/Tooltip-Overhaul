@@ -17,23 +17,17 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.FMLPaths;
+import org.slf4j.LoggerFactory;
 
 @Mod(TooltipOverhaul.MOD_ID)
 public class TooltipOverhaulForge {
 
     public TooltipOverhaulForge(FMLJavaModLoadingContext context) {
-        ModLoadingContext.get().registerExtensionPoint(
-                ConfigScreenHandler.ConfigScreenFactory.class,
-                () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) ->
-                        new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class)
-                )
-
-        );
-
         if (FMLLoader.getDist().isClient()) {
             ClientEntrypoint.init(context.getModEventBus());
-        } else {
-            TooltipOverhaul.LOGGER.warn("Won't load as the mod should be initialized on the client side.");
+        }
+        else {
+            LoggerFactory.getLogger("Tooltip Overhaul").warn("Tooltip Overhaul is a client-side mod and does nothing on a dedicated server.");
         }
 
     }
@@ -41,6 +35,14 @@ public class TooltipOverhaulForge {
     private static final class ClientEntrypoint {
 
         public static void init(IEventBus modBus) {
+            ModLoadingContext.get().registerExtensionPoint(
+                    ConfigScreenHandler.ConfigScreenFactory.class,
+                    () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) ->
+                            new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class)
+                    )
+
+            );
+
             modBus.addListener(ClientEntrypoint::onClientSetup);
             modBus.addListener(ClientEntrypoint::onRegisterClientReloads);
         }

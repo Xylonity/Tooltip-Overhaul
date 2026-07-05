@@ -15,23 +15,18 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import org.slf4j.LoggerFactory;
 
 @Mod(TooltipOverhaul.MOD_ID)
 public class TooltipOverhaulNeoForge {
 
     public TooltipOverhaulNeoForge(IEventBus eventBus) {
-        ModLoadingContext.get().registerExtensionPoint(
-                IConfigScreenFactory.class,
-                () -> (mc, parent) -> new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class)
-        );
-
         if (FMLLoader.getDist().isClient()) {
             ClientEntrypoint.init(eventBus);
         }
         else {
-            TooltipOverhaul.LOGGER.warn("Won't load as the mod should be initialized on the client side.");
+            LoggerFactory.getLogger("Tooltip Overhaul").warn("Tooltip Overhaul is a client-side mod and does nothing on a dedicated server.");
         }
 
     }
@@ -39,6 +34,11 @@ public class TooltipOverhaulNeoForge {
     private static final class ClientEntrypoint {
 
         public static void init(IEventBus modBus) {
+            ModLoadingContext.get().registerExtensionPoint(
+                    IConfigScreenFactory.class,
+                    () -> (mc, parent) -> new TooltipOverhaulConfigScreen(parent, TooltipsConfig.class)
+            );
+
             modBus.addListener(ClientEntrypoint::onClientSetup);
             modBus.addListener(ClientEntrypoint::onRegisterClientReloads);
         }
