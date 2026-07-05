@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client.util;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.mixin.KeyMappingAccessor;
 import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.minecraft.client.Minecraft;
@@ -22,13 +23,7 @@ public class EquippedContextCalculator {
 
     public static @Nullable TooltipContext from(GuiGraphics graphics, Font font, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, ItemStack fromStack, int screenWidth, int screenHeight) {
 
-        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
-        boolean isKeyDown = false;
-        if (!compareKey.equals(InputConstants.UNKNOWN)) {
-            isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
-        }
-
-        if (!isKeyDown) {
+        if (!isComparisonRequested()) {
             return null;
         }
 
@@ -70,6 +65,19 @@ public class EquippedContextCalculator {
 
         final List<ClientTooltipComponent> componentList = TextUtils.getTooltipComponentsFrom(equippedStack, font, screenWidth, 2.2f);
         return new TooltipContext(graphics, font, componentList, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, equippedStack, false);
+    }
+
+    /**
+     * The comparison is requested either while the compare key is held or at all times when the always-show
+     * config option is enabled
+     */
+    public static boolean isComparisonRequested() {
+        if (TooltipsConfig.ALWAYS_SHOW_COMPARISON) {
+            return true;
+        }
+
+        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
+        return !compareKey.equals(InputConstants.UNKNOWN) && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
     }
 
 }

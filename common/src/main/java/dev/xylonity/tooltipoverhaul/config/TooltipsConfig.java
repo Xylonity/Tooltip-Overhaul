@@ -33,6 +33,13 @@ public final class TooltipsConfig {
     public static boolean DISABLE_TOOLTIP_SCROLLING = false;
 
     @ConfigEntry(
+            category = "general",
+            comment = "Always show the equipment comparison tooltip when hovering a comparable item, " +
+                    "without needing to hold the compare key (Left Shift by default)."
+    )
+    public static boolean ALWAYS_SHOW_COMPARISON = false;
+
+    @ConfigEntry(
             category = "divider",
             comment = "Disable the divider line"
     )
