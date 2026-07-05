@@ -1,12 +1,10 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
-import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import dev.xylonity.tooltipoverhaul.util.ITooltipOverhaulItemAware;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -54,13 +52,7 @@ public class GuiGraphicsMixin {
         // the margins of the screen when forcing the screen scale under extreme circumstances
         List<ClientTooltipComponent> componentList;
 
-        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
-        boolean isKeyDown = false;
-        if (!compareKey.equals(InputConstants.UNKNOWN)) {
-            isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
-        }
-
-        if (isKeyDown && equippedStackContext != null) {
+        if (equippedStackContext != null) {
             componentList = TextUtils.getTooltipComponentsFrom(stack, font, screenWidth, 2.2f);
         }
         else {

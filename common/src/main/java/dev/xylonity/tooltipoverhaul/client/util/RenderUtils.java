@@ -1,14 +1,11 @@
 package dev.xylonity.tooltipoverhaul.client.util;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.FadeRenderType;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
-import dev.xylonity.tooltipoverhaul.mixin.KeyMappingAccessor;
-import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -77,13 +74,7 @@ public class RenderUtils {
     }
 
     private static boolean isComparisonActive(TooltipContext context) {
-        InputConstants.Key compareKey = ((KeyMappingAccessor) TooltipOverhaulKeyMappings.COMPARE_TOOLTIP).tooltipoverhaul$key();
-        boolean isKeyDown = false;
-        if (!compareKey.equals(InputConstants.UNKNOWN)) {
-            isKeyDown = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), compareKey.getValue());
-        }
-
-        return isKeyDown && context.getOtherTooltipContext() != null;
+        return EquippedContextCalculator.isComparisonRequested() && context.getOtherTooltipContext() != null;
     }
 
     public static int calculateSecondPanelSize(TooltipContext context, TextAxis axis) {
