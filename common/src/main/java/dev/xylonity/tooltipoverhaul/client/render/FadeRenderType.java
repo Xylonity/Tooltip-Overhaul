@@ -29,6 +29,12 @@ public final class FadeRenderType extends RenderType {
             return original;
         }
 
+        // Foil items request the glint layer and the base layer at the same time and this RT cancels the latter,
+        // so ignoring the vanilla render type (which also supports transparencies) would do the trick
+        if (original.toString().contains("glint")) {
+            return original;
+        }
+
         return CACHE.computeIfAbsent(original, FadeRenderType::new);
     }
 
