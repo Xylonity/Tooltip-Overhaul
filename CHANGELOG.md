@@ -1,3 +1,8 @@
+# 1.5.1
+- Added a global config option to always enable the equipment comparison functionality
+- Now the mod isn't loaded when present on a dedicated server to preserve modpack parity
+- Fixed a case where some appear animations (that made the icon transparent over the time) would crash the game when rendering items with a foil texture
+
 # 1.5.0
 - Reworked the in-game config screen
 - Added a visual editor for the Tooltip Overhaul's custom_frames.json file (open it from the config screen), where you can also see a live tooltip preview that reacts as you type
