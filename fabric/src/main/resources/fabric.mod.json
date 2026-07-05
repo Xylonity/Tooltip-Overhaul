@@ -13,7 +13,7 @@
     },
     "license": "${license}",
     "icon": "",
-    "environment": "*",
+    "environment": "client",
     "entrypoints": {
         "client": [
             "dev.xylonity.tooltipoverhaul.TooltipOverhaulFabric"
