@@ -1,3 +1,9 @@
+# 1.5.2
+- Updated localization files
+- Added a global config option to always enable the equipment comparison functionality
+- Now the mod isn't loaded when present on a dedicated server to preserve modpack parity
+- Fixed a case where some appear animations (that made the icon transparent over the time) would crash the game when rendering items with a foil texture
+
 # 1.5.1
 - Added a global config option to always enable the equipment comparison functionality
 - Now the mod isn't loaded when present on a dedicated server to preserve modpack parity
