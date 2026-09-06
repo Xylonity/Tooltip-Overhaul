@@ -38,6 +38,9 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
 
         Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
         Optional<String> titleAlignment = parseString(entry, "titleAlignment");
+        Optional<String> tooltipLayout = parseString(entry, "tooltipLayout");
+        Optional<Boolean> compactShowModName = parseBool(entry, "compactShowModName");
+        Optional<String> compactModNameColor = parseString(entry, "compactModNameColor");
         Optional<Integer> tooltipPositionX = parseInt(entry, "tooltipPositionX");
         Optional<Integer> tooltipPositionY = parseInt(entry, "tooltipPositionY");
         Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
@@ -92,6 +95,9 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 colorItemRating,
                 ratingAlignment,
                 titleAlignment,
+                tooltipLayout,
+                compactShowModName,
+                compactModNameColor,
                 tooltipPositionX,
                 tooltipPositionY,
                 mainPanelPaddingX,

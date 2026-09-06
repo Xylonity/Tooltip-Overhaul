@@ -28,6 +28,14 @@ import java.util.Optional;
 
 public class RenderUtils {
 
+    public static String getTooltipLayout(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getTooltipLayout).orElse(TooltipsConfig.TOOLTIP_LAYOUT);
+    }
+
+    public static boolean shouldShowCompactModName(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowCompactModName).orElse(TooltipsConfig.COMPACT_SHOW_MOD_NAME);
+    }
+
     public static boolean hasIcon(TooltipContext context) {
         return !context.getStack().isEmpty() && !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableIcon).orElse(TooltipsConfig.DISABLE_ICON);
     }

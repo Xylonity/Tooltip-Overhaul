@@ -32,6 +32,9 @@ public record CustomFrameData(
         Optional<String> colorItemRating,
         Optional<String> ratingAlignment,
         Optional<String> titleAlignment,
+        Optional<String> tooltipLayout,
+        Optional<Boolean> compactShowModName,
+        Optional<String> compactModNameColor,
         Optional<Integer> tooltipPositionX,
         Optional<Integer> tooltipPositionY,
         Optional<Integer> mainPanelPaddingX,
@@ -220,6 +223,18 @@ public record CustomFrameData(
 
     public String getTitleAlignment() {
         return titleAlignment.orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
+    }
+
+    public String getTooltipLayout() {
+        return tooltipLayout.orElse(TooltipsConfig.TOOLTIP_LAYOUT);
+    }
+
+    public boolean shouldShowCompactModName() {
+        return compactShowModName.orElse(TooltipsConfig.COMPACT_SHOW_MOD_NAME);
+    }
+
+    public String getCompactModNameColor() {
+        return compactModNameColor.orElse(TooltipsConfig.COMPACT_MOD_NAME_COLOR);
     }
 
     public float getSecondPanelRendererSpeed() {
