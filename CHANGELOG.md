@@ -1,6 +1,7 @@
 # 2.0.0
 - Most effects have been reworked with a whole new polished look: bubbles, cinder, crystals, fireflies, echo, galaxy, magic_orbs, speed_lines, spiral, metal_shining, rim_light, ripples, sonar, stars
 - Added new effects: astral, fluorite, aurora, opal, floating_stars, steel_shining, fireflies_2, snowfall, prism
+- Internal refactor of the effect building pattern into a common canvas for much faster and better effect creation process
 - Fixed a case where the metal_shining effect was ending too early on big tooltips
 - Fixed a case where the cinder effect wasn't adapting to the whole tooltip proportions
 
