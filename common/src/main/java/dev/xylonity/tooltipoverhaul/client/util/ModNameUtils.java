@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Resolves the display name of the mod that adds an item, so it can be appended as the last tooltip line
+ * Resolves the display name of the mod that adds an item for the tooltip body or footer
  */
 public final class ModNameUtils {
 
@@ -43,14 +43,32 @@ public final class ModNameUtils {
         }
 
         final String name = getModName(stack);
-        if (!components.isEmpty() && name.equalsIgnoreCase(plainTextOf(components.get(components.size() - 1)))) {
-            return components;
+        for (ClientTooltipComponent component : components) {
+            if (name.equalsIgnoreCase(plainTextOf(component).trim())) {
+                return components;
+            }
+
         }
 
         final List<ClientTooltipComponent> result = new ArrayList<>(components);
         result.add(ClientTooltipComponent.create(Component.literal(name).withStyle(ChatFormatting.BLUE, ChatFormatting.ITALIC).getVisualOrderText()));
 
         return result;
+    }
+
+    static boolean hasTrailingModName(List<ClientTooltipComponent> components, ItemStack stack) {
+        return !components.isEmpty() && getModName(stack).equalsIgnoreCase(plainTextOf(components.get(components.size() - 1)));
+    }
+
+    /**
+     * Moves an existing attribution out of the body without removing the title or changing the caller's list
+     */
+    public static List<ClientTooltipComponent> removeTrailingModName(List<ClientTooltipComponent> components, String name) {
+        if (components.size() > 1 && name.equalsIgnoreCase(plainTextOf(components.get(components.size() - 1)))) {
+            return new ArrayList<>(components.subList(0, components.size() - 1));
+        }
+
+        return components;
     }
 
     private static String plainTextOf(ClientTooltipComponent component) {

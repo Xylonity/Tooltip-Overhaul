@@ -4,14 +4,18 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectClip;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
 import java.util.Random;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectRuntime;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.parameter;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
 public class GalaxyEffect implements EffectLayer {
 
@@ -22,7 +26,7 @@ public class GalaxyEffect implements EffectLayer {
     private static final int STAR_COLOR = 0xFFFFFFDD;
     private static final int DUST_COLOR = 0xAA8A60C0;
 
-    private static final int SEGMENTS = 64;
+    private static final int SEGMENTS = 96;
     private static final int STAR_COUNT = 80;
     private static final int DUST_COUNT = 120;
 
@@ -30,7 +34,7 @@ public class GalaxyEffect implements EffectLayer {
     private static final float[][] DUST_PARTICLES = new float[DUST_COUNT][4];
 
     static {
-        Random random = new Random(31415L);
+        final Random random = new Random(31415L);
 
         // Stars
         for (int i = 0; i < STAR_COUNT; i++) {
@@ -45,7 +49,7 @@ public class GalaxyEffect implements EffectLayer {
         // Particles
         for (int i = 0; i < DUST_COUNT; i++) {
             float angle = random.nextFloat() * (float) Math.PI * 2.0f;
-            float distance = random.nextFloat();
+            final float distance = random.nextFloat();
             DUST_PARTICLES[i][0] = angle;
             DUST_PARTICLES[i][1] = distance;
             DUST_PARTICLES[i][2] = 0.5f + random.nextFloat(); // Size
@@ -56,27 +60,21 @@ public class GalaxyEffect implements EffectLayer {
 
     @Override
     public void render(TooltipContext context, Vec2 position) {
-        int positionX = (int) position.x;
-        int positionY = (int) position.y;
-        int tooltipWidth = (int) context.getTooltipSize().x;
-        int tooltipHeight = (int) context.getTooltipSize().y;
+        final EffectClip clip = new EffectClip(context, position);
+        final int positionX = clip.hasExtension() ? clip.left() : (int) position.x;
+        final int positionY = clip.hasExtension() ? clip.top() : (int) position.y;
+        final int tooltipWidth = clip.hasExtension() ? clip.width() : (int) context.getTooltipSize().x;
+        final int tooltipHeight = clip.hasExtension() ? clip.height() : (int) context.getTooltipSize().y;
 
-        long now = System.currentTimeMillis();
-        float time = (now - context.getStartTime()) / 12000f;
+        final long now = System.currentTimeMillis();
+        final float time = (float) (EffectRuntime.seconds(context) / 12);
 
-        float centerX = positionX + tooltipWidth * 0.5f;
-        float centerY = positionY + tooltipHeight * 0.5f;
-        float maxRadius = (float) Math.hypot(tooltipWidth, tooltipHeight) * 0.6f;
+        final float centerX = positionX + tooltipWidth * 0.5f;
+        final float centerY = positionY + tooltipHeight * 0.5f;
+        final float maxRadius = (float) Math.hypot(tooltipWidth, tooltipHeight) * 0.6f;
 
+        context.flush();
         context.push(() -> {
-            context.enableScissor(
-                    positionX - context.getPaddingX() - 1,
-                    positionY - context.getPaddingY(),
-                    positionX + tooltipWidth + context.getPaddingX(),
-                    positionY + tooltipHeight + context.getPaddingY()
-            );
-
-            context.translate(0, 0, context.getLayerDepth().getZ());
 
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(
@@ -92,24 +90,24 @@ public class GalaxyEffect implements EffectLayer {
 
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            Matrix4f pose = context.getPose().last().pose();
-            Tesselator tess = Tesselator.getInstance();
-            BufferBuilder buf = tess.getBuilder();
+            final Matrix4f pose = context.getPose().last().pose();
+            final Tesselator tess = Tesselator.getInstance();
+            final BufferBuilder buf = tess.getBuilder();
 
             // Inner
-            renderNebula(buf, tess, pose, centerX, centerY, maxRadius, time);
+            renderNebula(clip, buf, tess, pose, centerX, centerY, maxRadius, time);
 
             // Random particles
-            renderParticles(buf, tess, pose, centerX, centerY, maxRadius, time);
+            renderParticles(clip, buf, tess, pose, centerX, centerY, maxRadius, time);
 
             // Spirals
-            renderSpirals(buf, tess, pose, centerX, centerY, maxRadius, time);
+            renderSpirals(clip, buf, tess, pose, centerX, centerY, maxRadius, time);
 
             // More particles
-            renderStars(buf, tess, pose, centerX, centerY, maxRadius, time);
+            renderStars(clip, buf, tess, pose, centerX, centerY, maxRadius, time);
 
             // Dark core inner
-            renderCore2(buf, tess, pose, centerX, centerY, maxRadius, time);
+            renderCore2(clip, buf, tess, pose, centerX, centerY, maxRadius, time);
 
             RenderSystem.depthMask(true);
             RenderSystem.enableDepthTest();
@@ -120,18 +118,16 @@ public class GalaxyEffect implements EffectLayer {
 
             RenderSystem.disableBlend();
             RenderSystem.enableCull();
-
-            context.getGraphics().disableScissor();
         });
 
     }
 
-    private void renderNebula(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+    private void renderNebula(EffectClip clip, BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
 
         float pulse = 0.95f + 0.05f * (float) Math.sin(time * Math.PI * 2.0f);
 
-        float[] radii = {maxRadius * 0.85f * pulse, maxRadius * 0.55f * pulse, maxRadius * 0.25f * pulse};
-        int[] colors = {NEBULA_OUTER, NEBULA_INNER, CORE_COLOR};
+        final float[] radii = {maxRadius * 0.85f * pulse, maxRadius * 0.55f * pulse, maxRadius * 0.25f * pulse};
+        final int[] colors = {EffectRuntime.color(0, NEBULA_OUTER), EffectRuntime.color(0, NEBULA_INNER), EffectRuntime.color(0, CORE_COLOR)};
 
         for (int layer = 0; layer < 3; layer++) {
             bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
@@ -142,191 +138,114 @@ public class GalaxyEffect implements EffectLayer {
             int alpha = layer == 0 ? 120 : (layer == 1 ? 180 : 220);
 
             bufferBuilder.vertex(pose, centerX, centerY, 0)
-                    .color(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), alpha)
+                    .color(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), EffectRuntime.alpha(alpha))
                     .endVertex();
 
             for (int i = 0; i <= SEGMENTS; i++) {
-                float s = i / (float) SEGMENTS;
-                float angle = s * (float) Math.PI * 2.0f;
+                final float along = i / (float) SEGMENTS;
+                float angle = along * (float) Math.PI * 2.0f;
 
-                float noise = 0.15f * (float) Math.sin(angle * 3.0f + time * Math.PI * 1.5f) * (float) Math.cos(angle * 5.0f - time * Math.PI * 2.0f);
-                float localRadius = radius * (1.0f + noise);
+                final float noise = 0.15f * (float) Math.sin(angle * 3.0f + time * Math.PI * 1.5f) * (float) Math.cos(angle * 5.0f - time * Math.PI * 2.0f);
+                final float localRadius = radius * (1.0f + noise);
 
                 float x = centerX + (float) Math.cos(angle) * localRadius;
                 float y = centerY + (float) Math.sin(angle) * localRadius;
 
                 bufferBuilder.vertex(pose, x, y, 0)
-                        .color(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), layer == 0 ? 20 : (layer == 1 ? 40 : 80))
+                        .color(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), 0)
                         .endVertex();
             }
 
-            BufferUploader.drawWithShader(bufferBuilder.end());
-        }
-    }
-
-    private void renderParticles(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
-
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-
-        for (float[] dust : DUST_PARTICLES) {
-            float baseAngle = dust[0];
-            float distance = dust[1];
-            float size = dust[2];
-            float speed = dust[3];
-
-            float angle = baseAngle + time * speed * (float) Math.PI * 2.0f;
-
-            float radius = maxRadius * distance * (0.8f + 0.2f * (float) Math.sin(time * Math.PI * 4.0f + baseAngle));
-
-            float px = centerX + (float) Math.cos(angle) * radius;
-            float py = centerY + (float) Math.sin(angle) * radius;
-
-            float twinkle = 0.4f + 0.6f * (float) Math.pow(Math.sin((time * 3.0f + baseAngle) * Math.PI) * 0.5f + 0.5f, 2.0f);
-
-            float particleSize = size * twinkle;
-            int alpha = AnimationUtils.clamp255((int) (ColorUtils.alpha(DUST_COLOR) * twinkle * (1.0f - distance * 0.3f)));
-
-            bufferBuilder.vertex(pose, px - particleSize, py - particleSize, 0)
-                    .color(ColorUtils.red(DUST_COLOR), ColorUtils.green(DUST_COLOR), ColorUtils.blue(DUST_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px - particleSize, py + particleSize, 0)
-                    .color(ColorUtils.red(DUST_COLOR), ColorUtils.green(DUST_COLOR), ColorUtils.blue(DUST_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px + particleSize, py + particleSize, 0)
-                    .color(ColorUtils.red(DUST_COLOR), ColorUtils.green(DUST_COLOR), ColorUtils.blue(DUST_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px + particleSize, py - particleSize, 0)
-                    .color(ColorUtils.red(DUST_COLOR), ColorUtils.green(DUST_COLOR), ColorUtils.blue(DUST_COLOR), alpha)
-                    .endVertex();
+            clip.draw(bufferBuilder.end());
         }
 
-        BufferUploader.drawWithShader(bufferBuilder.end());
     }
 
-    private void renderSpirals(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+    private void renderParticles(EffectClip clip, BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        EffectCanvas canvas = new EffectCanvas(bufferBuilder, pose, centerX - maxRadius, centerY - maxRadius, maxRadius * 2, maxRadius * 2, time * 12.0, 1);
+        for (int index = 0; index < Math.round(DUST_COUNT * EffectRuntime.density()); index++) {
+            final float[] dust = DUST_PARTICLES[index % DUST_PARTICLES.length];
 
-        int armCount = 3;
-        for (int arm = 0; arm < armCount; arm++) {
-            float armOffset = (float) (arm * 2.0 * Math.PI / armCount);
+            float angle = dust[0] + (index / DUST_PARTICLES.length) * 2.399963f + time * dust[3] * EffectCanvas.TAU;
+            float radius = maxRadius * dust[1] * (0.8f + 0.2f * EffectCanvas.sin(time * Math.PI * 4 + dust[0]));
 
-            bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+            float x = centerX + EffectCanvas.cos(angle) * radius;
+            float y = centerY + EffectCanvas.sin(angle) * radius;
 
-            int segments = 40;
-            for (int i = 0; i <= segments; i++) {
-                float s = i / (float) segments;
+            float twinkle = 0.35f + 0.65f * EffectCanvas.bell(EffectCanvas.cycle(time * 1.5 + dust[0]));
+            canvas.glow(x, y, dust[2] * 1.4f, EffectRuntime.color(1, DUST_COLOR), twinkle * (1 - dust[1] * 0.3f) * 0.6f);
+        }
 
-                float radius = maxRadius * (0.2f + s * 0.7f);
-                float angle = armOffset + s * (float) Math.PI * 3.0f - time * (float) Math.PI * 0.5f;
+        clip.draw(bufferBuilder.end());
+    }
 
-                float wave = 0.08f * (float) Math.sin(s * Math.PI * 5.0f + time * Math.PI * 3.0f);
-                angle += wave;
+    private void renderSpirals(EffectClip clip, BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
 
-                float x = centerX + (float) Math.cos(angle) * radius;
-                float y = centerY + (float) Math.sin(angle) * radius;
+        EffectCanvas canvas = new EffectCanvas(bufferBuilder, pose, centerX - maxRadius, centerY - maxRadius, maxRadius * 2, maxRadius * 2, time * 12.0, 1);
+        final int arms = (int) parameter(ARM_COUNT);
+        for (int arm = 0; arm < arms; arm++) {
+            final float offset = (float) (arm * Math.PI * 2 / arms);
+            canvas.ribbon(112, along -> {
+                float radius = maxRadius * (0.2f + along * 0.7f);
 
-                float thickness = maxRadius * 0.05f * (1.0f - s * 0.6f) * (0.7f + 0.3f * (float) Math.sin(s * Math.PI * 3.0f + time * Math.PI * 4.0f));
+                float angle = offset + along * (float) Math.PI * 3 * parameter(TWIST) - time * (float) Math.PI * 0.5f;
+                angle += 0.08f * EffectCanvas.sin(along * Math.PI * 5 + time * Math.PI * 3);
 
-                float perpendicular = angle + (float) Math.PI * 0.5f;
-                float x1 = x + (float) Math.cos(perpendicular) * thickness;
-                float y1 = y + (float) Math.sin(perpendicular) * thickness;
-                float x2 = x - (float) Math.cos(perpendicular) * thickness;
-                float y2 = y - (float) Math.sin(perpendicular) * thickness;
+                float thickness = maxRadius * 0.05f * (1 - along * 0.6f) * (0.7f + 0.3f * EffectCanvas.sin(along * Math.PI * 3 + time * Math.PI * 4));
+                final float brightness = 0.5f + 0.5f * EffectCanvas.sin(along * Math.PI * 4 + time * Math.PI * 5);
+                final float fade = (float) Math.pow(1 - along, 1.2) * EffectCanvas.smooth(along / 0.07f);
 
-                float fadeOut = (float) Math.pow(1.0f - s, 1.2f);
-                float brightness = 0.5f + 0.5f * (float) Math.sin(s * Math.PI * 4.0f + time * Math.PI * 5.0f);
+                return new EffectCanvas.Knot(centerX + EffectCanvas.cos(angle) * radius, centerY + EffectCanvas.sin(angle) * radius, thickness * 1.5f, EffectRuntime.color(1, SPIRAL_COLOR), fade * brightness);
+            });
 
-                int alpha = AnimationUtils.clamp255((int) (ColorUtils.alpha(SPIRAL_COLOR) * fadeOut * brightness));
+        }
 
-                bufferBuilder.vertex(pose, x1, y1, 0)
-                        .color(ColorUtils.red(SPIRAL_COLOR), ColorUtils.green(SPIRAL_COLOR), ColorUtils.blue(SPIRAL_COLOR), alpha)
-                        .endVertex();
-                bufferBuilder.vertex(pose, x2, y2, 0)
-                        .color(ColorUtils.red(SPIRAL_COLOR), ColorUtils.green(SPIRAL_COLOR), ColorUtils.blue(SPIRAL_COLOR), alpha)
-                        .endVertex();
+        clip.draw(bufferBuilder.end());
+    }
+
+    private void renderStars(EffectClip clip, BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        EffectCanvas canvas = new EffectCanvas(bufferBuilder, pose, centerX - maxRadius, centerY - maxRadius, maxRadius * 2, maxRadius * 2, time * 12.0, 1);
+        for (int i = 0; i < Math.round(STARS.length * EffectRuntime.density()); i++) {
+            final float[] star = STARS[i % STARS.length];
+
+            final float angle = star[0] + (i / STARS.length) * 2.399963f + time * star[3] * EffectCanvas.TAU;
+            final float radius = maxRadius * star[1];
+
+            final float x = centerX + EffectCanvas.cos(angle) * radius;
+            final float y = centerY + EffectCanvas.sin(angle) * radius;
+
+            float twinkle = 1 - parameter(TWINKLE_DEPTH) * 0.45f + 0.45f * parameter(TWINKLE_DEPTH) * EffectCanvas.sin((time * 5 * parameter(TWINKLE_SPEED) + star[0] * 10) * Math.PI);
+
+            final float size = star[2] * (0.85f + twinkle * 0.15f);
+            final float alpha = (0.25f + twinkle * 0.6f) * (1 - star[1] * 0.2f);
+
+            final int color = EffectCanvas.mix(EffectRuntime.color(2, STAR_COLOR), 0xFFD6D0FA, EffectCanvas.seed(i, 21) * 0.65f);
+            if (i % 3 == 0) {
+                final int points = 4 + i % 4;
+                canvas.star(x, y, size * (i % 9 == 0 ? 2.7f : 1.7f), points, 0.24f + (i % 2) * 0.1f, star[0] + time * 0.2f, color, alpha * 0.85f);
+            }
+            else {
+                canvas.glow(x, y, size * 1.35f, color, alpha * 0.65f);
             }
 
-            BufferUploader.drawWithShader(bufferBuilder.end());
         }
 
+        clip.draw(bufferBuilder.end());
     }
 
-    private void renderStars(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+    private void renderCore2(EffectClip clip, BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
+        final float pulse = 0.92f + 0.08f * (float) Math.sin(time * Math.PI * 3.0f);
+        final float coreRadius = maxRadius * 0.12f * pulse;
 
-        bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        EffectCanvas canvas = new EffectCanvas(bufferBuilder, pose, centerX - maxRadius, centerY - maxRadius, maxRadius * 2, maxRadius * 2, time * 12.0, 1);
 
-        for (float[] star : STARS) {
-            float baseAngle = star[0];
-            float distance = star[1];
-            float size = star[2];
-            float speed = star[3];
+        canvas.glow(centerX, centerY, coreRadius * 1.9f, EffectRuntime.color(0, CORE_COLOR), 0.85f);
 
-            float angle = baseAngle + time * speed * (float) Math.PI * 2.0f;
-            float radius = maxRadius * distance;
-
-            float px = centerX + (float) Math.cos(angle) * radius;
-            float py = centerY + (float) Math.sin(angle) * radius;
-
-            float twinkle = 0.6f + 0.4f * (float) Math.sin((time * 8.0f + baseAngle * 10.0f) * Math.PI);
-
-            float starSize = size * twinkle;
-            int alpha = AnimationUtils.clamp255((int) (255 * twinkle * (1.0f - distance * 0.2f)));
-
-            bufferBuilder.vertex(pose, px - starSize, py - starSize * 0.3f, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px - starSize, py + starSize * 0.3f, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px + starSize, py + starSize * 0.3f, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px + starSize, py - starSize * 0.3f, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-
-            bufferBuilder.vertex(pose, px - starSize * 0.3f, py - starSize, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px - starSize * 0.3f, py + starSize, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px + starSize * 0.3f, py + starSize, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-            bufferBuilder.vertex(pose, px + starSize * 0.3f, py - starSize, 0)
-                    .color(ColorUtils.red(STAR_COLOR), ColorUtils.green(STAR_COLOR), ColorUtils.blue(STAR_COLOR), alpha)
-                    .endVertex();
-        }
-
-        BufferUploader.drawWithShader(bufferBuilder.end());
-    }
-
-    private void renderCore2(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float time) {
-
-        float pulse = 0.92f + 0.08f * (float) Math.sin(time * Math.PI * 3.0f);
-        float coreRadius = maxRadius * 0.12f * pulse;
-
-        bufferBuilder.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-
-        bufferBuilder.vertex(pose, centerX, centerY, 0)
-                .color(ColorUtils.red(CORE_COLOR), ColorUtils.green(CORE_COLOR), ColorUtils.blue(CORE_COLOR), 255)
-                .endVertex();
-
-        for (int i = 0; i <= SEGMENTS; i++) {
-            float angle = (i / (float) SEGMENTS) * (float) Math.PI * 2.0f;
-
-            float distortion = 0.1f * (float) Math.sin(angle * 4.0f + time * Math.PI * 6.0f);
-            float localRadius = coreRadius * (1.0f + distortion);
-
-            float x = centerX + (float) Math.cos(angle) * localRadius;
-            float y = centerY + (float) Math.sin(angle) * localRadius;
-
-            bufferBuilder.vertex(pose, x, y, 0)
-                    .color(ColorUtils.red(CORE_COLOR), ColorUtils.green(CORE_COLOR), ColorUtils.blue(CORE_COLOR), 200)
-                    .endVertex();
-        }
-
-        BufferUploader.drawWithShader(bufferBuilder.end());
+        clip.draw(bufferBuilder.end());
     }
 
 }

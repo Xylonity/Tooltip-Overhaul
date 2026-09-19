@@ -1,161 +1,86 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.phys.Vec2;
-import org.joml.Matrix4f;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.AmbientEffect;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.*;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
-public class SonarEffect implements EffectLayer {
+public class SonarEffect extends AmbientEffect {
 
-    private static final int RINGS = 1;
-    private static final long PER_PULSE = 1200L;
-    private static final int LIFETIME = 1400;
-    private static final float THICKNESS = 10f;
-    private static final float GLOW = 2.6f;
-    private static final int COLOR = 0x88A0D8FF;
-
-    private static long lastSpawn = 0;
-    private static final Deque<Pulse> pulses = new ArrayDeque<>();
+    private static final float SPEED = 38;
 
     @Override
-    public void render(TooltipContext context, Vec2 position) {
-        int positionX = (int) position.x;
-        int positionY = (int) position.y;
-        int tooltipWidth = (int) context.getTooltipSize().x;
-        int tooltipHeight = (int) context.getTooltipSize().y;
-
-        long now = System.currentTimeMillis();
-        float centerX = positionX + tooltipWidth * 0.5f;
-        float centerY = positionY + tooltipHeight * 0.5f;
-
-        if (now - lastSpawn >= PER_PULSE && pulses.size() < RINGS) {
-            pulses.addLast(new Pulse(now, LIFETIME, (float) Math.hypot(tooltipWidth, tooltipHeight) * 0.6f, 0, COLOR));
-            lastSpawn = now;
-        }
-
-        context.push(() -> {
-            context.enableScissor(
-                    positionX - context.getPaddingX() - 1,
-                    positionY - context.getPaddingY(),
-                    positionX + tooltipWidth + context.getPaddingX(),
-                    positionY + tooltipHeight + context.getPaddingY()
-            );
-
-            //context.translate(0, 0, context.getLayerDepth().getZ());
-
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-            pulses.removeIf(p -> !p.render(context.getPose().last().pose(), now, centerX, centerY));
-
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.disableBlend();
-
-            context.getGraphics().disableScissor();
-        });
-
+    protected boolean clipToTooltip() {
+        return true;
     }
 
-    private static void draw(Matrix4f pose, float cx, float cy, float innerR, float outerR, int r, int g, int b, int alphaPeak) {
-        if (outerR <= 1f) {
-            return;
-        }
-
-        if (innerR < 0f) {
-            innerR = 0f;
-        }
-        if (outerR - innerR <= 0.5f) {
-            outerR = innerR + 0.5f;
-        }
-
-        int segments = Math.max(16, (int) (outerR * 0.8f));
-        float midR = innerR + (outerR - innerR) * 0.5f;
-
-        BufferBuilder buf = Tesselator.getInstance().getBuilder();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-        // inner
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-
-        for (int i = 0; i <= segments; i++) {
-            double rot = i * (Math.PI * 2.0 / segments);
-            float function = (float) Math.cos(rot), sin = (float) Math.sin(rot);
-
-            buf.vertex(pose, cx + function * midR, cy + sin * midR, 0)
-                    .color(r, g, b, alphaPeak)
-                    .endVertex();
-            buf.vertex(pose, cx + function * innerR, cy + sin * innerR, 0)
-                    .color(r, g, b, 0)
-                    .endVertex();
-        }
-
-        BufferUploader.drawWithShader(buf.end());
-
-        // outer
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-
-        for (int i = 0; i <= segments; i++) {
-            double rot = i * (Math.PI * 2.0 / segments);
-            float function = (float) Math.cos(rot), sin = (float) Math.sin(rot);
-
-            buf.vertex(pose, cx + function * outerR, cy + sin * outerR, 0)
-                    .color(r, g, b, 0)
-                    .endVertex();
-            buf.vertex(pose, cx + function * midR, cy + sin * midR, 0)
-                    .color(r, g, b, alphaPeak)
-                    .endVertex();
-        }
-
-        BufferUploader.drawWithShader(buf.end());
+    @Override
+    protected float interiorVisibility() {
+        return 0.68f;
     }
 
-    private record Pulse(long start, int lifetime, float radiusS, float radiusE, int color) {
+    @Override
+    protected void draw(EffectCanvas canvas) {
+        final float x = canvas.left + canvas.width * parameter(ORIGIN_X);
+        final float y = canvas.top + canvas.height * parameter(ORIGIN_Y);
 
-        boolean render(Matrix4f pose, long now, float centerX, float centerY) {
-            float time = (now - start) / (float) lifetime;
-            if (time >= 1f) return false;
+        float reach = (float) Math.hypot(Math.max(x - canvas.left, canvas.right - x), Math.max(y - canvas.top, canvas.bottom - y)) + 20;
 
-            float radius = AnimationUtils.lerp(radiusS, radiusE, AnimationUtils.easeInOutCubic(time));
+        final float spacing = Math.max(42, reach / 8) * parameter(WAVE_SPACING);
+        final float travel = cycle(canvas.time * SPEED / spacing) * spacing;
 
-            float innerCore = Math.max(0f, radius - THICKNESS * 0.5f);
-            float innerGlow = Math.max(0f, radius - (THICKNESS * 0.5f * GLOW));
-            float outerGlow = Math.max(innerGlow + 0.5f, radius + (THICKNESS * 0.5f * GLOW));
+        final int waves = (int) Math.ceil(reach / spacing);
+        final double heading = -0.7 + canvas.time * 0.32;
 
-            if (outerGlow <= 1f) {
-                return true;
+        canvas.haze(x, y, Math.max(48, canvas.width * 0.55f), Math.max(48, canvas.height * 0.7f), color(0, 0xFF246E91), 0.14f);
+        canvas.haze(canvas.right, canvas.top, canvas.width * 0.65f, canvas.height * 0.8f, color(0, 0xFF304B83), 0.10f);
+
+        for (int wave = 0; wave < waves; wave++) {
+            final float radius = travel + wave * spacing;
+            final float fade = smooth(radius / 12) * smooth((reach - radius) / Math.max(24, reach * 0.24f));
+            if (fade < 0.002f) {
+                continue;
             }
 
-            int red = (color >>> 16) & 0xFF;
-            int green = (color >>> 8) & 0xFF;
-            int blue = color & 0xFF;
-            float alpha = (float) Math.sin(Math.PI * AnimationUtils.clamp01(time));
+            final int segments = Math.max(96, Math.min(384, (int) (radius * 4)));
+            for (int pass = 0; pass < 3; pass++) {
+                final int layer = pass;
+                final float ringRadius = Math.max(0.5f, radius - (layer == 2 ? 5 : 0));
 
-            // Glow
-            draw(pose, centerX, centerY, innerGlow, outerGlow, red, green, blue, (int) (((int) (alpha * 90)) * 0.65f));
+                canvas.ribbon(segments, along -> {
+                    final float angle = along * TAU;
+                    final float crescent = (float) Math.pow(0.5 + 0.5 * cos(angle - heading + radius * 0.008), 3);
+                    final float light = 0.38f + crescent * 0.62f;
+                    final int color = mix(color(0, 0xFF538EBD), color(1, 0xFFA5EBDD), crescent);
+                    return new Knot(x + cos(angle) * ringRadius, y + sin(angle) * ringRadius,
+                            Math.min(ringRadius * 0.4f, layer == 0 ? 5.5f : layer == 1 ? 0.95f : 0.5f), color, fade * light * (layer == 0 ? 0.18f : layer == 1 ? 0.72f : 0.20f));
+                });
 
-            // core
-            draw(pose, centerX, centerY, innerCore, Math.max(innerCore + 0.5f, radius + THICKNESS * 0.5f), red, green, blue, (int) (alpha * 170));
+            }
 
-            return true;
         }
 
+        for (int i = 0; i < canvas.particleCount(24); i++) {
+            final float px = canvas.left + (0.04f + seed(i, 21) * 0.92f) * canvas.width;
+            final float py = canvas.top + (0.06f + seed(i, 22) * 0.88f) * canvas.height;
+
+            final float distance = (float) Math.hypot(px - x, py - y);
+            final float sinceWave = cycle((canvas.time * SPEED - distance) / spacing);
+            final float pulse = smooth(sinceWave / 0.035f) * (1 - smooth(sinceWave / 0.48f));
+
+            canvas.glow(px, py, 4.5f, color(1, 0xFF7DDBD2), pulse * 0.27f);
+            canvas.dot(px, py, 0.45f + seed(i, 23) * 0.35f, color(2, 0xFFC8F7EA), 0.025f + pulse * 0.70f);
+
+            if (i % 5 == 0) {
+                canvas.arc(px, py, 1.5f + sinceWave * 7, 1.5f + sinceWave * 7, 0, TAU, 0.45f, color(1, 0xFF87C6D0), pulse * 0.18f);
+            }
+
+        }
+
+        final float ping = 1 - smooth(travel / (spacing * 0.38f));
+        canvas.glow(x, y, 6 + ping * 3, color(0, 0xFF66C9D4), 0.16f + ping * 0.22f);
+        canvas.sparkle(x, y, 2.4f + ping * 0.7f, 0, color(2, 0xFFBCEDE6), 0.28f + ping * 0.32f);
     }
 
 }

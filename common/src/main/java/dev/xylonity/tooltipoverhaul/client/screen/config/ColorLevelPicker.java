@@ -4,15 +4,18 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import org.lwjgl.glfw.GLFW;
 
-import static dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigScreen.*;
+import static dev.xylonity.tooltipoverhaul.client.screen.config.ConfigScreenStyle.drawCard;
+import static dev.xylonity.tooltipoverhaul.client.util.ColorUtils.*;
 
 /**
  * HSV color picker shared by the config screens
  */
-final class ColorLevelPicker {
+final class ColorLevelPicker implements ConfigModal {
 
     interface Commit {
+
         void accept(int argb);
     }
 
@@ -25,6 +28,7 @@ final class ColorLevelPicker {
     private final int accent;
 
     private final boolean alwaysAlphaHex;
+    private final boolean alphaEnabled;
 
     private final int x;
     private final int y;
@@ -36,18 +40,24 @@ final class ColorLevelPicker {
     private float value;
     private int alpha;
 
-    private final TooltipOverhaulConfigScreen.StyledEditBox hexBox;
+    private final StyledEditBox hexBox;
     private boolean syncingHex = false;
+    private boolean closed;
 
     // 0 none, 1 sv square, 2 hue bar, 3 alpha bar
     private int dragZone = 0;
 
     ColorLevelPicker(int anchorX, int anchorY, int minY, int screenWidth, int screenHeight, int accent, int initialArgb, boolean alwaysAlphaHex, Commit commit) {
+        this(anchorX, anchorY, minY, screenWidth, screenHeight, accent, initialArgb, alwaysAlphaHex, true, commit);
+    }
+
+    ColorLevelPicker(int anchorX, int anchorY, int minY, int screenWidth, int screenHeight, int accent, int initialArgb, boolean alwaysAlphaHex, boolean alphaEnabled, Commit commit) {
         this.commit = commit;
+        this.alphaEnabled = alphaEnabled;
         this.accent = accent;
         this.alwaysAlphaHex = alwaysAlphaHex;
         this.width = PADDING * 2 + SV_WIDTH;
-        this.height = PADDING + SV_HEIGHT + 6 + BAR_HEIGHT + 6 + BAR_HEIGHT + 8 + 16 + PADDING;
+        this.height = PADDING + SV_HEIGHT + 6 + BAR_HEIGHT + (alphaEnabled ? 6 + BAR_HEIGHT : 0) + 8 + 16 + PADDING;
         this.x = Mth.clamp(anchorX - width - 6, 4, Math.max(4, screenWidth - width - 4));
         this.y = Mth.clamp(anchorY - height / 2, minY, Math.max(minY, screenHeight - height - 4));
 
@@ -55,10 +65,10 @@ final class ColorLevelPicker {
         this.hue = hsv[0];
         this.saturation = hsv[1];
         this.value = hsv[2];
-        this.alpha = initialArgb >>> 24;
+        this.alpha = alphaEnabled ? initialArgb >>> 24 : 255;
 
-        this.hexBox = new TooltipOverhaulConfigScreen.StyledEditBox(Minecraft.getInstance().font, x + PADDING, y + height - PADDING - 16, SV_WIDTH - 24, 16, Component.empty(), accent);
-        this.hexBox.setMaxLength(9);
+        this.hexBox = new StyledEditBox(Minecraft.getInstance().font, x + PADDING, y + height - PADDING - 16, SV_WIDTH - 24, 16, Component.empty(), accent);
+        this.hexBox.setMaxLength(alphaEnabled ? 9 : 7);
         this.hexBox.setValue(currentHex());
         this.hexBox.setResponder(this::onHexTyped);
     }
@@ -84,11 +94,7 @@ final class ColorLevelPicker {
     }
 
     private String currentHex() {
-        if (alwaysAlphaHex) {
-            return String.format("#%08X", argb());
-        }
-
-        return alpha == 0xFF ? String.format("#%06X", argb() & 0x00FFFFFF) : String.format("#%08X", argb());
+        return formatHex(argb(), alwaysAlphaHex);
     }
 
     private void onHexTyped(String raw) {
@@ -109,7 +115,7 @@ final class ColorLevelPicker {
         }
 
         final long value = Long.parseLong(hex, 16);
-        if (hex.length() == 8) {
+        if (alphaEnabled && hex.length() == 8) {
             alpha = (int) ((value >> 24) & 0xFF);
         }
 
@@ -135,8 +141,10 @@ final class ColorLevelPicker {
         commit.accept(argb());
     }
 
-    void render(GuiGraphics graphics, int mouseX, int mouseY) {
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         graphics.pose().pushPose();
+
         graphics.pose().translate(0, 0, 400);
 
         drawCard(graphics, x, y, x + width, y + height, 0xF8101012, withAlpha(dimAccent(accent), 0xFF));
@@ -163,14 +171,16 @@ final class ColorLevelPicker {
 
         // Alpha bar
         final int rgb = hsvToRgb(hue, saturation, value);
-        for (int i = 0; i < SV_WIDTH; i++) {
-            final float t = (float) i / (SV_WIDTH - 1);
-            graphics.fill(svX() + i, alphaY(), svX() + i + 1, alphaY() + BAR_HEIGHT, 0xFF000000 | mixRgb(0x232327, rgb, t));
-        }
+        if (alphaEnabled) {
+            for (int i = 0; i < SV_WIDTH; i++) {
+                final float ratio = (float) i / (SV_WIDTH - 1);
+                graphics.fill(svX() + i, alphaY(), svX() + i + 1, alphaY() + BAR_HEIGHT, 0xFF000000 | mixRgb(0x232327, rgb, ratio));
+            }
 
-        final int alphaCursorX = svX() + (int) (alpha / 255f * (SV_WIDTH - 1));
-        graphics.fill(alphaCursorX - 1, alphaY() - 1, alphaCursorX + 2, alphaY() + BAR_HEIGHT + 1, 0xFFFFFFFF);
-        graphics.fill(alphaCursorX, alphaY(), alphaCursorX + 1, alphaY() + BAR_HEIGHT, 0xFF17171A);
+            final int alphaCursorX = svX() + (int) (alpha / 255f * (SV_WIDTH - 1));
+            graphics.fill(alphaCursorX - 1, alphaY() - 1, alphaCursorX + 2, alphaY() + BAR_HEIGHT + 1, 0xFFFFFFFF);
+            graphics.fill(alphaCursorX, alphaY(), alphaCursorX + 1, alphaY() + BAR_HEIGHT, 0xFF17171A);
+        }
 
         hexBox.render(graphics, mouseX, mouseY, 0);
 
@@ -183,11 +193,13 @@ final class ColorLevelPicker {
     }
 
     /**
-     * Returns false when the click landed outside, which should dismiss this picker
+     * Clicking outside marks the picker for dismissal by its host
      */
-    boolean mouseClicked(double mouseX, double mouseY, int button) {
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (mouseX < x || mouseX >= x + width || mouseY < y || mouseY >= y + height) {
-            return false;
+            closed = true;
+            return true;
         }
 
         if (button != 0) {
@@ -200,7 +212,7 @@ final class ColorLevelPicker {
         else if (mouseY >= hueY() - 2 && mouseY < hueY() + BAR_HEIGHT + 2 && mouseX >= svX() && mouseX < svX() + SV_WIDTH) {
             dragZone = 2;
         }
-        else if (mouseY >= alphaY() - 2 && mouseY < alphaY() + BAR_HEIGHT + 2 && mouseX >= svX() && mouseX < svX() + SV_WIDTH) {
+        else if (alphaEnabled && mouseY >= alphaY() - 2 && mouseY < alphaY() + BAR_HEIGHT + 2 && mouseX >= svX() && mouseX < svX() + SV_WIDTH) {
             dragZone = 3;
         }
 
@@ -215,7 +227,8 @@ final class ColorLevelPicker {
         return true;
     }
 
-    boolean mouseDragged(double mouseX, double mouseY) {
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         if (dragZone == 0) {
             return true;
         }
@@ -224,12 +237,14 @@ final class ColorLevelPicker {
         return true;
     }
 
-    void mouseReleased() {
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (dragZone != 0) {
             dragZone = 0;
             commit();
         }
 
+        return true;
     }
 
     private void update(double mouseX, double mouseY) {
@@ -247,9 +262,16 @@ final class ColorLevelPicker {
         }
 
         syncHex();
+        commit();
     }
 
-    boolean keyPressed(int key, int scancode, int modifiers) {
+    @Override
+    public boolean keyPressed(int key, int scancode, int modifiers) {
+        if (key == GLFW.GLFW_KEY_ESCAPE || key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
+            closed = true;
+            return true;
+        }
+
         if (hexBox.isFocused()) {
             hexBox.keyPressed(key, scancode, modifiers);
             return true;
@@ -258,7 +280,8 @@ final class ColorLevelPicker {
         return false;
     }
 
-    boolean charTyped(char chr, int modifiers) {
+    @Override
+    public boolean charTyped(char chr, int modifiers) {
         if (hexBox.isFocused()) {
             hexBox.charTyped(chr, modifiers);
         }
@@ -266,78 +289,14 @@ final class ColorLevelPicker {
         return true;
     }
 
-    void tick() {
+    @Override
+    public void tick() {
         hexBox.tick();
     }
 
-    private static int hsvToRgb(float hue, float saturation, float value) {
-        final float c = value * saturation;
-        final float hh = ((hue % 360f) + 360f) % 360f / 60f;
-        final float xx = c * (1f - Math.abs(hh % 2f - 1f));
-
-        float r = 0;
-        float g = 0;
-        float b = 0;
-        if (hh < 1f) {
-            r = c;
-            g = xx;
-        }
-        else if (hh < 2f) {
-            r = xx;
-            g = c;
-        }
-        else if (hh < 3f) {
-            g = c;
-            b = xx;
-        }
-        else if (hh < 4f) {
-            g = xx;
-            b = c;
-        }
-        else if (hh < 5f) {
-            r = xx;
-            b = c;
-        }
-        else {
-            r = c;
-            b = xx;
-        }
-
-        final float m = value - c;
-        final int ri = Math.round((r + m) * 255f);
-        final int gi = Math.round((g + m) * 255f);
-        final int bi = Math.round((b + m) * 255f);
-        return (ri << 16) | (gi << 8) | bi;
-    }
-
-    private static float[] rgbToHsv(int rgb) {
-        final float r = ((rgb >> 16) & 0xFF) / 255f;
-        final float g = ((rgb >> 8) & 0xFF) / 255f;
-        final float b = (rgb & 0xFF) / 255f;
-
-        final float max = Math.max(r, Math.max(g, b));
-        final float min = Math.min(r, Math.min(g, b));
-        final float delta = max - min;
-
-        float hue = 0;
-        if (delta > 0) {
-            if (max == r) {
-                hue = 60f * (((g - b) / delta) % 6f);
-            }
-            else if (max == g) {
-                hue = 60f * ((b - r) / delta + 2f);
-            }
-            else {
-                hue = 60f * ((r - g) / delta + 4f);
-            }
-
-        }
-
-        if (hue < 0) {
-            hue += 360f;
-        }
-
-        return new float[] { hue, max == 0 ? 0 : delta / max, max };
+    @Override
+    public boolean closed() {
+        return closed;
     }
 
 }

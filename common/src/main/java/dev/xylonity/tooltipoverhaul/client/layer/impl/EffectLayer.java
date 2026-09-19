@@ -8,6 +8,7 @@ public interface EffectLayer extends ITooltipLayer {
 
     @Override
     default void renderInternal(TooltipContext context) {
+        context.flush();
         context.push(() -> {
             context.translate(0, 0, getLayerDepth().getZ());
             context.setLayerDepth(getLayerDepth());

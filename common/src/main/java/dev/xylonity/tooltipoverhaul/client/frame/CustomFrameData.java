@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.frame;
 
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectSettings;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
@@ -17,6 +18,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public record CustomFrameData(
+        int priority,
+        FrameConditions conditions,
+        EffectSettings effectSettings,
         List<String> items,
         List<String> tags,
         Optional<String> namespace,
@@ -45,6 +49,7 @@ public record CustomFrameData(
         Optional<Float> iconRotatingSpeed,
         Optional<String> iconAppearAnimation,
         Optional<String> tooltipAppearAnimation,
+        Optional<String> tooltipDisappearAnimation,
         Optional<Float> tooltipAnimationDuration,
         Optional<Integer> secondPanelX,
         Optional<Integer> secondPanelY,
@@ -57,11 +62,17 @@ public record CustomFrameData(
         Optional<String> specialEffect,
         List<String> vignettes,
         Optional<String> iconBackgroundType,
+        Optional<String> iconBackgroundColor,
+        Optional<String> iconBorderColor,
         Optional<Boolean> usePlayerSkinInPreview,
         Optional<String> previewPanelModel,
+        Optional<String> previewPanelSideTriangles,
+        Optional<String> previewPanelCornerType,
+        Optional<String> previewPanelBackgroundCornerType,
         Optional<Boolean> showSecondPanel,
         Optional<Boolean> showRating,
         Optional<Boolean> showShadow,
+        Optional<Boolean> effectsBehindText,
         Optional<Boolean> disableIcon,
         Optional<Boolean> disableScrolling,
         Optional<Boolean> disableTooltip,
@@ -70,6 +81,18 @@ public record CustomFrameData(
 
     public String getTextureLocation() {
         return texture.filter(t -> !t.trim().isEmpty()).orElse(TooltipsConfig.GLOBAL_FRAME_OVERLAY_LOCATION);
+    }
+
+    public String getPreviewPanelSideTriangles() {
+        return previewPanelSideTriangles.orElse(TooltipsConfig.PREVIEW_PANEL_SIDE_TRIANGLES);
+    }
+
+    public String getPreviewPanelCornerType() {
+        return previewPanelCornerType.orElse(TooltipsConfig.PREVIEW_PANEL_CORNER_TYPE);
+    }
+
+    public String getPreviewPanelBackgroundCornerType() {
+        return previewPanelBackgroundCornerType.orElse(TooltipsConfig.PREVIEW_PANEL_BACKGROUND_CORNER_TYPE);
     }
 
     public String getBorderType() {
@@ -95,12 +118,12 @@ public record CustomFrameData(
     public int[] getGradientColors(TooltipContext context) {
         return gradientColors
                 .map(list -> {
-                    int length = Math.min(3, list.size());
+                    final int length = Math.min(3, list.size());
                     if (length == 0) {
                         return new int[0];
                     }
 
-                    int[] array = new int[3];
+                    final int[] array = new int[3];
                     int last = 0;
                     for (int i = 0; i < length; i++) {
                         String key = list.get(i);
@@ -145,12 +168,31 @@ public record CustomFrameData(
         return tooltipAppearAnimation.orElse(TooltipsConfig.TOOLTIP_APPEAR_ANIMATION);
     }
 
+    /**
+     * May return match_appear which the animator resolves to the appear animation
+     */
+    public String getTooltipDisappearAnimation() {
+        return tooltipDisappearAnimation.orElse(TooltipsConfig.TOOLTIP_DISAPPEAR_ANIMATION);
+    }
+
     public float getTooltipAnimationDuration() {
         return tooltipAnimationDuration.orElse(TooltipsConfig.TOOLTIP_ANIMATION_DURATION);
     }
 
     public String getIconBackground() {
         return iconBackgroundType.orElse(TooltipsConfig.ICON_BACKGROUND_TYPE);
+    }
+
+    public String getIconBackgroundColor() {
+        return iconBackgroundColor.orElse(TooltipsConfig.ICON_BACKGROUND_COLOR);
+    }
+
+    public String getIconBorderColor() {
+        return iconBorderColor.orElse(TooltipsConfig.ICON_BORDER_COLOR);
+    }
+
+    public float getIconSize() {
+        return iconSize.orElse(1f);
     }
 
     public boolean hasVignette() {
@@ -199,6 +241,10 @@ public record CustomFrameData(
 
     public boolean shouldShowShadow() {
         return showShadow.orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
+    }
+
+    public boolean shouldRenderEffectsBehindText() {
+        return effectsBehindText.orElse(TooltipsConfig.EFFECTS_BEHIND_TEXT);
     }
 
     public int getSecondPanelX() {
@@ -259,10 +305,14 @@ public record CustomFrameData(
 
     /**
      * Specificity of the match.
-     * 0 no match, and the higher wins: 4 item, 3 tag, 2 namespace (including *), 1 rarity
+     * 0 no match, and the higher wins, so 4 item, 3 tag, 2 namespace (including *), 1 rarity
      */
     public int matchScore(ItemStack stack) {
-        ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
+        if (!conditions.matches(stack)) {
+            return 0;
+        }
+
+        final ResourceLocation key = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (items.contains(key.toString())) {
             return 4;
         }
@@ -275,11 +325,12 @@ public record CustomFrameData(
         }
 
         if (namespace.isPresent()) {
-            String namespace = this.namespace.get().trim();
+            final String namespace = this.namespace.get().trim();
             if (!namespace.isEmpty()) {
                 if (namespace.equals("*") || namespace.equalsIgnoreCase("all")) {
                     return 2;
                 }
+
                 if (key.getNamespace().equals(namespace)) {
                     return 2;
                 }
@@ -350,14 +401,16 @@ public record CustomFrameData(
     }
 
     public boolean shouldShowSecondPanel(TooltipContext context) {
-        if (context.getStack().getItem() instanceof TieredItem && showSecondPanel.orElse(TooltipsConfig.TIERED_ITEMS_RENDERER)) {
-            return true;
-        }
-        else if (context.getStack().getItem() instanceof ArmorItem && showSecondPanel.orElse(TooltipsConfig.ARMOR_ITEMS_RENDERER)) {
-            return true;
+        return shouldShowSecondPanel(context.getStack());
+    }
+
+    public boolean shouldShowSecondPanel(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
         }
 
-        return false;
+        return showSecondPanel.orElseGet(() -> stack.getItem() instanceof ArmorItem ? TooltipsConfig.ARMOR_ITEMS_RENDERER
+                : stack.getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER);
     }
 
     public boolean hasCustomColorItemRating() {
@@ -365,6 +418,7 @@ public record CustomFrameData(
     }
 
     public enum GradientType {
+
         COMMON,
         UNCOMMON,
         RARE,

@@ -1,152 +1,54 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
-import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.phys.Vec2;
-import org.joml.Matrix4f;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.AmbientEffect;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 
-public class SpeedLinesEffect implements EffectLayer {
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.*;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
-    private static final int RAYS_PER_SIDE = 14;
-
-    private static final int WING_COLOR_INNER = 0xC0FFFFFF;
-    private static final int WING_COLOR_OUTER = 0x60D0F0FF;
+public class SpeedLinesEffect extends AmbientEffect {
 
     @Override
-    public void render(TooltipContext context, Vec2 position) {
-        int positionX = (int) position.x;
-        int positionY = (int) position.y;
-        int tooltipWidth = (int) context.getTooltipSize().x;
-        int tooltipHeight = (int) context.getTooltipSize().y;
-
-        long now = System.currentTimeMillis();
-        float time = (now - context.getStartTime()) / 5000f;
-
-        float centerX = positionX + tooltipWidth * 0.5f;
-        float centerY = positionY + tooltipHeight * 0.5f;
-        float maxRadius = (float) Math.hypot(tooltipWidth, tooltipHeight);
-
-        context.push(() -> {
-            context.enableScissor(
-                    positionX - context.getPaddingX() - 1,
-                    positionY - context.getPaddingY(),
-                    positionX + tooltipWidth + context.getPaddingX(),
-                    positionY + tooltipHeight + context.getPaddingY()
-            );
-
-            context.translate(0, 0, context.getLayerDepth().getZ());
-
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.disableCull();
-
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-            Matrix4f pose = context.getPose().last().pose();
-            Tesselator tesselator = Tesselator.getInstance();
-            BufferBuilder bufferBuilder = tesselator.getBuilder();
-
-            renderWings(bufferBuilder, tesselator, pose, centerX, centerY, maxRadius, time);
-
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-
-            context.getGraphics().disableScissor();
-        });
-
+    protected boolean clipToTooltip() {
+        return true;
     }
 
-    private void renderWings(BufferBuilder bufferBuilder, Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float maxRadius, float t) {
+    @Override
+    protected float interiorVisibility() {
+        return 0.75f;
+    }
 
-        bufferBuilder.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+    @Override
+    protected void draw(EffectCanvas canvas) {
+        final int count = canvas.particleCount(28);
+        for (int i = 0; i < count; i++) {
+            final float depth = seed(i, 1);
+            final float phase = cycle(canvas.time / (1.0 + (1 - depth) * 1.8) + seed(i, 2));
 
-        int innerRed = ColorUtils.red(WING_COLOR_INNER);
-        int innerGreen = ColorUtils.green(WING_COLOR_INNER);
-        int innerBlue = ColorUtils.blue(WING_COLOR_INNER);
-        int innerAlpha = ColorUtils.alpha(WING_COLOR_INNER);
+            final float fade = life(phase);
 
-        int outerRed = ColorUtils.red(WING_COLOR_OUTER);
-        int outerGreen = ColorUtils.green(WING_COLOR_OUTER);
-        int outerBlue = ColorUtils.blue(WING_COLOR_OUTER);
-        int outerAlpha = ColorUtils.alpha(WING_COLOR_OUTER);
+            final float x = canvas.right + 25 - phase * (canvas.width + 55);
+            final float y = canvas.top + 2 + seed(i, 3) * Math.max(1, canvas.height - 4);
 
-        float rayMin = maxRadius * 0.25f;
-        float rayMax = maxRadius * 0.95f;
-        float spread = (float) (Math.PI * 0.85);
+            final float length = (6 + depth * 23) * parameter(TRAIL_LENGTH);
+            final int color = mix(color(0, 0xFF719BC7), color(1, 0xFFE2F4FF), depth);
 
-        for (int side = -1; side <= 1; side += 2) {
-            float baseAngle = (side > 0) ? 0f : (float) Math.PI;
-            for (int i = 0; i < RAYS_PER_SIDE; i++) {
-                float s = i / (float) (RAYS_PER_SIDE - 1);
+            final int index = i;
 
-                float wingOffset = (s - 0.4f) * spread;
-                float wobble = 0.10f * (float) Math.sin((t * 2.5f + i * 0.6f) * Math.PI * 2.0);
-                float angle = baseAngle + side * (wingOffset + wobble);
+            canvas.ribbon(18, along -> {
+                final float px = x + (1 - along) * length;
+                float bend = flow(px / 65, canvas.time * 0.25 + index % 2) * 3 * parameter(TURBULENCE);
+                return new Knot(px, y + bend - (1 - along) * 1.4f,
+                        (0.3f + depth * 0.45f) * sin(along * Math.PI), color, fade * smooth(along / 0.7f) * smooth((1 - along) / 0.13f) * (0.3f + depth * 0.5f));
+            });
 
-                float dirX = (float) Math.cos(angle);
-                float dirY = (float) Math.sin(angle);
-                float nx = -dirY;
-                float ny = dirX;
-
-                float open = 0.75f + 0.25f * (float) Math.sin((t * 1.8f + s * 0.3f) * Math.PI * 2.0);
-                float rayLength = rayMin + (rayMax - rayMin) * open;
-
-                float baseRadius = rayMin * (0.4f + s * 0.4f);
-                float thickness = maxRadius * 0.03f * (1.1f - s * 0.7f);
-
-                float tipX = centerX + dirX * rayLength;
-                float tipY = centerY + dirY * rayLength;
-
-                float rootX = centerX + dirX * baseRadius;
-                float rootY = centerY + dirY * baseRadius;
-
-                float tip1X = tipX + nx * thickness;
-                float tip1Y = tipY + ny * thickness;
-                float tip2X = tipX - nx * thickness;
-                float tip2Y = tipY - ny * thickness;
-
-                float head = (float) Math.pow(1.0f - s, 1.4f);
-                float flicker = 0.6f + 0.4f * (float) Math.sin((t * 3.0f + i * 0.8f) * Math.PI * 2.0);
-                float alphaFactor = head * flicker;
-
-                int rootAlpha = AnimationUtils.clamp255((int) (innerAlpha * alphaFactor * 0.8f));
-                int tipAlpha = AnimationUtils.clamp255((int) (outerAlpha * alphaFactor));
-
-                bufferBuilder.vertex(pose, rootX, rootY, 0)
-                        .color(innerRed, innerGreen, innerBlue, rootAlpha)
-                        .endVertex();
-                bufferBuilder.vertex(pose, tip1X, tip1Y, 0)
-                        .color(outerRed, outerGreen, outerBlue, tipAlpha)
-                        .endVertex();
-                bufferBuilder.vertex(pose, tip2X, tip2Y, 0)
-                        .color(outerRed, outerGreen, outerBlue, tipAlpha / 2 + rootAlpha / 2)
-                        .endVertex();
+            if (depth > 0.7f) {
+                final float bend = flow(x / 65, canvas.time * 0.25 + i % 2) * 3 * parameter(TURBULENCE);
+                canvas.haze(x + length * 0.3f, y + bend, length * 0.65f, 1.8f, color(2, mix(0xFF719BC7, 0xFFE2F4FF, depth)), fade * 0.10f);
             }
 
         }
 
-        BufferUploader.drawWithShader(bufferBuilder.end());
     }
 
 }

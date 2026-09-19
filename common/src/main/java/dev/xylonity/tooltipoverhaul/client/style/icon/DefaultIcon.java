@@ -7,6 +7,7 @@ import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.style.icon.animation.IconAnimation;
 import dev.xylonity.tooltipoverhaul.client.style.icon.animation.IconAnimationFactory;
 import dev.xylonity.tooltipoverhaul.client.util.Constants;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipLayout;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.compat.modernfix.ModernFixCompat;
 import net.minecraft.client.Minecraft;
@@ -20,17 +21,19 @@ public class DefaultIcon implements IconLayer {
     @Override
     public void render(TooltipContext context, Vec2 position) {
 
-        float positionX = context.getTooltipPosition().x + context.getPaddingX() - 1;
-        float positionY = context.getTooltipPosition().y + context.getPaddingY();
+        final float positionX = context.getTooltipPosition().x + TooltipLayout.iconX(context);
+        final float positionY = context.getTooltipPosition().y + TooltipLayout.iconY(context);
 
         context.push(() -> {
 
             context.translate(positionX + Constants.getIconSize(context) / 2f, positionY + Constants.getIconSize(context) / 2f, context.getLayerDepth().getZ());
+            final float layoutScale = Constants.getIconSize(context) / 22f;
+            context.scale(layoutScale, layoutScale, layoutScale);
 
-            IconAnimation animationType = IconAnimation.fromString(RenderUtils.getIconAppearAnimation(context));
+            final IconAnimation animationType = IconAnimation.fromString(RenderUtils.getIconAppearAnimation(context));
 
-            float elapsed = TooltipRenderer.COUNTER;
-            float progress = Math.min(elapsed / ANIMATION_DURATION, 1.0f);
+            final float elapsed = TooltipRenderer.COUNTER;
+            final float progress = Math.min(elapsed / ANIMATION_DURATION, 1.0f);
 
             // Entry animation before a continuous rotation is applied
             if (elapsed < ANIMATION_DURATION) {
@@ -69,9 +72,9 @@ public class DefaultIcon implements IconLayer {
     private void applyContinuousRotation(TooltipContext context, IconAnimation type, float elapsed) {
         context.scale(ICON_SCALE, ICON_SCALE, ICON_SCALE);
 
-        float rotationSpeed = RenderUtils.getIconRotatingSpeed(context);
+        final float rotationSpeed = RenderUtils.getIconRotatingSpeed(context);
         if (rotationSpeed > 0) {
-            float additionalRotation = (elapsed - ANIMATION_DURATION) * (360f / (6.0f / rotationSpeed));
+            final float additionalRotation = (elapsed - ANIMATION_DURATION) * (360f / (6.0f / rotationSpeed));
             context.multiply(Axis.YP, additionalRotation % 360);
         }
 

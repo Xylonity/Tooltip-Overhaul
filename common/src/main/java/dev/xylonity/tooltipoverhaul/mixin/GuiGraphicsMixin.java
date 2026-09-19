@@ -2,15 +2,19 @@ package dev.xylonity.tooltipoverhaul.mixin;
 
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.render.TooltipHoverTracker;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.util.ITooltipOverhaulItemAware;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,16 +22,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Mixin(value = GuiGraphics.class, priority = 1)
 public class GuiGraphicsMixin {
-
-    @Unique
-    private static ItemStack tooltipoverhaul$cachedMainStack = ItemStack.EMPTY;
-
-    @Unique
-    private static long tooltipoverhaul$hoverStartTime = 0;
 
     /**
      * Main tooltip renderer call. A context is populated with the relevant info needed to render the tooltip. Nothing else
@@ -37,16 +36,16 @@ public class GuiGraphicsMixin {
     @Inject(method = "renderTooltipInternal", at = @At(value = "HEAD"), cancellable = true)
     private void tooltipoverhaul$coreRenderCall(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
 
-        int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
-        int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
+        final int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
+        final int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();
 
-        ItemStack stack = ((ITooltipOverhaulItemAware) this).tooltipsOverhaul$hoveredItem();
+        final ItemStack stack = ((ITooltipOverhaulItemAware) this).tooltipsOverhaul$hoveredItem();
 
         tooltipoverhaul$calculateCounterValue(stack);
 
         // We create the context and the renderer for the equipped stack here, as this is the highest priority when computing certain values a posteriori
-        TooltipContext equippedStackContext = EquippedContextCalculator.from((GuiGraphics) (Object) this, font, mouseX, mouseY, tooltipPositioner, stack, screenWidth, screenHeight);
-        TooltipRenderer equippedStackRenderer = new TooltipRenderer(equippedStackContext);
+        final TooltipContext equippedStackContext = EquippedContextCalculator.from((GuiGraphics) (Object) this, font, mouseX, mouseY, tooltipPositioner, stack, screenWidth, screenHeight);
+        final TooltipRenderer equippedStackRenderer = new TooltipRenderer(equippedStackContext);
 
         // The original lines of the original tooltip are rewrapped if the comparison exists, to prevent the content of the main tooltip from going beyond
         // the margins of the screen when forcing the screen scale under extreme circumstances
@@ -60,8 +59,8 @@ public class GuiGraphicsMixin {
         }
 
         // Then, the main renderer is computed here
-        TooltipContext context = new TooltipContext((GuiGraphics) (Object) this, font, componentList, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, stack, true);
-        TooltipRenderer renderer = new TooltipRenderer(context);
+        final TooltipContext context = new TooltipContext((GuiGraphics) (Object) this, font, componentList, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner, stack, true);
+        final TooltipRenderer renderer = new TooltipRenderer(context);
 
         // Parity is assigned here so that both contexts inherit from each other
         if (equippedStackContext != null) {
@@ -80,7 +79,7 @@ public class GuiGraphicsMixin {
             renderer.adjustLayout();
         }
 
-        // Cancelling renderTooltipInternal at head also skips the loader's pre-render tooltip event, so it's replayed here.
+        // Cancelling renderTooltipInternal at head also skips the loader's pre-render tooltip event, so it's replayed here
         // Only fired when the renderer is going to take over
         if (renderer.canRender() && TooltipOverhaul.PLATFORM.fireRenderTooltipPre((GuiGraphics) (Object) this, stack, componentList, font, mouseX, mouseY, screenWidth, screenHeight, tooltipPositioner)) {
             ci.cancel();
@@ -99,18 +98,25 @@ public class GuiGraphicsMixin {
     }
 
     @Unique
-    private void tooltipoverhaul$calculateCounterValue(ItemStack of) {
-        if (ItemStack.isSameItemSameTags(tooltipoverhaul$cachedMainStack, of)) {
-            long elapsed = System.currentTimeMillis() - tooltipoverhaul$hoverStartTime;
-            TooltipRenderer.COUNTER = elapsed / 1000f;
-        }
-        else {
-            // Only copied when the hovered stack changes, as copy() clones the whole NBT tree and this runs every frame
-            tooltipoverhaul$cachedMainStack = of.copy();
-            tooltipoverhaul$hoverStartTime = System.currentTimeMillis();
-            TooltipRenderer.COUNTER = 0;
+    private void tooltipoverhaul$calculateCounterValue(ItemStack stack) {
+        final float delay = Math.max(0, TooltipsConfig.TOOLTIP_APPEAR_DELAY);
+        TooltipRenderer.COUNTER = TooltipHoverTracker.seconds(stack, tooltipoverhaul$hoveredSlot(), delay, !TooltipsConfig.TOOLTIP_ANIMATE_ON_SWITCH) - delay;
+    }
+
+    @Unique
+    @Nullable
+    private static Slot tooltipoverhaul$hoveredSlot() {
+        if (Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> container) {
+            try {
+                return ((AbstractContainerScreenMixin) container).getHoveredSlot();
+            }
+            catch (Throwable ignored) {
+                ;;
+            }
+
         }
 
+        return null;
     }
 
 }

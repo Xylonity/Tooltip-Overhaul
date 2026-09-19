@@ -6,6 +6,9 @@ import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectFieldRenderer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -22,6 +25,18 @@ public class TooltipOverhaulFabric implements ClientModInitializer {
     public void onInitializeClient() {
 
         TooltipOverhaulClientEvents.init();
+        CoreShaderRegistrationCallback.EVENT.register(registry -> {
+            EffectFieldRenderer.reset();
+            try {
+                registry.register(EffectFieldRenderer.SHADER_ID, DefaultVertexFormat.POSITION, EffectFieldRenderer::setShader);
+            }
+            catch (Exception failure)  {
+                TooltipOverhaul.LOGGER.warn("Could not load effect shader... ", failure);
+            }
+
+        });
+
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> EffectFieldRenderer.reset());
 
         // Loads a simplex wrapper of nightconfig, impl derived from knightlib
         ConfigManager.init(FabricLoader.getInstance().getConfigDir(), TooltipsConfig.class);
@@ -47,6 +62,7 @@ public class TooltipOverhaulFabric implements ClientModInitializer {
                         CustomFrameManager.reset();
                         CustomFrameManager.initialize();
                     }
+
                 }
         );
 

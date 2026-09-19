@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client.render;
 
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.style.animation.TooltipAnimator;
+import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -52,6 +53,8 @@ public final class TooltipAnimationState {
             return;
         }
 
+        PinnedTooltipState.capture(context);
+
         font = context.getFont();
         components = context.getComponents();
         stack = context.getStack();
@@ -64,11 +67,16 @@ public final class TooltipAnimationState {
         lastAliveFrame = frameCounter;
     }
 
+    public static long frame() {
+        return frameCounter;
+    }
+
     public static void clear() {
         font = null;
         components = null;
         stack = null;
         positioner = null;
+        TooltipScrollState.reset();
     }
 
     public static void tick(GuiGraphics graphics) {
@@ -77,6 +85,7 @@ public final class TooltipAnimationState {
         if (font == null || positioner == null || stack == null || components == null || components.isEmpty()) {
             return;
         }
+
         if (frameCounter - lastAliveFrame <= 1) {
             return;
         }
@@ -86,7 +95,7 @@ public final class TooltipAnimationState {
         try {
             // The context resolves the stack's custom frame, so the replay honors per-frame appear anims
             final TooltipContext context = new TooltipContext(graphics, font, components, mouseX, mouseY, screenWidth, screenHeight, positioner, stack, true);
-            if (!TooltipAnimator.animation(context).isAnimated()) {
+            if (!TooltipAnimator.animation(context, true).isAnimated()) {
                 clear();
                 return;
             }

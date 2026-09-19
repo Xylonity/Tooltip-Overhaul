@@ -24,22 +24,30 @@ public final class EmiHoverHolder {
     private static boolean isTagCategory() {
         try {
             Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.screen == null) return false;
+            if (minecraft.screen == null) {
+                return false;
+            }
 
-            Class<?> recipeScreen = Class.forName(RECIPESCREEN_CLASS_LOCATION, false, EmiHoverHolder.class.getClassLoader());
-            if (!recipeScreen.isInstance(minecraft.screen)) return false;
+            final Class<?> recipeScreen = Class.forName(RECIPESCREEN_CLASS_LOCATION, false, EmiHoverHolder.class.getClassLoader());
+            if (!recipeScreen.isInstance(minecraft.screen)) {
+                return false;
+            }
 
             Method method = recipeScreen.getMethod("getFocusedCategory");
-            Object category = method.invoke(minecraft.screen);
-            if (category == null) return false;
+            final Object category = method.invoke(minecraft.screen);
+            if (category == null) {
+                return false;
+            }
 
-            Method getId = category.getClass().getMethod("getId");
-            Object idValue = getId.invoke(category);
-            String id = (idValue == null) ? null : idValue.toString();
-            if (id == null) return false;
+            final Method getId = category.getClass().getMethod("getId");
+            final Object idValue = getId.invoke(category);
+            final String id = (idValue == null) ? null : idValue.toString();
+            if (id == null) {
+                return false;
+            }
 
-            String ss = id.toLowerCase(Locale.ROOT);
-            return ss.contains("tag");
+            final String ss = id.toLowerCase(Locale.ROOT);
+            return ss.equals("tag") || ss.endsWith(":tag");
         }
         catch (Exception ignored) {
             return false;
@@ -48,19 +56,13 @@ public final class EmiHoverHolder {
     }
 
     private static boolean isTagIngredient(EmiIngredient ei) {
-        try {
-            String isIng = ei.getClass().getName().toLowerCase(Locale.ROOT);
-            return isIng.contains("tag");
-        }
-        catch (Throwable ignored) {
-            ;;
-        }
-
-        return false;
+        return ei != null && ei.getClass().getSimpleName().equals("TagEmiIngredient");
     }
 
     public static ItemStack getItemStack() {
-        if (isTagCategory()) return ItemStack.EMPTY;
+        if (isTagCategory()) {
+            return ItemStack.EMPTY;
+        }
 
         ItemStack fromCache = EmiDeferredHover.pop();
         if (!fromCache.isEmpty()) {
@@ -82,9 +84,11 @@ public final class EmiHoverHolder {
     }
 
     public static ItemStack getItemStack(int mouseX, int mouseY) {
-        if (isTagCategory()) return ItemStack.EMPTY;
+        if (isTagCategory()) {
+            return ItemStack.EMPTY;
+        }
 
-        ItemStack fromCache = EmiDeferredHover.pop();
+        final ItemStack fromCache = EmiDeferredHover.pop();
         if (!fromCache.isEmpty()) {
             return fromCache;
         }
@@ -117,13 +121,17 @@ public final class EmiHoverHolder {
 
     private static ItemStack fromRecipeScreen() {
         try {
-            Minecraft minecraft = Minecraft.getInstance();
-            if (minecraft.screen == null) return ItemStack.EMPTY;
+            final Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.screen == null) {
+                return ItemStack.EMPTY;
+            }
 
-            Class<?> resource = Class.forName(RECIPESCREEN_CLASS_LOCATION, false, EmiHoverHolder.class.getClassLoader());
-            if (!resource.isInstance(minecraft.screen)) return ItemStack.EMPTY;
+            final Class<?> resource = Class.forName(RECIPESCREEN_CLASS_LOCATION, false, EmiHoverHolder.class.getClassLoader());
+            if (!resource.isInstance(minecraft.screen)) {
+                return ItemStack.EMPTY;
+            }
 
-            Method method = resource.getMethod("getHoveredStack");
+            final Method method = resource.getMethod("getHoveredStack");
             Object ingred = method.invoke(minecraft.screen);
             if (!(ingred instanceof EmiIngredient s)) {
                 return ItemStack.EMPTY;
@@ -143,26 +151,42 @@ public final class EmiHoverHolder {
     }
 
     private static ItemStack getStack(EmiStackInteraction hovered) {
-        if (hovered == null || hovered.isEmpty()) return ItemStack.EMPTY;
+        if (hovered == null || hovered.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
 
-        EmiIngredient ingred = hovered.getStack();
-        if (ingred == null) return ItemStack.EMPTY;
+        final EmiIngredient ingred = hovered.getStack();
+        if (ingred == null) {
+            return ItemStack.EMPTY;
+        }
 
-        if (isTagIngredient(ingred)) return ItemStack.EMPTY;
+        if (isTagIngredient(ingred)) {
+            return ItemStack.EMPTY;
+        }
 
         return getStack(ingred);
     }
 
     private static ItemStack getStack(EmiIngredient ingred) {
-        if (ingred == null) return ItemStack.EMPTY;
+        if (ingred == null) {
+            return ItemStack.EMPTY;
+        }
 
-        List<EmiStack> list = ingred.getEmiStacks();
-        if (list == null || list.isEmpty()) return ItemStack.EMPTY;
+        final List<EmiStack> list = ingred.getEmiStacks();
+        if (list == null || list.isEmpty()) {
+            return ItemStack.EMPTY;
+        }
 
         for (EmiStack es : list) {
-            if (es == null) continue;
-            ItemStack st = es.getItemStack();
-            if (st != null && !st.isEmpty()) return st;
+            if (es == null) {
+                continue;
+            }
+
+            final ItemStack st = es.getItemStack();
+            if (st != null && !st.isEmpty()) {
+                return st;
+            }
+
         }
 
         return ItemStack.EMPTY;

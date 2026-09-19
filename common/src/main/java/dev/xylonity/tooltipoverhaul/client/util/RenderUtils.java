@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.FadeRenderType;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.preview.PreviewPanelDecorations;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -52,27 +53,44 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldShowShadow).orElse(TooltipsConfig.SHOW_TOOLTIP_SHADOW);
     }
 
+    public static float getIconScale(TooltipContext context) {
+        final float scale = Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconSize).orElse(1f);
+        return Float.isFinite(scale) ? Math.max(0.5f, Math.min(2f, scale)) : 1f;
+    }
+
+    public static boolean effectsBehindText(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldRenderEffectsBehindText).orElse(TooltipsConfig.EFFECTS_BEHIND_TEXT);
+    }
+
     public static boolean hasVignette(TooltipContext context) {
-        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(TooltipsConfig.VIGNETTES.isBlank());
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(!TooltipsConfig.VIGNETTES.isBlank());
     }
 
     public static boolean shouldRender(TooltipContext context) {
         return !Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldDisableTooltip).orElse(false);
     }
 
-    public static boolean hasPreviewOfTieredItem(TooltipContext context) {
+    public static boolean hasPreviewOfStack(TooltipContext context) {
+        if (context.isPinned()) {
+            return false;
+        }
+
         if (isComparisonActive(context)) {
             return false;
         }
 
-        if (context.getStack().getItem() instanceof TieredItem) {
-            return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(TooltipsConfig.TIERED_ITEMS_RENDERER);
+        if (!context.getStack().isEmpty() && !(context.getStack().getItem() instanceof ArmorItem)) {
+            return Optional.ofNullable(context.getFrameData()).map(data -> data.shouldShowSecondPanel(context)).orElse(context.getStack().getItem() instanceof TieredItem && TooltipsConfig.TIERED_ITEMS_RENDERER);
         }
 
         return false;
     }
 
     public static boolean hasPreviewOfArmorItem(TooltipContext context) {
+        if (context.isPinned()) {
+            return false;
+        }
+
         if (isComparisonActive(context)) {
             return false;
         }
@@ -97,10 +115,18 @@ public class RenderUtils {
     }
 
     public static String getIconAppearAnimation(TooltipContext context) {
+        if (TooltipsConfig.REDUCED_MOTION || context.isPinned()) {
+            return "none";
+        }
+
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconAppearAnimation).orElse(TooltipsConfig.ICON_APPEAR_ANIMATION);
     }
 
     public static float getIconRotatingSpeed(TooltipContext context) {
+        if (TooltipsConfig.REDUCED_MOTION) {
+            return 0;
+        }
+
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getIconRotatingSpeed).orElse(TooltipsConfig.ICON_ROTATING_SPEED);
     }
 
@@ -122,6 +148,24 @@ public class RenderUtils {
 
     public static String getPreviewPanelModel(TooltipContext context) {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getPreviewPanelModel).orElse(TooltipsConfig.PREVIEW_PANEL_MODEL);
+    }
+
+    public static boolean hasPreviewPanelSideTriangles(TooltipContext context) {
+        return getPreviewPanelSideTriangles(context) != PreviewPanelDecorations.SideTriangles.NONE;
+    }
+
+    public static PreviewPanelDecorations.SideTriangles getPreviewPanelSideTriangles(TooltipContext context) {
+        return PreviewPanelDecorations.SideTriangles.fromString(
+                Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getPreviewPanelSideTriangles).orElse(TooltipsConfig.PREVIEW_PANEL_SIDE_TRIANGLES));
+    }
+
+    public static String getPreviewPanelCornerType(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getPreviewPanelCornerType).orElse(TooltipsConfig.PREVIEW_PANEL_CORNER_TYPE);
+    }
+
+    public static PreviewPanelDecorations.BackgroundCornerType getPreviewPanelBackgroundCornerType(TooltipContext context) {
+        return PreviewPanelDecorations.BackgroundCornerType.fromString(
+                Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getPreviewPanelBackgroundCornerType).orElse(TooltipsConfig.PREVIEW_PANEL_BACKGROUND_CORNER_TYPE));
     }
 
     public static int calculatePadding(TooltipContext context, TextAxis axis) {
@@ -152,52 +196,50 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBackgroundCornerType).orElse(TooltipsConfig.BACKGROUND_CORNER_TYPE);
     }
 
-    public static void applyFrameCorners(GuiGraphics graphics, int x0, int y0, int width, int height, int topColor, int bottomColor, int bgColor, String type, boolean cornerCut) {
-        final int[][] erase;
+    public static int cornerTrim(String type) {
+        return switch (type) {
+            case "rounded", "bevel" -> 1;
+            case "cut", "notch" -> 2;
+            default -> 0;
+        };
+
+    }
+
+    public static void applyFrameCorners(GuiGraphics graphics, int x0, int y0, int width, int height, int topColor, int bottomColor, String type) {
         final int[][] add;
-        // Which corners the style is applied to, as indices into the corners array below (in order: top left, top right, bottom left, bottom right)
+        // Which corners the style is applied to, as indices into the corners array below, in order top left, top right, bottom left and bottom right
         int[] cornersToApply = {0, 1, 2, 3};
 
         switch (type) {
             case "rounded" -> {
-                erase = new int[][]{{0, 0}};
                 add = new int[][]{};
             }
             case "bevel" -> {
-                erase = new int[][]{{0, 0}};
                 add = new int[][]{{1, 1}};
             }
             case "inner" -> {
-                erase = new int[][]{};
                 add = new int[][]{{1, 1}};
             }
             case "cut" -> {
-                erase = new int[][]{{0, 0}, {1, 0}, {0, 1}};
                 add = new int[][]{{1, 1}};
             }
             case "thick" -> {
-                erase = new int[][]{};
                 add = new int[][]{{1, 1}, {2, 1}, {3, 1}, {1, 2}, {2, 2}, {1, 3}};
                 cornersToApply = new int[]{1};
             }
             case "bracket" -> {
-                erase = new int[][]{};
                 add = new int[][]{{2, 2}, {3, 2}, {2, 3}};
             }
             case "block" -> {
-                erase = new int[][]{};
                 add = new int[][]{{1, 1}, {2, 1}, {1, 2}, {2, 2}};
             }
             case "notch" -> {
-                erase = new int[][]{{0, 0}, {1, 0}, {0, 1}};
                 add = new int[][]{{2, 1}, {1, 2}, {2, 2}};
             }
             case "weld" -> {
-                erase = new int[][]{};
                 add = new int[][]{{1, 1}, {2, 1}, {1, 2}};
             }
             case "gem" -> {
-                erase = new int[][]{};
                 add = new int[][]{{2, 1}, {4, 1}, {1, 2}, {3, 2}, {2, 3}, {1, 4}};
             }
             default -> {
@@ -225,13 +267,6 @@ public class RenderUtils {
             final int stepY = corner[3];
             final int color = cornerY == y0 ? topColor : bottomColor;
 
-            for (final int[] pixel : erase) {
-                if (cornerCut && pixel[0] == 0 && pixel[1] == 0) {
-                    continue;
-                }
-
-                fillPixel(graphics, cornerX + pixel[0] * stepX, cornerY + pixel[1] * stepY, bgColor);
-            }
             for (final int[] pixel : add) {
                 fillPixel(graphics, cornerX + pixel[0] * stepX, cornerY + pixel[1] * stepY, color);
             }
@@ -250,13 +285,13 @@ public class RenderUtils {
 
     public static void renderItem(TooltipContext context, @Nullable LivingEntity entity, @Nullable Level level, ItemStack stack, int seed) {
         if (!stack.isEmpty()) {
-            BakedModel bakedmodel = Minecraft.getInstance().getItemRenderer().getModel(stack, level, entity, seed);
+            final BakedModel bakedmodel = Minecraft.getInstance().getItemRenderer().getModel(stack, level, entity, seed);
             context.getPose().pushPose();
 
             try {
                 context.getPose().mulPoseMatrix((new Matrix4f()).scaling(1.0F, -1.0F, 1.0F));
                 context.getPose().scale(16.0F, 16.0F, 16.0F);
-                boolean flag = !bakedmodel.usesBlockLight();
+                final boolean flag = !bakedmodel.usesBlockLight();
                 if (flag) {
                     Lighting.setupForFlatItems();
                 }
@@ -274,10 +309,11 @@ public class RenderUtils {
                 if (flag) {
                     Lighting.setupFor3DItems();
                 }
+
             }
             catch (Throwable throwable) {
-                CrashReport crashreport = CrashReport.forThrowable(throwable, "Rendering item");
-                CrashReportCategory crashreportcategory = crashreport.addCategory("Item being rendered");
+                final CrashReport crashreport = CrashReport.forThrowable(throwable, "Rendering item");
+                final CrashReportCategory crashreportcategory = crashreport.addCategory("Item being rendered");
                 crashreportcategory.setDetail("Item Type", () -> String.valueOf(stack.getItem()));
                 crashreportcategory.setDetail("Item Damage", () -> String.valueOf(stack.getDamageValue()));
                 crashreportcategory.setDetail("Item NBT", () -> String.valueOf(stack.getTag()));
@@ -291,15 +327,27 @@ public class RenderUtils {
     }
 
     public static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int c1, int c2, int c3) {
-        int mid = height / 2;
+        renderFrameGradient(graphics, x, y, width, height, c1, c2, c3, 0, 0);
+    }
 
-        // Left border (top and bottom sections)
-        graphics.fillGradient(x, y, x + 1, y + mid, c1, c2);
-        graphics.fillGradient(x, y + mid, x + 1, y + height, c2, c3);
+    public static void renderFrameGradient(GuiGraphics graphics, int x, int y, int width, int height, int c1, int c2, int c3, int trimTop, int trimBottom) {
+        final int mid = height / 2;
+        for (int lineX : new int[]{x, x + width - 1}) {
+            gradientColumn(graphics, lineX, y, y + mid, c1, c2, trimTop, 0);
+            gradientColumn(graphics, lineX, y + mid, y + height, c2, c3, 0, trimBottom);
+        }
 
-        // Right border (top and bottom sections)
-        graphics.fillGradient(x + width - 1, y, x + width, y + mid, c1, c2);
-        graphics.fillGradient(x + width - 1, y + mid, x + width, y + height, c2, c3);
+    }
+
+    private static void gradientColumn(GuiGraphics graphics, int x, int y0, int y1, int c0, int c1, int trimTop, int trimBottom) {
+        final int top = y0 + trimTop, bottom = y1 - trimBottom, span = y1 - y0;
+        if (bottom <= top || span <= 0) {
+            return;
+        }
+
+        final int topColor = trimTop == 0 ? c0 : ColorUtils.lerpColor(c0, c1, (float) trimTop / span);
+        final int bottomColor = trimBottom == 0 ? c1 : ColorUtils.lerpColor(c0, c1, (float) (span - trimBottom) / span);
+        graphics.fillGradient(x, top, x + 1, bottom, topColor, bottomColor);
     }
 
 }

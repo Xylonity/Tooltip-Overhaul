@@ -1,0 +1,25 @@
+{
+  "blend": { "func": "add", "srcrgb": "srcalpha", "dstrgb": "1", "srcalpha": "1", "dstalpha": "1-srcalpha" },
+  "vertex": "tooltipoverhaul:effect_field",
+  "fragment": "tooltipoverhaul:effect_field",
+  "attributes": [ "Position" ],
+  "samplers": [],
+  "uniforms": [
+    { "name": "ModelViewMat", "type": "matrix4x4", "count": 16, "values": [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ] },
+    { "name": "ProjMat", "type": "matrix4x4", "count": 16, "values": [ 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 ] },
+    { "name": "ColorModulator", "type": "float", "count": 4, "values": [ 1 ] },
+    { "name": "FieldKind", "type": "int", "count": 1, "values": [ 0 ] },
+    { "name": "FieldTime", "type": "float", "count": 1, "values": [ 0 ] },
+    { "name": "CanvasSize", "type": "float", "count": 2, "values": [ 1 ] },
+    { "name": "FieldScale", "type": "float", "count": 3, "values": [ 1 ] },
+    { "name": "FieldControls", "type": "float", "count": 4, "values": [ 1 ] },
+    { "name": "InteriorVisibility", "type": "float", "count": 1, "values": [ 0.8 ] },
+    { "name": "Variation", "type": "int", "count": 1, "values": [ 0 ] },
+    { "name": "PatternPhase", "type": "float", "count": 3, "values": [ 0 ] },
+    { "name": "Palette0", "type": "float", "count": 3, "values": [ 255 ] },
+    { "name": "Palette1", "type": "float", "count": 3, "values": [ 255 ] },
+    { "name": "Palette2", "type": "float", "count": 3, "values": [ 255 ] },
+    { "name": "Palette3", "type": "float", "count": 3, "values": [ 255 ] },
+    { "name": "Palette4", "type": "float", "count": 3, "values": [ 255 ] }
+  ]
+}

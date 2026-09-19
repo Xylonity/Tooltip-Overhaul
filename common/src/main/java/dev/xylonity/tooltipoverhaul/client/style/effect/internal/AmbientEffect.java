@@ -12,6 +12,9 @@ import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.world.phys.Vec2;
 
+/**
+ * Shared setup for every effect, which owns the render state so the effects themselves only ever have to write down geometry
+ */
 public abstract class AmbientEffect implements EffectLayer {
 
     @Override
@@ -25,25 +28,17 @@ public abstract class AmbientEffect implements EffectLayer {
         context.flush();
 
         final boolean clipped = clipToTooltip();
+        final EffectClip clip = clipped ? new EffectClip(context, position) : null;
 
         float left = position.x - 4;
         float top = position.y - 3;
         float width = size.x + 7;
         float height = size.y + 6;
         if (clipped) {
-            final int x = (int) position.x;
-            final int y = (int) position.y;
-            final int x0 = x - context.getPaddingX() - 1;
-            final int y0 = y - context.getPaddingY();
-            final int x1 = x + (int) size.x + context.getPaddingX();
-            final int y1 = y + (int) size.y + context.getPaddingY();
-
-            context.enableScissor(x0, y0, x1, y1);
-
-            left = x0;
-            top = y0;
-            width = x1 - x0;
-            height = y1 - y0;
+            left = clip.left();
+            top = clip.top();
+            width = clip.width();
+            height = clip.height();
         }
 
         RenderSystem.enableBlend();
@@ -54,16 +49,28 @@ public abstract class AmbientEffect implements EffectLayer {
 
         final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
         try {
-            final double time = Math.max(0, System.currentTimeMillis() - context.getStartTime()) / 1000.0;
+            final double time = EffectRuntime.seconds(context);
+            final boolean gpuField = field() != null && clip != null && EffectFieldRenderer.available();
+            if (gpuField) {
+                EffectFieldRenderer.draw(field(), context, clip, time, interiorVisibility());
+                RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            }
+
             if (hasMaterial()) {
                 RenderSystem.defaultBlendFunc();
 
                 buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
                 try {
-                    drawMaterial(new EffectCanvas(buffer, context.getPose().last().pose(), left, top, width, height, time, 1));
+                    drawMaterial(new EffectCanvas(buffer, context.getPose().last().pose(), left, top, width, height, time, 1, clipped));
                 }
                 finally {
-                    BufferUploader.drawWithShader(buffer.end());
+                    if (clip != null) {
+                        clip.draw(buffer.end());
+                    }
+                    else {
+                        BufferUploader.drawWithShader(buffer.end());
+                    }
+
                 }
 
             }
@@ -72,33 +79,46 @@ public abstract class AmbientEffect implements EffectLayer {
             buffer.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
 
             try {
-                draw(new EffectCanvas(buffer, context.getPose().last().pose(), left, top, width, height, time, interiorVisibility()));
-            }
-            finally {
-                BufferUploader.drawWithShader(buffer.end());
-            }
-
-        }
-        finally {
-            try {
-                if (clipped) {
-                    context.getGraphics().disableScissor();
+                final EffectCanvas canvas = new EffectCanvas(buffer, context.getPose().last().pose(), left, top, width, height, time, interiorVisibility(), clipped);
+                if (gpuField) {
+                    drawAfterField(canvas);
+                }
+                else {
+                    draw(canvas);
                 }
 
             }
             finally {
-                RenderSystem.depthMask(true);
-                RenderSystem.enableDepthTest();
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.disableBlend();
-                RenderSystem.enableCull();
+                if (clip != null) {
+                    clip.draw(buffer.end());
+                }
+                else {
+                    BufferUploader.drawWithShader(buffer.end());
+                }
+
             }
+
+        }
+        finally {
+            RenderSystem.depthMask(true);
+            RenderSystem.enableDepthTest();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableBlend();
+            RenderSystem.enableCull();
 
         }
 
     }
 
     protected abstract void draw(EffectCanvas canvas);
+
+    protected EffectField field() {
+        return null;
+    }
+
+    protected void drawAfterField(EffectCanvas canvas) {
+        ;;
+    }
 
     protected boolean clipToTooltip() {
         return false;

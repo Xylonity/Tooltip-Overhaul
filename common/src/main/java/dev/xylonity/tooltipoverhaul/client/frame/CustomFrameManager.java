@@ -6,17 +6,17 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.ItemStack;
 
-import java.awt.*;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles the loading context of the custom_frames.json files
  */
 public class CustomFrameManager {
 
-    private static final Map<ResourceLocation, CustomFrameData> customFrames = new ConcurrentHashMap<>();
+    private static final Map<ResourceLocation, CustomFrameData> customFrames = new LinkedHashMap<>();
+
     private static boolean INIT = false;
 
     // Set by the frame editor screen so the live preview tooltip uses the frame being edited instead of the loaded ones
@@ -27,7 +27,9 @@ public class CustomFrameManager {
     }
 
     public static void initialize() {
-        if (INIT) return;
+        if (INIT) {
+            return;
+        }
 
         try {
             customFrames.clear();
@@ -44,7 +46,9 @@ public class CustomFrameManager {
     }
 
     public static void initialize(ResourceManager resourceManager) {
-        if (INIT) return;
+        if (INIT) {
+            return;
+        }
 
         try {
             customFrames.clear();
@@ -68,9 +72,6 @@ public class CustomFrameManager {
         INIT = false;
     }
 
-    /**
-     * Returns the custom frame data for the specified stack (if it's present anywhere). The most specific match wins (item > tag > namespace > rarity)
-     */
     public static Optional<CustomFrameData> of(ItemStack stack) {
         if (previewOverride != null) {
             return Optional.of(previewOverride);
@@ -80,17 +81,20 @@ public class CustomFrameManager {
             initialize();
         }
 
+        return findMatch(customFrames.values(), stack);
+    }
+
+    /**
+     * priority > specificity > order
+     */
+    public static Optional<CustomFrameData> findMatch(Iterable<CustomFrameData> frames, ItemStack stack) {
         CustomFrameData best = null;
         int bestScore = 0;
-        for (final CustomFrameData customFrameData : customFrames.values()) {
+        for (final CustomFrameData customFrameData : frames) {
             final int score = customFrameData.matchScore(stack);
-            if (score > bestScore) {
+            if (score > 0 && (best == null || customFrameData.priority() > best.priority() || customFrameData.priority() == best.priority() && score > bestScore)) {
                 bestScore = score;
                 best = customFrameData;
-                // An explicit item match can't be beaten
-                if (score == 4) {
-                    break;
-                }
 
             }
 

@@ -1,116 +1,94 @@
 package dev.xylonity.tooltipoverhaul.client.screen.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameLoader;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipAnimationState;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameSource;
+import dev.xylonity.tooltipoverhaul.client.frame.FrameTemplates;
+import dev.xylonity.tooltipoverhaul.client.style.preview.PreviewPanelDecorations;
 import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
-import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
-import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
-import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
-import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
+import dev.xylonity.tooltipoverhaul.client.util.Constants;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
-import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.InputStream;
 import java.util.*;
 
-import static dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigScreen.*;
+import static dev.xylonity.tooltipoverhaul.client.screen.config.ConfigScreenStyle.*;
+import static dev.xylonity.tooltipoverhaul.client.screen.config.FrameFieldSchema.*;
+import static dev.xylonity.tooltipoverhaul.client.util.ColorUtils.*;
 
 /**
- * Visual editor for the TO's custom frames json file
+ * Visual editor shared by user, mod and resourcepack custom frame values
  */
-public class FrameEditorScreen extends Screen {
+public class FrameEditorScreen extends AbstractConfigScreen {
 
-    private final Screen parent;
-    private final int accent;
-
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-
-    private static final int HEADER_HEIGHT = 40;
+    private static final int HEADER_HEIGHT = ConfigScreenStyle.HEADER_HEIGHT;
     private static final int FOOTER_HEIGHT = 32;
-    private static final int LIST_WIDTH = 130;
-    private static final int LIST_ROW_HEIGHT = 22;
-
     private static final int MAX_LIST_COLORS = 3;
 
-    private final Path file;
-    private JsonObject root = new JsonObject();
-    private final List<JsonObject> entries = new ArrayList<>();
+    private final FrameEditorDocument document;
+    private final CustomFrameSource source;
+    private final JsonObject root;
+    private final List<JsonObject> frameEntries;
+    private final List<JsonObject> templateEntries;
+    private List<JsonObject> entries;
+    private boolean editingTemplates;
+    private String searchQuery = "";
+    private String validationError = "";
     private int selected = -1;
     private boolean dirty = false;
-    private boolean loadFailed = false;
+    private long nextDraftSaveAt;
+    private String draftError = "";
+    private final boolean loadFailed;
 
     private final List<FieldRow> rows = new ArrayList<>();
+    private final List<FieldRow> visibleRows = new ArrayList<>();
     private double formScroll = 0;
-    private double listScroll = 0;
+    private @Nullable ConfigNavigationList<JsonObject> entryList;
+    private @Nullable SearchBox searchBox;
     private @Nullable EditBox focusedBox = null;
 
-    private final List<ItemStack> previewStacks = new ArrayList<>();
-    private double panX = 0;
-    private double panY = 0;
-    private double previewZoom = 1.0;
-    private boolean panning = false;
-    private @Nullable CustomFrameData previewData = null;
-    private boolean previewBroken = false;
+    private final ConfigThreePaneLayout panelLayout = new ConfigThreePaneLayout(10, 8, HEADER_HEIGHT + 6,
+            FOOTER_HEIGHT + 26, FOOTER_HEIGHT + 4, 130, 96, 220, 140);
 
-    /**
-     * Measured footprint of one previewed tooltip
-     */
-    private record PreviewBounds(
-            float width,
-            float height,
-            float insetLeft
-    ) {
-        ;;
-    }
+    private boolean draggingListSplitter = false;
+    private boolean draggingPreviewSplitter = false;
+    private @Nullable ConfigIconButton createEntryButton = null;
+    private @Nullable ConfigIconButton cloneEntryButton = null;
+    private @Nullable ConfigIconButton deleteEntryButton = null;
+    private @Nullable ConfigIconButton libraryEntryButton = null;
 
-    // Mosaic layout cache
-    private final List<PreviewBounds> previewSizes = new ArrayList<>();
-    private float previewContentW = 0;
-    private float previewContentH = 0;
-    private int previewTotalItems = 0;
-
-    private static final int PREVIEW_CAP = 12;
+    private final FramePreviewPanel previewPanel = new FramePreviewPanel(accent);
 
     // Scrollbar dragging
     private boolean draggingFormBar = false;
-    private boolean draggingListBar = false;
     private double barDragOffset = 0;
-
-    private @Nullable ColorLevelPicker picker = null;
-    private @Nullable ListEditor listEditor = null;
 
     // Field and color index the open picker writes into
     private @Nullable FieldRow pickerRow = null;
@@ -118,56 +96,31 @@ public class FrameEditorScreen extends Screen {
 
     // Field help tooltip
     private @Nullable FieldRow hoveredRow = null;
+
+    private boolean swatchHintHovered;
     private long hoveredRowSince = 0;
     private int hoverMouseX;
     private int hoverMouseY;
 
-    private final long openedAt = Util.getMillis();
-    private long selectedAt = Util.getMillis();
+    private long formRevealAt = -1L;
     private long savedFlashAt = 0;
-
-    // Items that cannot render due to certain circumstances (like a null level)
-    private final Set<Item> brokenRenderItems = new HashSet<>();
-
-    private final List<String> unresolvedIds = new ArrayList<>();
-
-    private static final PreviewBounds PLACEHOLDER_BOUNDS = new PreviewBounds(150, 46, 0);
 
     private static final String[] BOOL_OPTIONS = { "inherit", "true", "false" };
 
-    private final Minecraft minecraft = Minecraft.getInstance();
-
     public FrameEditorScreen(Screen parent, int accent) {
-        super(Component.literal("Custom Frames"));
-        this.parent = parent;
-        this.accent = accent;
-        this.file = CustomFrameLoader.getUserConfigFile(TooltipOverhaul.PLATFORM.getConfigPath());
-        load();
+        this(parent, accent, CustomFrameLoader.discoverSources(Minecraft.getInstance().getResourceManager(), TooltipOverhaul.PLATFORM.getConfigPath()).get(0));
     }
 
-    private void load() {
-        entries.clear();
-        try {
-            if (Files.exists(file)) {
-                root = JsonParser.parseString(Files.readString(file, StandardCharsets.UTF_8)).getAsJsonObject();
-            }
-        }
-        catch (Exception exception) {
-            TooltipOverhaul.LOGGER.error("Frame editor could not read {}: {}", file, exception.getMessage());
-            loadFailed = true;
-            return;
-        }
-
-        if (root.has("frames") && root.get("frames").isJsonArray()) {
-            for (JsonElement element : root.getAsJsonArray("frames")) {
-                if (element.isJsonObject()) {
-                    entries.add(element.getAsJsonObject());
-                }
-
-            }
-
-        }
-
+    public FrameEditorScreen(Screen parent, int accent, CustomFrameSource source) {
+        super(Component.literal("Tooltip Overhaul"), parent, accent);
+        this.source = source;
+        this.document = new FrameEditorDocument(source);
+        this.root = document.root();
+        this.frameEntries = document.frames();
+        this.templateEntries = document.templates();
+        this.entries = frameEntries;
+        this.loadFailed = document.loadFailed();
+        this.dirty = document.hasDraft();
         if (!entries.isEmpty()) {
             select(0);
         }
@@ -175,43 +128,145 @@ public class FrameEditorScreen extends Screen {
     }
 
     private void save() {
-        JsonArray array = new JsonArray();
-        for (JsonObject entry : entries) {
-            array.add(entry);
-        }
-
-        root.add("frames", array);
-
-        try {
-            Files.writeString(file, GSON.toJson(root), StandardCharsets.UTF_8);
-        }
-        catch (Exception exception) {
-            TooltipOverhaul.LOGGER.error("Frame editor could not write {}: {}", file, exception.getMessage());
+        if (loadFailed) {
             return;
         }
 
-        dirty = false;
-        savedFlashAt = Util.getMillis();
+        String error = document.save();
+        if (error != null) {
+            validationError = error;
+            return;
+        }
 
-        // Hot reload, same thing as /tooltipoverhaul reload
+        validationError = "";
+        dirty = false;
+        draftError = "";
+        savedFlashAt = Util.getMillis();
         CustomFrameManager.reset();
         CustomFrameManager.initialize();
+    }
+
+    private void syncRoot() {
+        document.syncRoot();
     }
 
     private JsonObject selectedEntry() {
         return selected >= 0 && selected < entries.size() ? entries.get(selected) : null;
     }
 
+    private void extractTemplate() {
+        if (editingTemplates || selectedEntry() == null) {
+            return;
+        }
+
+        applyFocused();
+        JsonObject entry = selectedEntry();
+        String name = uniqueTemplateName("style");
+
+        final JsonObject style = FrameTemplates.styleOf(entry);
+        for (String key : new ArrayList<>(style.keySet())) {
+            entry.remove(key);
+        }
+
+        style.addProperty("name", name);
+        templateEntries.add(style);
+        entry.addProperty("extends", name);
+
+        markDirty();
+        rebuildRows();
+    }
+
+    private String uniqueTemplateName(String base) {
+        Set<String> names = new HashSet<>();
+        for (JsonObject template : templateEntries) {
+            if (template.has("name")) {
+                names.add(template.get("name").getAsString());
+            }
+
+        }
+
+        String name = base;
+        for (int i = 2; names.contains(name); i++) {
+            name = base + "_" + i;
+        }
+
+        return name;
+    }
+
+    private String[] templateOptions(JsonObject entry) {
+        final List<String> names = new ArrayList<>(List.of("inherit"));
+        for (JsonObject template : templateEntries) {
+            if (template != entry && template.has("name")) {
+                names.add(template.get("name").getAsString());
+            }
+
+        }
+
+        if (entry.has("extends") && !names.contains(entry.get("extends").getAsString())) {
+            names.add(entry.get("extends").getAsString());
+        }
+
+        return names.toArray(String[]::new);
+    }
+
+    private void moveEntry(int target) {
+        if (selected < 0 || target == selected || target < 0 || target >= entries.size()) {
+            return;
+        }
+
+        final JsonObject entry = entries.remove(selected);
+        entries.add(target, entry);
+        selected = target;
+        if (!editingTemplates) {
+            for (int i = 0; i < entries.size(); i++) {
+                entries.get(i).addProperty("priority", entries.size() - i);
+            }
+
+        }
+
+        markDirty();
+    }
+
+    private static int identityIndexOf(List<JsonObject> haystack, @Nullable JsonObject needle) {
+        if (needle == null) {
+            return -1;
+        }
+
+        for (int i = 0; i < haystack.size(); i++) {
+            if (haystack.get(i) == needle) {
+                return i;
+            }
+
+        }
+
+        return -1;
+    }
+
+    private void refreshEntryList(boolean resetScroll) {
+        if (entryList == null) {
+            return;
+        }
+
+        entryList.setItems(entries);
+        entryList.setReorderingEnabled(true);
+        entryList.setSelectedIndex(selected);
+        if (resetScroll) {
+            entryList.resetScroll();
+        }
+
+    }
+
     private void select(int index) {
         selected = Mth.clamp(index, -1, entries.size() - 1);
-        selectedAt = Util.getMillis();
+        formRevealAt = -1L;
         formScroll = 0;
         focusedBox = null;
-        picker = null;
-        listEditor = null;
-        panX = 0;
-        panY = 0;
-        previewZoom = 1.0;
+        modals.clear();
+        previewPanel.resetViewAndAnimations();
+        if (entryList != null) {
+            entryList.setSelectedIndex(selected);
+        }
+
         rebuildRows();
         refreshPreview();
     }
@@ -222,322 +277,419 @@ public class FrameEditorScreen extends Screen {
     }
 
     private void refreshPreview() {
-        JsonObject entry = selectedEntry();
-        previewBroken = false;
-        previewData = null;
-        previewStacks.clear();
-        if (entry == null) {
-            return;
-        }
-
-        try {
-            previewData = CustomFrameLoader.parseFrame(entry);
-        }
-        catch (Exception exception) {
-            previewBroken = true;
-        }
-
-        resolvePreviewStacks(entry);
-
-        previewSizes.clear();
-        for (int i = 0; i < previewStacks.size(); i++) {
-            previewSizes.add(null);
-        }
-
-    }
-
-    private void flagBroken(ItemStack stack, Throwable throwable) {
-        if (brokenRenderItems.add(stack.getItem())) {
-            TooltipOverhaul.LOGGER.warn("Frame editor cannot preview {} on this screen: {}", BuiltInRegistries.ITEM.getKey(stack.getItem()), throwable.toString());
-        }
-
-    }
-
-    private void resolvePreviewStacks(JsonObject entry) {
-        previewTotalItems = 0;
-        unresolvedIds.clear();
-        if (entry.has("items") && entry.get("items").isJsonArray()) {
-            for (JsonElement element : entry.getAsJsonArray("items")) {
-                if (!element.isJsonPrimitive()) continue;
-
-                final String raw = element.getAsString().trim();
-                if (raw.isEmpty()) continue;
-
-                ResourceLocation id = ResourceLocation.tryParse(raw);
-                if (id == null || !BuiltInRegistries.ITEM.containsKey(id)) {
-                    unresolvedIds.add(raw);
-                    continue;
-                }
-
-                previewTotalItems++;
-                if (previewStacks.size() < PREVIEW_CAP) {
-                    previewStacks.add(new ItemStack(BuiltInRegistries.ITEM.get(id)));
-                }
-
-            }
-
-        }
-
-        if (previewStacks.isEmpty()) {
-            previewStacks.add(new ItemStack(Items.DIAMOND_SWORD));
-        }
-
+        syncRoot();
+        validationError = previewPanel.refresh(root, selectedEntry());
     }
 
     private ItemStack resolveListStack(JsonObject entry) {
-        if (entry.has("items") && entry.get("items").isJsonArray()) {
-            for (JsonElement element : entry.getAsJsonArray("items")) {
-                if (!element.isJsonPrimitive()) {
-                    continue;
-                }
-
-                ResourceLocation id = ResourceLocation.tryParse(element.getAsString().trim());
-                if (id != null && BuiltInRegistries.ITEM.containsKey(id)) {
-                    return new ItemStack(BuiltInRegistries.ITEM.get(id));
-                }
-
-            }
-
-        }
-
-        return new ItemStack(Items.DIAMOND_SWORD);
-    }
-
-    private void drawItemSafe(GuiGraphics graphics, ItemStack stack, int x, int y) {
-        if (brokenRenderItems.contains(stack.getItem())) {
-            graphics.renderItem(new ItemStack(Items.PAPER), x, y);
-            return;
-        }
-
-        try {
-            graphics.renderItem(stack, x, y);
-        }
-        catch (Throwable throwable) {
-            flagBroken(stack, throwable);
-        }
-
+        return previewPanel.stackFor(entry);
     }
 
     private int listLeft() {
-        return 10;
+        return panelLayout.left();
     }
 
     private int listTop() {
-        return HEADER_HEIGHT + 6;
+        return panelLayout.top();
     }
 
     private int listBottom() {
-        return this.height - FOOTER_HEIGHT - 26;
+        return panelLayout.leftBottom();
+    }
+
+    private int listWidth() {
+        return panelLayout.leftWidth();
     }
 
     private int previewWidth() {
-        return Mth.clamp((int) (this.width * 0.36f), 200, 300);
+        return panelLayout.rightWidth();
     }
 
     private int previewLeft() {
-        return this.width - previewWidth() - 10;
+        return panelLayout.rightLeft();
     }
 
     private int formLeft() {
-        return listLeft() + LIST_WIDTH + 8;
+        return panelLayout.centerLeft();
     }
 
     private int formRight() {
-        return previewLeft() - 8;
+        return panelLayout.centerRight();
+    }
+
+    private int listSplitterX() {
+        return panelLayout.leftSplitter();
+    }
+
+    private int previewSplitterX() {
+        return panelLayout.rightSplitter();
+    }
+
+    private boolean overListSplitter(double mouseX, double mouseY) {
+        return panelLayout.overLeftSplitter(mouseX, mouseY);
+    }
+
+    private boolean overPreviewSplitter(double mouseX, double mouseY) {
+        return panelLayout.overRightSplitter(mouseX, mouseY);
+    }
+
+    private void clampPanelWidths() {
+        panelLayout.resize(width, height);
     }
 
     private int formTop() {
-        return HEADER_HEIGHT + 6;
+        return panelLayout.top();
     }
 
     private int formBottom() {
-        return this.height - FOOTER_HEIGHT - 4;
+        return panelLayout.contentBottom();
     }
 
     @Override
-    protected void init() {
-        picker = null;
-        listEditor = null;
+    protected void initScreen() {
+        draggingListSplitter = false;
+        draggingPreviewSplitter = false;
+        clampPanelWidths();
         rebuildRows();
+        entryList = createEntryList();
 
-        final int buttonHeight = 18;
-        final int buttonY = this.height - 26;
+        addCenteredFooterButtons(92, 8,
+                new FooterAction(Component.translatable("tooltipoverhaul.config.frames.save"), () -> {applyFocused();save();}, true),
+                new FooterAction(Component.translatable("tooltipoverhaul.config.frames.back"), this::onClose, false)
+        );
 
-        addRenderableWidget(new FlatButton(this.width / 2 - 96, buttonY, 92, buttonHeight,
-                Component.translatable("tooltipoverhaul.config.frames.save"),
-                button -> { applyFocused(); save(); },
-                accent, true));
-
-        addRenderableWidget(new FlatButton(this.width / 2 + 4, buttonY, 92, buttonHeight,
-                Component.translatable("tooltipoverhaul.config.frames.back"),
-                button -> onClose(),
-                accent));
-
-        // Entry management buttons under the list
         final int manageY = listBottom() + 4;
-        final int third = (LIST_WIDTH - 8) / 3;
+        final int buttonWidth = Math.max(1, (listWidth() - 12) / 4);
+        libraryEntryButton = addRenderableWidget(new ConfigIconButton(listLeft() + (buttonWidth + 4) * 3, manageY, buttonWidth, ConfigIconButton.Icon.TEMPLATES,
+                Component.translatable("tooltipoverhaul.config.frames.templates_hint"), button -> {
+            applyFocused();
+            editingTemplates = !editingTemplates;
+            entries = editingTemplates ? templateEntries : frameEntries;
+            refreshEntryList(true);
+            select(entries.isEmpty() ? -1 : 0);
+        }, accent));
+        libraryEntryButton.setTooltip(Tooltip.create(Component.translatable("tooltipoverhaul.config.frames.templates_hint")));
 
-        addRenderableWidget(new FlatButton(listLeft(), manageY, third, 18,
-                Component.literal("+"), button -> {
+        createEntryButton = addRenderableWidget(new ConfigIconButton(listLeft(), manageY, buttonWidth, ConfigIconButton.Icon.ADD,
+                Component.translatable("tooltipoverhaul.config.frames.create"), button -> {
             JsonObject entry = new JsonObject();
-            entry.add("items", new JsonArray());
+            if (editingTemplates) {
+                entry.addProperty("name", uniqueTemplateName("style"));
+            }
+            else {
+                entry.add("items", new JsonArray());
+            }
+
             entries.add(entry);
             dirty = true;
+            refreshEntryList(false);
+            entryList.reveal();
             select(entries.size() - 1);
-        }, accent, true));
-
-        addRenderableWidget(new FlatButton(listLeft() + third + 4, manageY, third, 18,
-                Component.literal("\u29c9"), button -> {
-            JsonObject entry = selectedEntry();
-            if (entry != null) {
-                entries.add(selected + 1, entry.deepCopy());
-                dirty = true;
-                select(selected + 1);
-            }
         }, accent));
 
-        addRenderableWidget(new FlatButton(listLeft() + (third + 4) * 2, manageY, third, 18,
-                Component.literal("\u2212"), button -> {
+        cloneEntryButton = addRenderableWidget(new ConfigIconButton(listLeft() + buttonWidth + 4, manageY, buttonWidth, ConfigIconButton.Icon.COPY,
+                Component.translatable("tooltipoverhaul.config.frames.clone"), button -> {
+            JsonObject entry = selectedEntry();
+            if (entry != null) {
+                final JsonObject copy = entry.deepCopy();
+                copy.remove("id");
+                if (editingTemplates) {
+                    copy.addProperty("name", uniqueTemplateName(entry.get("name").getAsString()));
+                }
+
+                entries.add(selected + 1, copy);
+                dirty = true;
+                refreshEntryList(false);
+                entryList.reveal();
+                select(selected + 1);
+            }
+
+        }, accent));
+
+        deleteEntryButton = addRenderableWidget(new ConfigIconButton(listLeft() + (buttonWidth + 4) * 2, manageY, buttonWidth, ConfigIconButton.Icon.TRASH,
+                Component.translatable("tooltipoverhaul.config.frames.delete"), button -> {
             if (selected >= 0 && selected < entries.size()) {
                 entries.remove(selected);
                 dirty = true;
+                refreshEntryList(false);
                 select(Math.min(selected, entries.size() - 1));
             }
+
         }, accent));
 
+        final int searchWidth = Math.min(200, this.width / 3);
+        final int searchX = this.width - searchWidth - 14;
+        final int searchY = (HEADER_HEIGHT - 16) / 2 - 1;
+        searchBox = new SearchBox(font, searchX, searchY, searchWidth, 16, accent);
+        searchBox.setResponder(query -> {
+            searchQuery = query;
+            rebuildVisibleRows();
+            formScroll = 0;
+            formRevealAt = -1L;
+            hoveredRow = null;
+        });
+
+        addRenderableWidget(searchBox);
+
+        if (!searchQuery.isEmpty()) {
+            searchBox.setValue(searchQuery);
+        }
+
+        layoutEntryButtons();
+
     }
 
-    private enum Kind {
-        STRING,
-        INT,
-        FLOAT,
-        COLOR,
-        COLOR_INT,
-        LIST,
-        TUPLE_LIST,
-        COLOR_LIST,
-        BOOL,
-        CHOICE
+    private ConfigNavigationList<JsonObject> createEntryList() {
+        ConfigNavigationList.Adapter<JsonObject> adapter = new ConfigNavigationList.Adapter<>() {
+
+            @Override
+            public Component label(JsonObject entry, int index) {
+                final int sourceIndex = identityIndexOf(entries, entry);
+                return Component.literal(labelFor(entry, sourceIndex >= 0 ? sourceIndex : index));
+            }
+
+            @Override
+            public int rowHeight(JsonObject entry, int index, int contentWidth) {
+                final int textWidth = Math.max(4, contentWidth - 42);
+                int lines = Math.max(1, font.split(label(entry, index), textWidth).size());
+                return Math.max(22, lines * font.lineHeight + Math.max(0, lines - 1) + 6);
+            }
+
+            @Override
+            public int leadingWidth(JsonObject entry, int index) {
+                return 20;
+            }
+
+            @Override
+            public int trailingWidth(JsonObject entry, int index) {
+                return 14;
+            }
+
+            @Override
+            public boolean wrapLabel(JsonObject entry, int index) {
+                return true;
+            }
+
+            @Override
+            public void renderLeading(GuiGraphics graphics, JsonObject entry, int index, int x, int y, int rowHeight, int alpha, boolean selected, boolean hovered) {
+                previewPanel.renderListIcon(graphics, entry, x, y + (rowHeight - 2 - 16) / 2, alpha / 255f);
+            }
+
+            @Override
+            public void renderTrailing(GuiGraphics graphics, JsonObject entry, int index, int right, int y, int rowHeight, int alpha, boolean selected, boolean hovered) {
+                ConfigIconButton.drawIcon(graphics, ConfigIconButton.Icon.ALIGN, right - ConfigIconButton.Icon.ALIGN.width, y + (rowHeight - ConfigIconButton.Icon.ALIGN.height) / 2, withAlpha(selected ? accent : 0x505050, alpha));
+            }
+
+        };
+        ConfigNavigationList<JsonObject> list = new ConfigNavigationList<>(listLeft(), listTop(), listWidth(), listBottom() - listTop(), Component.literal(I18n.get("tooltipoverhaul.config.frames.entries").toUpperCase(Locale.ROOT)),
+                accent, entries, adapter, index -> {
+            applyFocused();
+            if (index >= 0 && index < entries.size()) {
+                select(index);
+            }
+
+        }, (from, target) -> {
+            moveEntry(target);
+            rebuildRows();
+        });
+
+        list.setReorderingEnabled(true);
+        list.setSelectedIndex(selected);
+
+        return list;
     }
 
-    private record FieldSpec(
-            String key,
-            Kind kind,
-            String... options
-    ) {
-        ;;
+    private void layoutEntryButtons() {
+        if (createEntryButton == null || cloneEntryButton == null || deleteEntryButton == null || libraryEntryButton == null) {
+            return;
+        }
+
+        final int buttonWidth = Math.max(1, (listWidth() - 12) / 4);
+        final int y = listBottom() + 4;
+        final ConfigIconButton[] buttons = { createEntryButton, cloneEntryButton, deleteEntryButton, libraryEntryButton };
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i].setX(listLeft() + (buttonWidth + 4) * i);
+            buttons[i].setY(y);
+            buttons[i].setWidth(buttonWidth);
+        }
+
     }
 
-    private static final List<Object> SECTIONS_AND_FIELDS = List.of(
-            "entry",
-            new FieldSpec("name", Kind.STRING),
-            "matching",
-            new FieldSpec("items", Kind.LIST),
-            new FieldSpec("tags", Kind.LIST),
-            new FieldSpec("namespace", Kind.STRING),
-            new FieldSpec("rarity", Kind.LIST),
-            "appearance",
-            new FieldSpec("texture", Kind.STRING),
-            new FieldSpec("backgroundColor", Kind.COLOR_INT),
-            new FieldSpec("borderType", Kind.CHOICE, "gradient", "glint", "static", "auto_gradient", "auto_glint", "auto_static"),
-            new FieldSpec("innerFrameCornerType", Kind.CHOICE, "default", "rounded", "bevel", "inner", "cut", "thick", "bracket", "block", "notch", "weld", "gem"),
-            new FieldSpec("backgroundCornerType", Kind.CHOICE, "default", "square", "rounded", "notch"),
-            new FieldSpec("gradientType", Kind.CHOICE, "common", "uncommon", "rare", "epic", "legendary", "chaos", "custom_rarity", "custom"),
-            new FieldSpec("gradientColors", Kind.COLOR_LIST),
-            "icon",
-            new FieldSpec("disableIcon", Kind.BOOL),
-            new FieldSpec("iconBackgroundType", Kind.CHOICE, "focus", "void", "slot", "slot_border", "glow"),
-            new FieldSpec("iconAppearAnimation", Kind.CHOICE, "none", "zoom", "rotate", "rotate_fast", "rotate_zoom", "zoom_snap", "skew", "vibration", "tilt_wave", "flip", "pendulum", "bounce", "go_down", "pulse", "fan_in", "hover_pop", "barrel_roll"),
-            new FieldSpec("iconSize", Kind.FLOAT),
-            new FieldSpec("iconRotatingSpeed", Kind.FLOAT),
-            "text",
-            new FieldSpec("titleAlignment", Kind.CHOICE, "left", "middle", "right"),
-            new FieldSpec("showRating", Kind.BOOL),
-            new FieldSpec("itemRating", Kind.STRING),
-            new FieldSpec("colorItemRating", Kind.COLOR),
-            new FieldSpec("ratingAlignment", Kind.CHOICE, "left", "middle", "right"),
-            "layout",
-            new FieldSpec("tooltipLayout", Kind.CHOICE, "classic", "badge", "floating", "compact"),
-            new FieldSpec("compactShowModName", Kind.BOOL),
-            new FieldSpec("compactModNameColor", Kind.COLOR),
-            new FieldSpec("tooltipPositionX", Kind.INT),
-            new FieldSpec("tooltipPositionY", Kind.INT),
-            new FieldSpec("mainPanelPaddingX", Kind.INT),
-            new FieldSpec("mainPanelPaddingY", Kind.INT),
-            "divider",
-            new FieldSpec("disableDividerLine", Kind.BOOL),
-            new FieldSpec("dividerLineType", Kind.CHOICE, "gradient", "static", "linear"),
-            new FieldSpec("dividerLineColor", Kind.COLOR),
-            new FieldSpec("dividerLineTopPadding", Kind.INT),
-            new FieldSpec("dividerLineBottomPadding", Kind.INT),
-            "preview",
-            new FieldSpec("showSecondPanel", Kind.BOOL),
-            new FieldSpec("previewPanelModel", Kind.CHOICE, "armor_stand", "player_skin"),
-            new FieldSpec("usePlayerSkinInPreview", Kind.BOOL),
-            new FieldSpec("secondPanelX", Kind.INT),
-            new FieldSpec("secondPanelY", Kind.INT),
-            new FieldSpec("secondPanelSizeX", Kind.INT),
-            new FieldSpec("secondPanelSizeY", Kind.INT),
-            new FieldSpec("secondPanelRendererSpeed", Kind.FLOAT),
-            "effects",
-            new FieldSpec("specialEffect", Kind.STRING),
-            new FieldSpec("particles", Kind.STRING),
-            new FieldSpec("vignettes", Kind.TUPLE_LIST),
-            "animation",
-            new FieldSpec("tooltipAppearAnimation", Kind.CHOICE, "none", "fade", "pop", "rise", "unfold", "zoom", "slide", "swing", "emerge", "squash", "card", "shake"),
-            new FieldSpec("tooltipAnimationDuration", Kind.FLOAT),
-            "misc",
-            new FieldSpec("showShadow", Kind.BOOL),
-            new FieldSpec("disableScrolling", Kind.BOOL),
-            new FieldSpec("disableTooltip", Kind.BOOL)
-    );
-
-    private final class FieldRow {
+    private final class FieldRow extends ConfigFormEntry {
 
         final @Nullable FieldSpec spec;
         final @Nullable String section;
-        final @Nullable AbstractWidget widget;
-        final int height;
+        final String searchIndex;
 
-        int currentY = 0;
+        final @Nullable JsonObject entry;
+        @Nullable ConfigIconButton replay;
 
         final List<int[]> swatchHits = new ArrayList<>();
 
         FieldRow(String section) {
             this.spec = null;
             this.section = section;
-            this.widget = null;
-            this.height = 20;
+            this.entry = null;
+            this.searchIndex = normalizeSearch(section + " " + I18n.get("tooltipoverhaul.config.frames.section." + section));
+            initialize(Component.empty(), "", null, section, FrameEditorScreen.this.accent, 20);
         }
 
-        FieldRow(FieldSpec spec, JsonObject entry) {
+        FieldRow(FieldSpec spec, JsonObject entry, String containingSection) {
+            super(Component.literal(fieldLabel(spec.key())), fieldDescription(spec.key()), null, spec.key(), FrameEditorScreen.this.accent, 32);
             this.spec = spec;
             this.section = null;
-            this.height = 24;
+            this.entry = entry;
+            this.searchIndex = normalizeSearch(spec.key() + " " + fieldLabel(spec.key()) + " "
+                    + fieldDescription(spec.key()) + " " + containingSection + " " + I18n.get("tooltipoverhaul.config.frames.section." + containingSection));
 
-            if (spec.kind() == Kind.BOOL || spec.kind() == Kind.CHOICE) {
-                final String[] options = spec.kind() == Kind.BOOL ? BOOL_OPTIONS : withInherit(spec.options());
-                this.widget = new StringCycleButton(0, 0, widgetWidth(), 18, options, readChoice(entry, spec, options), accent, value -> writeChoice(entry, spec, value));
+            if (spec.key().equals("createTemplate")) {
+                this.widget = new FlatButton(0, 0, widgetWidth(), 18, Component.translatable("tooltipoverhaul.config.frames.extract_template"), button -> extractTemplate(), accent);
+            }
+            else if (spec.key().equals("specialEffect")) {
+                this.widget = new FlatButton(0, 0, widgetWidth(), 18, Component.translatable("tooltipoverhaul.config.frames.effect_editor"), button -> {
+                    applyFocused();
+                    syncRoot();
+                    try {
+                        minecraft.setScreen(new EffectEditorScreen(FrameEditorScreen.this, root, entry, previewPanel.selectedStack(), accent, draft -> {
+                            for (String key : List.of("specialEffect", "effectSettings")) {
+                                if (draft.has(key)) {
+                                    entry.add(key, draft.get(key).deepCopy());
+                                }
+                                else {
+                                    entry.remove(key);
+                                }
+
+                            }
+
+                            markDirty();
+                        }));
+
+                    }
+                    catch (RuntimeException exception) {
+                        validationError = exception.getMessage();
+                    }
+
+                }, accent);
+            }
+            else if (spec.key().equals("vignettes")) {
+                this.widget = new FlatButton(0, 0, widgetWidth(), 18, Component.translatable("tooltipoverhaul.config.frames.vignette_editor"), button -> {
+                    applyFocused();
+                    syncRoot();
+                    try {
+                        minecraft.setScreen(new VignetteEditorScreen(FrameEditorScreen.this, root, entry, previewPanel.selectedStack(), accent, draft -> {
+                            if (draft.has("vignettes")) {
+                                entry.add("vignettes", draft.get("vignettes").deepCopy());
+                            }
+                            else {
+                                entry.remove("vignettes");
+                            }
+
+                            markDirty();
+                        }));
+
+                    }
+                    catch (RuntimeException exception) {
+                        validationError = exception.getMessage();
+                    }
+
+                }, accent);
+            }
+            else if (spec.kind() == Kind.BOOL || spec.kind() == Kind.CHOICE) {
+                final String[] options = spec.key().equals("extends") ? templateOptions(entry) : spec.kind() == Kind.BOOL ? BOOL_OPTIONS : withInherit(spec.options());
+                this.widget = new ConfigOptionButton<>(0, 0, widgetWidth(), 18,
+                        Arrays.asList(options), readChoice(entry, spec, options), accent,
+                        value -> value, FrameEditorScreen::optionLabel,
+                        value -> writeChoice(entry, spec, value), () -> { }, modals,
+                        FrameEditorScreen.this.width, FrameEditorScreen.this.height);
             }
             else {
                 final StyledEditBox box = new StyledEditBox(minecraft.font, 0, 0, widgetWidth(), 18, Component.empty(), accent);
-                box.setMaxLength(1024);
+                box.setMaxLength(spec.kind() == Kind.LIST ? 32767 : 1024);
                 box.setValue(readText(entry, spec));
                 box.setResponder(value -> writeText(entry, spec, value));
                 this.widget = box;
             }
 
+            if (spec.key().equals("tooltipAppearAnimation") || spec.key().equals("tooltipDisappearAnimation") || spec.key().equals("iconAppearAnimation")) {
+                replay = new ConfigIconButton(0, 0, 18, ConfigIconButton.Icon.PLAY,
+                        Component.translatable("tooltipoverhaul.config.frames.replay_animation"), button -> {
+                    applyFocused();
+                    if (spec.key().equals("iconAppearAnimation")) {
+                        previewPanel.replayIconAnimation();
+                    }
+                    else if (spec.key().equals("tooltipDisappearAnimation")) {
+                        previewPanel.replayTooltipDisappearAnimation();
+                    }
+                    else {
+                        previewPanel.replayTooltipAnimation();
+                    }
+
+                }, accent);
+
+            }
+
+        }
+
+        @Override
+        protected void prepareWidgetWidth(int rowWidth) {
+            if (widget instanceof StyledEditBox box) {
+                box.setBaseWidth(widgetWidth());
+            }
+            else if (widget != null) {
+                widget.setWidth(widgetWidth());
+            }
+
+        }
+
+        @Override
+        protected int expandedWidgetWidth(int rowWidth) {
+            return rowWidth - 16;
+        }
+
+        @Override
+        boolean isModified() {
+            return spec != null && entry != null && entry.has(spec.key());
+        }
+
+        @Override
+        protected void renderAccessories(GuiGraphics graphics, int mouseX, int mouseY, int widgetX, int widgetY, int alpha, float textFade, float entrance, float hover) {
+            if (replay != null) {
+                replay.setX(widgetX - 22);
+                replay.setY(widgetY);
+                replay.setAlpha(entrance);
+                replay.render(graphics, mouseX, mouseY, 0);
+            }
+
+            renderRowSwatches(graphics, this, mouseX, mouseY, textFade * entrance);
+            renderRowReset(graphics, this, mouseX, mouseY, widgetX, hover, entrance);
         }
 
         int widgetWidth() {
             final int formW = formRight() - formLeft();
-            if (spec != null && (spec.kind() == Kind.BOOL || spec.kind() == Kind.CHOICE)) {
-                return Math.min(150, Math.max(100, formW / 3));
-            }
-
-            return Math.min(220, Math.max(120, (int) (formW * 0.42f)));
+            final int available = Math.max(36, formW - 52);
+            return Math.min(available, Math.min(130, Math.max(88, (int) (formW / 3.5f))));
         }
 
+        boolean matchesSearch(String query) {
+            for (String term : normalizeSearch(query).split("\\s+")) {
+                if (!term.isEmpty() && !searchIndex.contains(term)) {
+                    return false;
+                }
+
+            }
+
+            return true;
+        }
+
+    }
+
+    private static String normalizeSearch(String value) {
+        return value.toLowerCase(Locale.ROOT).replace('_', ' ');
+    }
+
+    private static String fieldDescription(String key) {
+        final String descriptionKey = "tooltipoverhaul.config.frames.field." + key + ".desc";
+        return I18n.exists(descriptionKey) ? I18n.get(descriptionKey) : "";
     }
 
     private static String[] withInherit(String[] options) {
@@ -556,16 +708,26 @@ public class FrameEditorScreen extends Screen {
         return prettify(key.replaceAll("([a-z0-9])([A-Z])", "$1 $2").toLowerCase(Locale.ROOT));
     }
 
+    private static String optionLabel(String value) {
+        String key = "tooltipoverhaul.config.frames.option." + value;
+        return I18n.exists(key) ? I18n.get(key) : prettify(value);
+    }
+
     private String readChoice(JsonObject entry, FieldSpec spec, String[] options) {
         if (!entry.has(spec.key()) || !entry.get(spec.key()).isJsonPrimitive()) {
             return options[0];
         }
 
-        final String raw = entry.get(spec.key()).getAsString().trim().toLowerCase();
+        final String raw = spec.key().equals("extends") ? entry.get(spec.key()).getAsString().trim() : entry.get(spec.key()).getAsString().trim().toLowerCase(Locale.ROOT);
+        if (spec.key().equals("previewPanelSideTriangles")) {
+            return PreviewPanelDecorations.SideTriangles.fromString(raw).name().toLowerCase(Locale.ROOT);
+        }
+
         for (String option : options) {
             if (option.equals(raw)) {
                 return option;
             }
+
         }
 
         return options[0];
@@ -583,51 +745,29 @@ public class FrameEditorScreen extends Screen {
         }
 
         markDirty();
+        refreshInheritedText();
     }
 
     private String readText(JsonObject entry, FieldSpec spec) {
-        if (!entry.has(spec.key()) || entry.get(spec.key()).isJsonNull()) {
-            return "";
-        }
-
-        final JsonElement element = entry.get(spec.key());
-        switch (spec.kind()) {
-            case LIST, TUPLE_LIST, COLOR_LIST -> {
-                if (element.isJsonArray()) {
-                    final StringBuilder joined = new StringBuilder();
-                    for (JsonElement item : element.getAsJsonArray()) {
-                        if (!item.isJsonPrimitive()) {
-                            continue;
-                        }
-                        if (!joined.isEmpty()) {
-                            joined.append(", ");
-                        }
-
-                        joined.append(item.getAsString());
-                    }
-
-                    return joined.toString();
-                }
-
-                return element.isJsonPrimitive() ? element.getAsString() : "";
-            }
-            case COLOR_INT -> {
-                if (element.isJsonPrimitive() && element.getAsJsonPrimitive().isNumber()) {
-                    return String.format("#%08X", element.getAsInt());
-                }
-
-                return element.isJsonPrimitive() ? element.getAsString() : "";
-            }
-            default -> {
-                return element.isJsonPrimitive() ? element.getAsString() : "";
-            }
-
-        }
-
+        return FrameFieldDefaults.read(root, entry, spec.key(), resolveListStack(entry));
     }
 
     private void writeText(JsonObject entry, FieldSpec spec, String raw) {
         final String value = raw.trim();
+        if (editingTemplates && spec.key().equals("name") && entry.has("name") && !value.isEmpty()) {
+            final String old = entry.get("name").getAsString();
+            for (List<JsonObject> group : List.of(frameEntries, templateEntries)) {
+                for (JsonObject dependent : group) {
+                    if (dependent.has("extends") && dependent.get("extends").getAsString().equals(old)) {
+                        dependent.addProperty("extends", value);
+                    }
+
+                }
+
+            }
+
+        }
+
         if (value.isEmpty()) {
             entry.remove(spec.key());
             markDirty();
@@ -641,10 +781,12 @@ public class FrameEditorScreen extends Screen {
                     if (!part.trim().isEmpty()) {
                         array.add(part.trim());
                     }
+
                 }
 
                 entry.add(spec.key(), array);
             }
+
             case TUPLE_LIST -> {
                 final JsonArray array = new JsonArray();
                 for (String part : value.split("(?<=\\))\\s*[,;]\\s*")) {
@@ -656,6 +798,7 @@ public class FrameEditorScreen extends Screen {
 
                 entry.add(spec.key(), array);
             }
+
             case INT -> {
                 try {
                     entry.addProperty(spec.key(), Integer.parseInt(value));
@@ -663,7 +806,9 @@ public class FrameEditorScreen extends Screen {
                 catch (NumberFormatException ignored) {
                     return;
                 }
+
             }
+
             case FLOAT -> {
                 try {
                     entry.addProperty(spec.key(), Float.parseFloat(value));
@@ -673,6 +818,7 @@ public class FrameEditorScreen extends Screen {
                 }
 
             }
+
             case COLOR_INT -> {
                 if (value.startsWith("#") || value.startsWith("0x") || value.startsWith("0X")) {
                     entry.addProperty(spec.key(), ConfigColorParser.parseColor(value));
@@ -682,6 +828,7 @@ public class FrameEditorScreen extends Screen {
                 }
 
             }
+
             default -> entry.addProperty(spec.key(), raw);
         }
 
@@ -689,19 +836,85 @@ public class FrameEditorScreen extends Screen {
     }
 
     private void rebuildRows() {
+        syncRoot();
         rows.clear();
+        visibleRows.clear();
 
         final JsonObject entry = selectedEntry();
         if (entry == null) {
             return;
         }
 
+        String currentSection = "";
         for (Object item : SECTIONS_AND_FIELDS) {
             if (item instanceof String section) {
+                if (editingTemplates && section.equals("matching")) {
+                    continue;
+                }
+
+                currentSection = section;
                 rows.add(new FieldRow(section));
             }
             else if (item instanceof FieldSpec spec) {
-                rows.add(new FieldRow(spec, entry));
+                if (editingTemplates && Set.of("items", "tags", "namespace", "rarity", "priority", "createTemplate").contains(spec.key())) {
+                    continue;
+                }
+
+                rows.add(new FieldRow(spec, entry, currentSection));
+            }
+
+        }
+
+        rebuildVisibleRows();
+
+    }
+
+    private void rebuildVisibleRows() {
+        visibleRows.clear();
+        if (searchQuery.isBlank()) {
+            visibleRows.addAll(rows);
+            return;
+        }
+
+        FieldRow sectionRow = null;
+        boolean sectionMatches = false;
+        boolean sectionAdded = false;
+        for (FieldRow row : rows) {
+            if (row.section != null) {
+                sectionRow = row;
+                sectionMatches = row.matchesSearch(searchQuery);
+                sectionAdded = false;
+                continue;
+            }
+
+            if (!sectionMatches && !row.matchesSearch(searchQuery)) {
+                hideRow(row);
+                continue;
+            }
+
+            if (sectionRow != null && !sectionAdded) {
+                visibleRows.add(sectionRow);
+                sectionAdded = true;
+            }
+
+            visibleRows.add(row);
+        }
+
+        for (FieldRow row : rows) {
+            if (!visibleRows.contains(row)) {
+                hideRow(row);
+            }
+
+        }
+
+    }
+
+    private static void hideRow(FieldRow row) {
+        row.swatchHits.clear();
+        if (row.widget != null) {
+            row.widget.setY(-1000);
+            if (row.replay != null) {
+                row.replay.setY(-1000);
             }
 
         }
@@ -710,104 +923,70 @@ public class FrameEditorScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(graphics);
+        restoreGuiRenderState(graphics);
+        clampPanelWidths();
+        layoutEntryButtons();
+        final String sourceLabel = source.primary() ? I18n.get("tooltipoverhaul.config.frames.subtitle") : source.location().toString();
+        renderScreenShell(graphics, font.plainSubstrByWidth(sourceLabel,
+                Math.max(60, (searchBox == null ? width : searchBox.getX()) - 30)));
 
         renderHeader(graphics);
-        renderList(graphics, mouseX, mouseY);
+        renderList(graphics, mouseX, mouseY, partialTick);
         renderForm(graphics, mouseX, mouseY, partialTick);
+
+        restoreGuiRenderState(graphics);
         renderPreview(graphics, mouseX, mouseY);
+        restoreGuiRenderState(graphics);
+        renderPanelSplitters(graphics, mouseX, mouseY);
 
         super.render(graphics, mouseX, mouseY, partialTick);
 
         renderFieldTooltip(graphics);
 
-        if (listEditor != null) {
-            listEditor.render(graphics, mouseX, mouseY);
-        }
+        renderModalLayer(graphics, mouseX, mouseY, partialTick);
 
-        if (picker != null) {
-            picker.render(graphics, mouseX, mouseY);
+    }
+
+    private void renderPanelSplitters(GuiGraphics graphics, int mouseX, int mouseY) {
+        renderPanelSplitter(graphics, listSplitterX(), draggingListSplitter || overListSplitter(mouseX, mouseY));
+        renderPanelSplitter(graphics, previewSplitterX(), draggingPreviewSplitter || overPreviewSplitter(mouseX, mouseY));
+    }
+
+    private void renderPanelSplitter(GuiGraphics graphics, int x, boolean active) {
+        final int color = active ? withAlpha(dimAccent(accent), 0xD0) : 0x302E2E32;
+        graphics.fill(x, formTop() + 5, x + 1, formBottom() - 5, color);
+
+        if (active) {
+            final int middleY = (formTop() + formBottom()) / 2;
+            final ConfigIconButton.Icon icon = ConfigIconButton.Icon.RESIZE_PANEL;
+            ConfigIconButton.drawIcon(graphics, icon, x - (icon.width - 1) / 2, middleY - icon.height / 2, color);
         }
 
     }
 
     private void renderHeader(GuiGraphics graphics) {
-        final float t = AnimationUtils.easeOutCubic(Mth.clamp((Util.getMillis() - openedAt) / 240f, 0f, 1f));
-
-        graphics.fill(0, 0, this.width, HEADER_HEIGHT, 0xE60F0F11);
-        graphics.fill(0, HEADER_HEIGHT, this.width, HEADER_HEIGHT + 1, withAlpha(dimAccent(accent), (int) (0xFF * t)));
-
-        final int barH = (int) ((HEADER_HEIGHT - 16) * t);
-        graphics.fill(12, (HEADER_HEIGHT - barH) / 2, 15, (HEADER_HEIGHT + barH) / 2, accent);
-
-        graphics.drawString(font, I18n.get("tooltipoverhaul.config.custom_frames"), 23, (HEADER_HEIGHT - font.lineHeight) / 2 - 4, 0xFFFFFFFF, false);
-        graphics.drawString(font, I18n.get("tooltipoverhaul.config.frames.subtitle"), 23, (HEADER_HEIGHT - font.lineHeight) / 2 + 6, 0xFF888888, false);
-
-        final int tagY = (HEADER_HEIGHT - font.lineHeight) / 2 + 1;
+        final int tagY = HEADER_HEIGHT - font.lineHeight + 1;
         if (dirty) {
-            final String tag = I18n.get("tooltipoverhaul.config.frames.unsaved");
+            final String tag = !draftError.isEmpty() ? I18n.get("tooltipoverhaul.config.frames.draft_error") : I18n.get("tooltipoverhaul.config.frames." + (document.hasDraft() ? "draft_saved" : "unsaved"));
             graphics.drawString(font, tag, this.width - font.width(tag) - 14, tagY, 0xFFFFB040, false);
+            return;
         }
-        else if (savedFlashAt > 0) {
-            // Short confirmation after a save
-            final float fade = 1f - Mth.clamp((Util.getMillis() - savedFlashAt) / 1600f, 0f, 1f);
-            final int alpha = (int) (0xFF * fade);
-            if (alpha >= 0x10) {
-                final String tag = I18n.get("tooltipoverhaul.config.frames.saved");
-                graphics.drawString(font, tag, this.width - font.width(tag) - 14, tagY, withAlpha(0x5FCB6A, alpha), false);
-            }
 
+        final float fade = savedFlashAt > 0 ? 1f - Mth.clamp((Util.getMillis() - savedFlashAt) / 1600f, 0f, 1f) : 0f;
+        if (fade > 0.06f) {
+            final String tag = I18n.get("tooltipoverhaul.config.frames.saved");
+            graphics.drawString(font, tag, this.width - font.width(tag) - 14, tagY, withAlpha(0x5FCB6A, (int) (0xFF * fade)), false);
         }
 
     }
 
-    private void renderList(GuiGraphics graphics, int mouseX, int mouseY) {
-        final int x0 = listLeft();
-        final int y0 = listTop();
-        final int x1 = x0 + LIST_WIDTH;
-        final int y1 = listBottom();
-
-        drawCard(graphics, x0, y0, x1, y1, 0xE6111113, 0xFF232327);
-
-        graphics.enableScissor(x0, y0 + 2, x1, y1 - 2);
-
-        int y = y0 + 4 - (int) listScroll;
-        for (int i = 0; i < entries.size(); i++) {
-            if (y + LIST_ROW_HEIGHT >= y0 && y <= y1) {
-                final boolean isSelected = i == selected;
-                final boolean hovered = mouseX >= x0 + 3 && mouseX < x1 - 3 && mouseY >= y && mouseY < y + LIST_ROW_HEIGHT - 2 && mouseY >= y0 && mouseY < y1;
-
-                final int bg = isSelected ? withAlpha(dimAccent(accent), 0x50) : hovered ? 0xFF1B1B1F : 0x00000000;
-                if (bg != 0) {
-                    graphics.fill(x0 + 3, y, x1 - 3, y + LIST_ROW_HEIGHT - 2, bg);
-                }
-
-                if (isSelected) {
-                    graphics.fill(x0 + 3, y, x0 + 5, y + LIST_ROW_HEIGHT - 2, accent);
-                }
-
-                final JsonObject entry = entries.get(i);
-                drawItemSafe(graphics, resolveListStack(entry), x0 + 8, y + 2);
-
-                String label = labelFor(entry, i);
-                if (font.width(label) > LIST_WIDTH - 38) {
-                    label = font.plainSubstrByWidth(label, LIST_WIDTH - 44) + "\u2026";
-                }
-
-                graphics.drawString(font, label, x0 + 28, y + (LIST_ROW_HEIGHT - font.lineHeight) / 2, isSelected ? 0xFFFFFFFF : 0xFFB0B0B0, false);
-            }
-
-            y += LIST_ROW_HEIGHT;
+    private void renderList(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (entryList == null) {
+            return;
         }
 
-        if (entries.isEmpty()) {
-            final String empty = I18n.get("tooltipoverhaul.config.empty");
-            graphics.drawString(font, empty, x0 + (LIST_WIDTH - font.width(empty)) / 2, (y0 + y1) / 2 - 4, 0xFF555555, false);
-        }
-
-        graphics.disableScissor();
-
-        renderScrollbar(graphics, listBarGeometry(), x1);
+        entryList.setBounds(listLeft(), listTop(), listWidth(), listBottom() - listTop());
+        entryList.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private String labelFor(JsonObject entry, int index) {
@@ -823,6 +1002,7 @@ public class FrameEditorScreen extends Screen {
     }
 
     private void renderForm(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        swatchHintHovered = false;
         final int x0 = formLeft();
         final int y0 = formTop();
         final int x1 = formRight();
@@ -836,43 +1016,48 @@ public class FrameEditorScreen extends Screen {
             return;
         }
 
+        if (visibleRows.isEmpty()) {
+            final String empty = I18n.get("tooltipoverhaul.config.empty_search", searchQuery);
+            graphics.drawString(font, empty, x0 + (x1 - x0 - font.width(empty)) / 2, (y0 + y1) / 2 - 4, 0xFF555555, false);
+            return;
+        }
+
         graphics.enableScissor(x0, y0 + 2, x1, y1 - 2);
 
         final boolean mouseInForm = mouseX >= x0 && mouseX < x1 - 10 && mouseY >= y0 && mouseY < y1;
         FieldRow hoverCandidate = null;
+        final long now = Util.getMillis();
+        if (formRevealAt < 0L) {
+            formRevealAt = now;
+        }
 
         int y = y0 + 6 - (int) formScroll;
-        for (FieldRow row : rows) {
+        for (int rowIndex = 0; rowIndex < visibleRows.size(); rowIndex++) {
+            y += rowGapBefore(rowIndex);
+
+            final FieldRow row = visibleRows.get(rowIndex);
+
             row.currentY = y;
 
+            final int baseRowLeft = x0 + 6;
+            final int baseRowRight = x1 - 8;
+            if (row.widget != null) {
+                row.recalcHeight(baseRowRight - baseRowLeft);
+            }
+
             if (y + row.height >= y0 && y <= y1) {
+                final float entrance = AnimationUtils.easeOutCubic(Mth.clamp((now - formRevealAt - Math.min(rowIndex, 12) * 35L) / 170f, 0f, 1f));
+                final int slide = Math.round((1f - entrance) * 16f);
+                final int entranceAlpha = Math.round(0xFF * entrance);
                 if (row.section != null) {
                     final String label = I18n.get("tooltipoverhaul.config.frames.section." + row.section);
-                    graphics.drawString(font, label, x0 + 10, y + 6, 0xFF585858, false);
-                    final int lineX = x0 + 14 + font.width(label);
-                    graphics.fill(lineX, y + 9, x1 - 10, y + 10, 0xFF232327);
+                    renderSectionHeader(graphics, font, label, baseRowLeft + slide, y, baseRowRight - baseRowLeft, accent, entranceAlpha);
                 }
                 else if (row.spec != null && row.widget != null) {
-                    float textFade = 1f;
-                    int expandShift = 0;
-                    if (row.widget instanceof StyledEditBox box) {
-                        row.widget.setWidth(box.layoutWidth(x1 - x0 - 22));
-                        textFade = 1f - box.expandProgress();
-                        expandShift = Math.round(4 * box.expandProgress());
-                    }
+                    final boolean rowHovered = mouseInForm && mouseX >= baseRowLeft && mouseX < baseRowRight && mouseY >= y && mouseY < y + row.height;
+                    row.render(graphics, rowIndex, y, baseRowLeft, baseRowRight - baseRowLeft, mouseX, mouseY, rowHovered, entrance, partialTick);
 
-                    final int labelAlpha = (int) (0xFF * textFade);
-                    if (labelAlpha >= 0x10) {
-                        graphics.drawString(font, fieldLabel(row.spec.key()), x0 + 10, y + (row.height - font.lineHeight) / 2, withAlpha(0xC4C4C4, labelAlpha), false);
-                    }
-
-                    row.widget.setX(x1 - row.widget.getWidth() - 10 - expandShift);
-                    row.widget.setY(y + (row.height - 18) / 2);
-                    row.widget.render(graphics, mouseX, mouseY, partialTick);
-
-                    renderRowSwatches(graphics, row, mouseX, mouseY, textFade);
-
-                    if (mouseInForm && mouseY >= y && mouseY < y + row.height && mouseX < row.widget.getX() - 20) {
+                    if (rowHovered && mouseX < row.widget.getX() - 20) {
                         hoverCandidate = row;
                     }
 
@@ -883,6 +1068,10 @@ public class FrameEditorScreen extends Screen {
                 row.swatchHits.clear();
                 if (row.widget != null) {
                     row.widget.setY(-1000);
+                    if (row.replay != null) {
+                        row.replay.setY(-1000);
+                    }
+
                 }
 
             }
@@ -902,7 +1091,46 @@ public class FrameEditorScreen extends Screen {
             hoverMouseY = mouseY;
         }
 
-        renderScrollbar(graphics, formBarGeometry(), x1);
+        renderScrollbar(graphics, formBarGeometry(), x1, mouseX, mouseY);
+    }
+
+    private void renderRowReset(GuiGraphics graphics, FieldRow row, int mouseX, int mouseY, int widgetX, float hover, float entrance) {
+        if (row.spec == null || row.widget == null || hover <= 0.3f || !row.isModified() || entrance <= 0f) {
+            return;
+        }
+
+        int leftmost = row.replay != null ? widgetX - 22 : widgetX;
+        for (int[] hit : row.swatchHits) {
+            leftmost = Math.min(leftmost, hit[0]);
+        }
+
+        final int resetX = leftmost - 22;
+        final int resetY = row.widget.getY() + (row.widget.getHeight() - 18) / 2;
+        final boolean hovered = mouseX >= resetX && mouseX < resetX + 18 && mouseY >= resetY && mouseY < resetY + 18;
+        final int alpha = (int) (0xFF * entrance * (hover - 0.3f) / 0.7f);
+        drawCard(graphics, resetX, resetY, resetX + 18, resetY + 18, withAlpha(hovered ? 0x202024 : 0x1A1A1C, alpha), withAlpha(hovered ? dimAccent(accent) : 0x2E2E32, alpha));
+        ConfigIconButton.drawIcon(graphics, ConfigIconButton.Icon.REPEAT, resetX + (18 - ConfigIconButton.Icon.REPEAT.width) / 2,
+                resetY + (18 - ConfigIconButton.Icon.REPEAT.height) / 2, hovered ? withAlpha(accent & 0x00FFFFFF, alpha) : withAlpha(0x8A8A8A, alpha));
+        row.swatchHits.add(new int[] { resetX, resetY, -4, 18 });
+    }
+
+    private void resetRow(FieldRow row) {
+        if (row.spec == null || row.entry == null) {
+            return;
+        }
+
+        if (row.widget instanceof EditBox box && focusedBox == box) {
+            box.setFocused(false);
+            focusedBox = null;
+        }
+
+        row.entry.remove(row.spec.key());
+        if (row.widget instanceof ConfigOptionButton<?> options) {
+            options.setCurrent("inherit");
+        }
+
+        markDirty();
+        refreshInheritedText();
     }
 
     private void renderRowSwatches(GuiGraphics graphics, FieldRow row, int mouseX, int mouseY, float textFade) {
@@ -913,19 +1141,31 @@ public class FrameEditorScreen extends Screen {
 
         final Kind kind = row.spec.kind();
 
-        // List fields to specify multiple matching items in a better way
+        if ("texture".equals(row.spec.key()) && row.widget instanceof EditBox) {
+            final int catalogX = row.widget.getX() - 22;
+            final int catalogY = row.widget.getY();
+            final boolean hovered = mouseX >= catalogX && mouseX < catalogX + 18 && mouseY >= catalogY && mouseY < catalogY + 18;
+            final int iconColor = hovered ? accent : 0xFF808080;
+
+            graphics.fill(catalogX, catalogY, catalogX + 18, catalogY + 18, hovered ? 0xFF26262A : 0xFF1A1A1C);
+            drawNotchedBorder(graphics, catalogX, catalogY, catalogX + 18, catalogY + 18, buttonBorder(accent, hovered ? 1f : 0f));
+            ConfigIconButton.drawIcon(graphics, ConfigIconButton.Icon.MENU, catalogX + (18 - ConfigIconButton.Icon.MENU.width) / 2, catalogY + (18 - ConfigIconButton.Icon.MENU.height) / 2, iconColor);
+            row.swatchHits.add(new int[] { catalogX, catalogY, -3, 18 });
+            return;
+        }
+
+        // Lists fields to specify multiple matching items in a better way
         if (kind == Kind.LIST && row.widget instanceof EditBox) {
-            final int listX = row.widget.getX() - 16;
-            final int listY = row.widget.getY() + 3;
-            final boolean hovered = mouseX >= listX && mouseX < listX + 12 && mouseY >= listY && mouseY < listY + 12;
+            final int listX = row.widget.getX() - 22;
+            final int listY = row.widget.getY();
+            final boolean hovered = mouseX >= listX && mouseX < listX + 18 && mouseY >= listY && mouseY < listY + 18;
 
-            graphics.fill(listX, listY, listX + 12, listY + 12, hovered ? 0xFF26262A : 0xFF1A1A1C);
-            drawNotchedBorder(graphics, listX, listY, listX + 12, listY + 12, hovered ? dimAccent(accent) | 0xFF000000 : 0xFF2E2E32);
-            for (int line = 0; line < 3; line++) {
-                graphics.fill(listX + 3, listY + 3 + line * 3, listX + 9, listY + 4 + line * 3, hovered ? accent : 0xFF808080);
-            }
+            graphics.fill(listX, listY, listX + 18, listY + 18, hovered ? 0xFF26262A : 0xFF1A1A1C);
+            drawNotchedBorder(graphics, listX, listY, listX + 18, listY + 18, buttonBorder(accent, hovered ? 1f : 0f));
+            ConfigIconButton.drawIcon(graphics, ConfigIconButton.Icon.MENU, listX + (18 - ConfigIconButton.Icon.MENU.width) / 2, listY + (18 - ConfigIconButton.Icon.MENU.height) / 2, hovered ? accent : 0xFF808080);
 
-            row.swatchHits.add(new int[] { listX, listY, -2 });
+            row.swatchHits.add(new int[] { listX, listY, -2, 18 });
+
             return;
         }
 
@@ -941,400 +1181,70 @@ public class FrameEditorScreen extends Screen {
         if ((kind == Kind.COLOR_LIST && parts.size() < MAX_LIST_COLORS) || parts.isEmpty()) {
             final boolean hovered = mouseX >= swatchX && mouseX < swatchX + 12 && mouseY >= swatchY && mouseY < swatchY + 12;
             graphics.fill(swatchX, swatchY, swatchX + 12, swatchY + 12, hovered ? 0xFF26262A : 0xFF1A1A1C);
-            drawNotchedBorder(graphics, swatchX, swatchY, swatchX + 12, swatchY + 12, hovered ? dimAccent(accent) | 0xFF000000 : 0xFF2E2E32);
+            drawNotchedBorder(graphics, swatchX, swatchY, swatchX + 12, swatchY + 12, buttonBorder(accent, hovered ? 1f : 0f));
             graphics.drawString(font, "+", swatchX + 4, swatchY + 2, hovered ? accent : 0xFF808080, false);
-            row.swatchHits.add(new int[] { swatchX, swatchY, -1 });
+            row.swatchHits.add(new int[] { swatchX, swatchY, -1, 12 });
             swatchX -= 14;
         }
 
         for (int i = parts.size() - 1; i >= 0; i--) {
             final boolean hovered = mouseX >= swatchX && mouseX < swatchX + 12 && mouseY >= swatchY && mouseY < swatchY + 12;
-            final int color = ConfigColorParser.parseColor(parts.get(i));
-
-            graphics.fill(swatchX, swatchY, swatchX + 12, swatchY + 12, hovered ? 0xFFAAAAAA : 0xFF2E2E32);
-            graphics.fill(swatchX + 1, swatchY + 1, swatchX + 11, swatchY + 11, 0xFF000000 | (color & 0x00FFFFFF));
-
-            row.swatchHits.add(new int[] { swatchX, swatchY, i });
+            swatchHintHovered |= hovered;
+            drawColorSwatch(graphics, swatchX, swatchY, 12, ConfigColorParser.parseColor(parts.get(i)), accent, hovered, 0xFF);
+            row.swatchHits.add(new int[] { swatchX, swatchY, i, 12 });
             swatchX -= 14;
         }
 
     }
 
     private static List<String> colorParts(String raw, Kind kind) {
-        final List<String> parts = new ArrayList<>();
-        if (raw.trim().isEmpty()) {
-            return parts;
-        }
-
-        if (kind == Kind.COLOR_LIST) {
-            for (String part : raw.split("[,;]")) {
-                if (!part.trim().isEmpty()) {
-                    parts.add(part.trim());
-                }
-            }
-        }
-        else {
-            parts.add(raw.trim());
-        }
-
-        return parts;
+        return kind == Kind.COLOR_LIST ? colorTokens(raw) : raw.isBlank() ? new ArrayList<>() : new ArrayList<>(List.of(raw.trim()));
     }
 
     private int totalFormHeight() {
         int total = 12;
-        for (FieldRow row : rows) {
-            total += row.height;
+        for (int rowIndex = 0; rowIndex < visibleRows.size(); rowIndex++) {
+            final FieldRow row = visibleRows.get(rowIndex);
+            if (row.widget != null) {
+                row.recalcHeight(Math.max(1, formRight() - formLeft() - 14));
+            }
+
+            total += rowGapBefore(rowIndex) + row.height;
         }
 
         return total;
     }
 
-    private @Nullable int[] formBarGeometry() {
-        final int view = formBottom() - formTop();
-        final int content = totalFormHeight();
-        if (content <= view || selectedEntry() == null) {
-            return null;
-        }
-
-        final int thumbH = Math.max(20, view * view / content);
-        final int thumbY = formTop() + (int) ((view - thumbH) * (formScroll / (content - view)));
-        return new int[] { formTop(), formBottom(), thumbY, thumbH };
+    private int rowGapBefore(int rowIndex) {
+        return rowIndex > 0 && visibleRows.get(rowIndex - 1).section == null ? ConfigFormEntry.ROW_GAP : 0;
     }
 
-    private @Nullable int[] listBarGeometry() {
-        final int view = listBottom() - listTop();
-        final int content = entries.size() * LIST_ROW_HEIGHT + 8;
-        if (content <= view) {
-            return null;
-        }
-
-        final int thumbH = Math.max(20, view * view / content);
-        final int thumbY = listTop() + (int) ((view - thumbH) * (listScroll / (content - view)));
-        return new int[] { listTop(), listBottom(), thumbY, thumbH };
+    private @Nullable ConfigScroll.Geometry formBarGeometry() {
+        return selectedEntry() == null ? null : ConfigScroll.fromContent(formTop(), formBottom(), totalFormHeight(), formScroll);
     }
 
-    private void renderScrollbar(GuiGraphics graphics, @Nullable int[] bar, int rightEdge) {
-        if (bar == null) {
-            return;
-        }
-
-        graphics.fill(rightEdge - 6, bar[0] + 2, rightEdge - 2, bar[1] - 2, 0x14FFFFFF);
-        graphics.fill(rightEdge - 6, bar[2], rightEdge - 2, bar[2] + bar[3], withAlpha(dimAccent(accent), 0xC0));
+    private void renderScrollbar(GuiGraphics graphics, @Nullable ConfigScroll.Geometry bar, int rightEdge, int mouseX, int mouseY) {
+        ConfigScroll.render(graphics, rightEdge, bar, accent, mouseX, mouseY, draggingFormBar);
     }
 
     private double maxFormScroll() {
         return Math.max(0, totalFormHeight() - (formBottom() - formTop()));
     }
 
-    private double maxListScroll() {
-        return Math.max(0, entries.size() * LIST_ROW_HEIGHT + 8 - (listBottom() - listTop()));
-    }
-
     private void renderPreview(GuiGraphics graphics, int mouseX, int mouseY) {
-        final int x0 = previewLeft();
-        final int y0 = formTop();
-        final int x1 = x0 + previewWidth();
-        final int y1 = formBottom();
-
-        drawCard(graphics, x0, y0, x1, y1, 0xE60D0D0F, 0xFF232327);
-
-        final String previewLabel = I18n.get("tooltipoverhaul.config.frames.preview");
-        graphics.drawString(font, previewLabel, x0 + 8, y0 + 6, 0xFF585858, false);
-
-        final String hint = I18n.get("tooltipoverhaul.config.frames.preview_hint");
-        if (font.width(hint) < previewWidth() - 24 - font.width(previewLabel)) {
-            graphics.drawString(font, hint, x1 - 8 - font.width(hint), y0 + 6, 0xFF3A3A3E, false);
-        }
-
-        if (selectedEntry() == null) {
-            return;
-        }
-
-        if (previewBroken) {
-            final String broken = I18n.get("tooltipoverhaul.config.frames.preview_error");
-            graphics.drawString(font, broken, x0 + (x1 - x0 - font.width(broken)) / 2, (y0 + y1) / 2, 0xFFCC5555, false);
-            return;
-        }
-
-        if (previewStacks.isEmpty()) {
-            return;
-        }
-
-        graphics.enableScissor(x0 + 1, y0 + 16, x1 - 1, y1 - 1);
-
-        // Item mosaic
-        final int count = previewStacks.size();
-        final int columns = Math.max(1, (int) Math.ceil(Math.sqrt(count)));
-        final int rowCount = (count + columns - 1) / columns;
-        final float scale = (float) previewZoom;
-        final float gap = 24 * scale;
-
-        final int virtualW = this.width + 4096;
-        final int virtualH = this.height + 4096;
-
-        TooltipRenderer.COUNTER = (Util.getMillis() - selectedAt) / 1000f;
-
-        try {
-            CustomFrameManager.setPreviewOverride(previewData);
-            TooltipAnimationState.setSuppressCapture(true);
-
-            for (int i = 0; i < count && i < previewSizes.size(); i++) {
-                if (previewSizes.get(i) == null) {
-                    measurePreviewSlot(graphics, i, virtualW, virtualH);
-                }
-
-            }
-
-            // Slot sizes in screen space
-            final float[] stackW = new float[count];
-            final float[] stackH = new float[count];
-            final float[] insetX = new float[count];
-            for (int i = 0; i < count; i++) {
-                final PreviewBounds measured = i < previewSizes.size() ? previewSizes.get(i) : null;
-                stackW[i] = (measured != null ? measured.width() : 170) * scale;
-                stackH[i] = (measured != null ? measured.height() : 70) * scale;
-                insetX[i] = (measured != null ? measured.insetLeft() : 0) * scale;
-            }
-
-            final float[] rowW = new float[rowCount];
-            final float[] rowH = new float[rowCount];
-            for (int i = 0; i < count; i++) {
-                final int r = i / columns;
-                rowW[r] += stackW[i] + (i % columns == 0 ? 0 : gap);
-                rowH[r] = Math.max(rowH[r], stackH[i]);
-            }
-
-            float totalW = 0;
-            float totalH = 0;
-            for (int r = 0; r < rowCount; r++) {
-                totalW = Math.max(totalW, rowW[r]);
-                totalH += rowH[r] + (r == 0 ? 0 : gap);
-            }
-
-            previewContentW = totalW;
-            previewContentH = totalH;
-
-            // Mosaic shape wwith random offset values
-            final float baseX = x0 + Math.max(18, (previewWidth() - totalW) / 2f) + (float) panX;
-            final float baseY = y0 + 16 + Math.max(34, (y1 - y0 - 16 - totalH) / 2f) + (float) panY;
-
-            float rowY = 0;
-            for (int r = 0; r < rowCount; r++) {
-                float itemX = (totalW - rowW[r]) / 2f + jitter(r, 3) * gap * 0.8f;
-
-                for (int i = r * columns; i < Math.min(count, (r + 1) * columns); i++) {
-                    final ItemStack stack = previewStacks.get(i);
-                    final float slotX = baseX + itemX + jitter(i, 1) * gap * 0.35f;
-                    final float slotY = baseY + rowY + (rowH[r] - stackH[i]) / 2f + jitter(i, 2) * gap * 0.35f;
-
-                    final int targetX = (int) (slotX + insetX[i]);
-                    final int targetY = (int) slotY;
-
-                    itemX += stackW[i] + gap;
-
-                    if (slotX >= x1 + 32 || slotX + stackW[i] <= x0 - 32 || targetY >= y1 + 32 || targetY + stackH[i] <= y0 - 64) {
-                        continue;
-                    }
-
-                    if (brokenRenderItems.contains(stack.getItem())) {
-                        renderBrokenSlot(graphics, stack, slotX, slotY, scale);
-                        continue;
-                    }
-
-                    try {
-                        final List<ClientTooltipComponent> components = TextUtils.getTooltipComponentsFrom(stack, font, this.width, 2.2f);
-                        final TooltipContext context = new TooltipContext(graphics, font, components, targetX - 12, targetY + 12, virtualW, virtualH, DefaultTooltipPositioner.INSTANCE, stack, true);
-                        final TooltipRenderer renderer = new TooltipRenderer(context);
-
-                        renderer.init();
-
-                        if (i < previewSizes.size()) {
-                            previewSizes.set(i, measuredBounds(context));
-                        }
-
-                        final float offX = PositionUtils.getMainPanelPosition(context, TextAxis.X);
-                        final float offY = PositionUtils.getMainPanelPosition(context, TextAxis.Y);
-                        final Vec2 actual = context.getTooltipPosition();
-
-                        graphics.pose().pushPose();
-                        graphics.pose().translate(targetX + scale * (offX - actual.x), targetY + scale * (offY - actual.y), 0);
-                        graphics.pose().scale(scale, scale, 1f);
-
-                        try {
-                            renderer.render();
-                        }
-                        finally {
-                            graphics.pose().popPose();
-                        }
-
-                    }
-                    catch (Throwable throwable) {
-                        // Placeholder render when the actual item is not detected
-                        if (!stack.is(Items.DIAMOND_SWORD)) {
-                            flagBroken(stack, throwable);
-                            if (i < previewSizes.size()) {
-                                previewSizes.set(i, PLACEHOLDER_BOUNDS);
-                            }
-
-                        }
-                        else {
-                            previewBroken = true;
-                            return;
-                        }
-
-                    }
-
-                }
-
-                rowY += rowH[r] + gap;
-            }
-
-        }
-        finally {
-            CustomFrameManager.setPreviewOverride(null);
-            TooltipAnimationState.setSuppressCapture(false);
-            graphics.disableScissor();
-        }
-
-        renderPreviewInfo(graphics, x0, y1, mouseX, mouseY);
-
-        if (Math.abs(previewZoom - 1.0) > 0.01) {
-            final String zoomLabel = Math.round(previewZoom * 100) + "%";
-            graphics.drawString(font, zoomLabel, x1 - 8 - font.width(zoomLabel), y1 - 12, 0xFF585858, false);
-        }
-
-    }
-
-    /**
-     * Small info badge at the panel's bottom-left corner
-     */
-    private void renderPreviewInfo(GuiGraphics graphics, int x0, int y1, int mouseX, int mouseY) {
-        final int hiddenCount = previewTotalItems - previewStacks.size();
-        final boolean hasUnknown = !unresolvedIds.isEmpty();
-        if (hiddenCount <= 0 && !hasUnknown) {
-            return;
-        }
-
-        final int bx = x0 + 8;
-        final int by = y1 - 18;
-        final boolean hovered = mouseX >= bx && mouseX < bx + 11 && mouseY >= by + 1 && mouseY < by + 12;
-
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, 0, 500);
-
-        final int border = hasUnknown ? 0xFFCC8040 : hovered ? withAlpha(dimAccent(accent), 0xFF) : 0xFF2E2E32;
-        drawCard(graphics, bx, by + 1, bx + 11, by + 12, hovered ? 0xFF202024 : 0xE6161618, border);
-        graphics.drawString(font, "i", bx + 5, by + 3, hasUnknown ? 0xFFCC8040 : 0xFFB0B0B0, false);
-
-        if (hovered) {
-            final List<FormattedCharSequence> lines = new ArrayList<>();
-            final int maxWidth = Math.min(240, previewWidth() - 24);
-            if (hiddenCount > 0) {
-                lines.addAll(font.split(Component.translatable("tooltipoverhaul.config.frames.preview_more", hiddenCount), maxWidth));
-            }
-            if (hasUnknown) {
-                lines.addAll(font.split(Component.translatable("tooltipoverhaul.config.frames.preview_unknown", String.join(", ", unresolvedIds)), maxWidth));
-            }
-
-            int textW = 0;
-            for (FormattedCharSequence line : lines) {
-                textW = Math.max(textW, font.width(line));
-            }
-
-            final int boxW = textW + 12;
-            final int boxH = lines.size() * (font.lineHeight + 1) - 1 + 10;
-            int px = bx;
-            final int py = by - boxH - 4;
-            if (px + boxW > this.width - 4) {
-                px = this.width - 4 - boxW;
-            }
-
-            drawCard(graphics, px, py, px + boxW, py + boxH, 0xF2121214, withAlpha(mixRgb(0x2E2E32, dimAccent(accent), 0.4f), 0xFF));
-
-            int lineY = py + 6;
-            for (FormattedCharSequence line : lines) {
-                graphics.drawString(font, line, px + 6, lineY, 0xFFDDDDDD, false);
-                lineY += font.lineHeight + 1;
-            }
-
-        }
-
-        graphics.pose().popPose();
-    }
-
-    private void measurePreviewSlot(GuiGraphics graphics, int index, int virtualW, int virtualH) {
-        final ItemStack stack = previewStacks.get(index);
-        if (brokenRenderItems.contains(stack.getItem())) {
-            previewSizes.set(index, PLACEHOLDER_BOUNDS);
-            return;
-        }
-
-        try {
-            final List<ClientTooltipComponent> components = TextUtils.getTooltipComponentsFrom(stack, font, this.width, 2.2f);
-            final TooltipContext context = new TooltipContext(graphics, font, components, 100, 100, virtualW, virtualH, DefaultTooltipPositioner.INSTANCE, stack, true);
-            new TooltipRenderer(context).init();
-            previewSizes.set(index, measuredBounds(context));
-        }
-        catch (Throwable throwable) {
-            flagBroken(stack, throwable);
-            previewSizes.set(index, PLACEHOLDER_BOUNDS);
-        }
-
-    }
-
-    private static PreviewBounds measuredBounds(TooltipContext context) {
-        final Vec2 size = context.getTooltipSize();
-
-        float insetLeft = 0;
-        float panelHeight = 0;
-        if (RenderUtils.hasPreviewOfTieredItem(context) || RenderUtils.hasPreviewOfArmorItem(context)) {
-            insetLeft = RenderUtils.calculateSecondPanelSize(context, TextAxis.X) + 30;
-            panelHeight = RenderUtils.calculateSecondPanelSize(context, TextAxis.Y) + 4;
-        }
-
-        return new PreviewBounds(size.x + insetLeft, Math.max(size.y, panelHeight), insetLeft);
-    }
-
-    /**
-     * Placeholder card for items whose tooltip refuses to load
-     */
-    private void renderBrokenSlot(GuiGraphics graphics, ItemStack stack, float slotX, float slotY, float scale) {
-        graphics.pose().pushPose();
-        graphics.pose().translate(slotX, slotY, 0);
-        graphics.pose().scale(scale, scale, 1f);
-
-        final int w = (int) PLACEHOLDER_BOUNDS.width();
-        drawCard(graphics, 0, 0, w, (int) PLACEHOLDER_BOUNDS.height(), 0xE6151517, 0xFF2E2E32);
-
-        final String id = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
-        graphics.drawString(font, font.plainSubstrByWidth(id, w - 16), 8, 11, 0xFFB0B0B0, false);
-
-        final String reason = I18n.get("tooltipoverhaul.config.frames.preview_unrenderable");
-        graphics.drawString(font, font.plainSubstrByWidth(reason, w - 16), 8, 27, 0xFF8A5A45, false);
-
-        graphics.pose().popPose();
-    }
-
-    private static float jitter(int index, int salt) {
-        int h = index * 374761393 + salt * 668265263;
-        h = (h ^ (h >>> 13)) * 1274126177;
-        return (((h ^ (h >>> 16)) & 0xFFFF) / 65535f) * 2f - 1f;
-    }
-
-    private boolean inPreviewPanel(double mouseX, double mouseY) {
-        return mouseX >= previewLeft() && mouseX < previewLeft() + previewWidth() && mouseY >= formTop() && mouseY < formBottom();
-    }
-
-    private void clampPan() {
-        final double limitX = Math.max(0, (previewContentW + previewWidth()) / 2.0 - 40);
-        final double limitY = Math.max(0, (previewContentH + (formBottom() - formTop())) / 2.0 - 40);
-
-        panX = Mth.clamp(panX, -limitX, limitX);
-        panY = Mth.clamp(panY, -limitY, limitY);
+        previewPanel.setBounds(previewLeft(), formTop(), previewWidth(), formBottom() - formTop());
+        previewPanel.render(graphics, font, width, height, mouseX, mouseY, validationError);
     }
 
     private void renderFieldTooltip(GuiGraphics graphics) {
-        if (hoveredRow == null || hoveredRow.spec == null || picker != null || listEditor != null || panning || draggingFormBar || draggingListBar) {
+        if (hoveredRow == null || hoveredRow.spec == null || modals.isOpen() || previewPanel.isPanning() || draggingFormBar || entryList != null && entryList.isDraggingEntry() || draggingListSplitter || draggingPreviewSplitter) {
+            return;
+        }
+
+        final int maxWidth = 200;
+        if (swatchHintHovered) {
+            ConfigTooltipRenderer.render(graphics, font, List.of(new ConfigTooltipRenderer.Section(font.split(Component.translatable("tooltipoverhaul.config.swatch_hint"), maxWidth), 0xFFFFFF)),
+                    hoverMouseX, hoverMouseY, width, height, HEADER_HEIGHT + 4, accent, 1f);
             return;
         }
 
@@ -1343,147 +1253,61 @@ public class FrameEditorScreen extends Screen {
         }
 
         final String key = hoveredRow.spec.key();
-        final List<FormattedCharSequence> lines = new ArrayList<>();
-        final int maxWidth = 200;
+        final List<FormattedCharSequence> lines = new ArrayList<>(font.split(Component.translatable("tooltipoverhaul.config.frames.tooltip.key", key).withStyle(style -> style.withColor(0x70707A)), maxWidth));
 
-        final String descKey = "tooltipoverhaul.config.frames.field." + key + ".desc";
-        if (I18n.exists(descKey)) {
-            lines.addAll(font.split(Component.literal(I18n.get(descKey)), maxWidth));
-        }
+        if (hoveredRow.entry != null && hoveredRow.widget instanceof EditBox) {
+            if (hoveredRow.isModified()) {
+                final JsonObject withoutOverride = hoveredRow.entry.deepCopy();
+                withoutOverride.remove(key);
+                final String fallback = FrameFieldDefaults.read(root, withoutOverride, key, resolveListStack(hoveredRow.entry));
+                lines.addAll(font.split(fallback.isBlank() ? Component.translatable("tooltipoverhaul.config.frames.tooltip.overridden").withStyle(style -> style.withColor(0xC4C4C4))
+                        : Component.translatable("tooltipoverhaul.config.frames.tooltip.default", fallback).withStyle(style -> style.withColor(0xC4C4C4)), maxWidth));
+            }
+            else {
+                lines.addAll(font.split(Component.translatable("tooltipoverhaul.config.frames.tooltip.using_default").withStyle(style -> style.withColor(0x8C8C8C)), maxWidth));
+            }
 
-        final List<FormattedCharSequence> footer = new ArrayList<>();
-        if (!"name".equals(key)) {
-            footer.addAll(font.split(Component.translatable("tooltipoverhaul.config.frames.tooltip.inherit").withStyle(style -> style.withColor(0x7A7A7A)), maxWidth));
-        }
-
-        footer.addAll(font.split(Component.translatable("tooltipoverhaul.config.frames.tooltip.key", key).withStyle(style -> style.withColor(0x50505A)), maxWidth));
-
-        if (lines.isEmpty() && footer.isEmpty()) {
-            return;
-        }
-
-        int textWidth = 0;
-        for (FormattedCharSequence line : lines) {
-            textWidth = Math.max(textWidth, font.width(line));
-        }
-        for (FormattedCharSequence line : footer) {
-            textWidth = Math.max(textWidth, font.width(line));
-        }
-
-        final int paddingX = 6;
-        final int paddingY = 5;
-        final int gap = lines.isEmpty() || footer.isEmpty() ? 0 : 3;
-        final int boxWidth = textWidth + paddingX * 2;
-        final int boxHeight = (lines.size() + footer.size()) * (font.lineHeight + 1) - 1 + gap + paddingY * 2;
-
-        int x = hoverMouseX + 10;
-        int y = hoverMouseY - boxHeight - 4;
-        if (x + boxWidth > this.width - 4) {
-            x = this.width - 4 - boxWidth;
-        }
-        if (y < HEADER_HEIGHT + 4) {
-            y = hoverMouseY + 12;
-        }
-        if (y + boxHeight > this.height - 4) {
-            y = this.height - 4 - boxHeight;
         }
 
         final float fade = AnimationUtils.easeOutQuad(Mth.clamp((Util.getMillis() - hoveredRowSince - 400) / 120f, 0f, 1f));
-        final int alpha = (int) (0xFF * fade);
-        if (alpha < 0x10) {
-            return;
-        }
-
-        graphics.pose().pushPose();
-        graphics.pose().translate(0, (1f - fade) * 3f, 400);
-
-        drawCard(graphics, x, y, x + boxWidth, y + boxHeight, ((int) (0xF2 * fade) << 24) | 0x121214, withAlpha(mixRgb(0x2E2E32, dimAccent(accent), 0.4f), alpha));
-
-        int lineY = y + paddingY;
-        for (FormattedCharSequence line : lines) {
-            graphics.drawString(font, line, x + paddingX, lineY, withAlpha(0xDDDDDD, alpha), false);
-            lineY += font.lineHeight + 1;
-        }
-
-        lineY += gap;
-        for (FormattedCharSequence line : footer) {
-            graphics.drawString(font, line, x + paddingX, lineY, withAlpha(0xFFFFFF, alpha), false);
-            lineY += font.lineHeight + 1;
-        }
-
-        graphics.pose().popPose();
+        ConfigTooltipRenderer.render(graphics, font, List.of(new ConfigTooltipRenderer.Section(lines, 0xFFFFFF)),
+                hoverMouseX, hoverMouseY, width, height, HEADER_HEIGHT + 4, accent, fade);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (picker != null) {
-            if (!picker.mouseClicked(mouseX, mouseY, button)) {
-                picker = null;
-            }
-
-            return true;
-        }
-
-        if (listEditor != null) {
-            if (!listEditor.mouseClicked(mouseX, mouseY, button)) {
-                listEditor = null;
-            }
-
-            return true;
-        }
-
-        if (inPreviewPanel(mouseX, mouseY)) {
+    protected boolean handleMouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0 && overListSplitter(mouseX, mouseY)) {
             applyFocused();
-            if (button == 1) {
-                panX = 0;
-                panY = 0;
-                previewZoom = 1.0;
-                return true;
-            }
-            if (button == 0 && mouseY >= formTop() + 16) {
-                panning = true;
-                return true;
-            }
-
+            draggingListSplitter = true;
+            hoveredRow = null;
             return true;
         }
 
-        // Entry list scrollbar
-        final int[] listBar = listBarGeometry();
-        if (listBar != null && button == 0 && mouseX >= listLeft() + LIST_WIDTH - 8 && mouseX < listLeft() + LIST_WIDTH && mouseY >= listBar[0] && mouseY < listBar[1]) {
-            if (mouseY >= listBar[2] && mouseY < listBar[2] + listBar[3]) {
-                draggingListBar = true;
-                barDragOffset = mouseY - listBar[2];
-            }
-            else {
-                listScroll = scrollFromBar(mouseY, listBar, maxListScroll());
-            }
-
+        if (button == 0 && overPreviewSplitter(mouseX, mouseY)) {
+            applyFocused();
+            draggingPreviewSplitter = true;
+            hoveredRow = null;
             return true;
         }
 
-        // List selection
-        if (mouseX >= listLeft() && mouseX < listLeft() + LIST_WIDTH - (listBar != null ? 8 : 0) && mouseY >= listTop() && mouseY < listBottom()) {
-            final int index = (int) ((mouseY - listTop() - 4 + listScroll) / LIST_ROW_HEIGHT);
-            if (index >= 0 && index < entries.size() && button == 0) {
-                applyFocused();
-                select(index);
-                playClickSound();
-                return true;
-            }
+        if (previewPanel.contains(mouseX, mouseY)) {
+            applyFocused();
+            return previewPanel.mouseClicked(mouseX, mouseY, button);
+        }
 
+        if (entryList != null && entryList.mouseClicked(mouseX, mouseY, button)) {
             return true;
         }
 
         // Form scrollbar
-        final int[] formBar = formBarGeometry();
-        if (formBar != null && button == 0 && mouseX >= formRight() - 10 && mouseX < formRight() && mouseY >= formBar[0] && mouseY < formBar[1]) {
-            if (mouseY >= formBar[2] && mouseY < formBar[2] + formBar[3]) {
+        final ConfigScroll.Geometry formBar = formBarGeometry();
+        if (formBar != null && button == 0 && mouseX >= formRight() - 10 && mouseX < formRight() && mouseY >= formBar.top() && mouseY < formBar.bottom()) {
+            if (mouseY >= formBar.thumbTop() && mouseY < formBar.thumbTop() + formBar.thumbHeight()) {
                 draggingFormBar = true;
-                barDragOffset = mouseY - formBar[2];
+                barDragOffset = mouseY - formBar.thumbTop();
             }
             else {
-                formScroll = scrollFromBar(mouseY, formBar, maxFormScroll());
+                formScroll = ConfigScroll.valueFromMouse(mouseY, formBar, maxFormScroll());
             }
 
             return true;
@@ -1491,11 +1315,18 @@ public class FrameEditorScreen extends Screen {
 
         // Form
         if (mouseX >= formLeft() && mouseX < formRight() && mouseY >= formTop() && mouseY < formBottom()) {
-            for (FieldRow row : rows) {
+            for (FieldRow row : visibleRows) {
                 for (int[] hit : row.swatchHits) {
-                    if (mouseX >= hit[0] && mouseX < hit[0] + 12 && mouseY >= hit[1] && mouseY < hit[1] + 12 && button == 0) {
-                        if (hit[2] == -2) {
+                    if (mouseX >= hit[0] && mouseX < hit[0] + hit[3]
+                            && mouseY >= hit[1] && mouseY < hit[1] + hit[3] && button == 0) {
+                        if (hit[2] == -4) {
+                            resetRow(row);
+                        }
+                        else if (hit[2] == -2) {
                             openListEditor(row, (int) mouseX, (int) mouseY);
+                        }
+                        else if (hit[2] == -3) {
+                            openFrameCatalog(row);
                         }
                         else {
                             openPicker(row, hit[2], (int) mouseX, (int) mouseY);
@@ -1509,8 +1340,14 @@ public class FrameEditorScreen extends Screen {
 
             }
 
-            for (FieldRow row : rows) {
-                if (row.widget == null) continue;
+            for (FieldRow row : visibleRows) {
+                if (row.widget == null) {
+                    continue;
+                }
+
+                if (row.replay != null && row.replay.mouseClicked(mouseX, mouseY, button)) {
+                    return true;
+                }
 
                 if (row.widget.mouseClicked(mouseX, mouseY, button)) {
                     if (row.widget instanceof EditBox box) {
@@ -1535,100 +1372,73 @@ public class FrameEditorScreen extends Screen {
         }
 
         applyFocused();
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
 
-    private static double scrollFromBar(double mouseY, int[] bar, double maxScroll) {
-        final int span = (bar[1] - bar[0]) - bar[3];
-        if (span <= 0) {
-            return 0;
-        }
-
-        final double t = (mouseY - bar[0] - bar[3] / 2.0) / span;
-        return Mth.clamp(t, 0, 1) * maxScroll;
+        return super.handleMouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (picker != null) {
-            return picker.mouseDragged(mouseX, mouseY);
+    protected boolean handleMouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (draggingListSplitter && button == 0) {
+            panelLayout.resizeLeft(mouseX);
+            layoutEntryButtons();
+            formScroll = Mth.clamp(formScroll, 0, maxFormScroll());
+            return true;
         }
 
-        if (panning) {
-            panX += dragX;
-            panY += dragY;
-            clampPan();
+        if (draggingPreviewSplitter && button == 0) {
+            panelLayout.resizeRight(mouseX);
+            previewPanel.setBounds(previewLeft(), formTop(), previewWidth(), formBottom() - formTop());
+            previewPanel.clampPan();
+            formScroll = Mth.clamp(formScroll, 0, maxFormScroll());
+            return true;
+        }
+
+        if (entryList != null && entryList.mouseDragged(mouseX, mouseY, button, dragX, dragY)) {
+            return true;
+        }
+
+        if (previewPanel.mouseDragged(dragX, dragY)) {
             return true;
         }
 
         if (draggingFormBar) {
-            final int[] bar = formBarGeometry();
+            final ConfigScroll.Geometry bar = formBarGeometry();
             if (bar != null) {
-                final int span = (bar[1] - bar[0]) - bar[3];
-                if (span > 0) {
-                    formScroll = Mth.clamp((mouseY - barDragOffset - bar[0]) / span, 0, 1) * maxFormScroll();
-                }
+                formScroll = ConfigScroll.valueFromDrag(mouseY, barDragOffset, bar, maxFormScroll());
 
             }
 
             return true;
         }
 
-        if (draggingListBar) {
-            final int[] bar = listBarGeometry();
-            if (bar != null) {
-                final int span = (bar[1] - bar[0]) - bar[3];
-                if (span > 0) {
-                    listScroll = Mth.clamp((mouseY - barDragOffset - bar[0]) / span, 0, 1) * maxListScroll();
-                }
-
-            }
-
-            return true;
-        }
-
-        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        return super.handleMouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (picker != null) {
-            picker.mouseReleased();
+    protected boolean handleMouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0 && (draggingListSplitter || draggingPreviewSplitter)) {
+            draggingListSplitter = false;
+            draggingPreviewSplitter = false;
+            return true;
         }
 
-        panning = false;
+        if (entryList != null && entryList.mouseReleased(mouseX, mouseY, button)) {
+            return true;
+        }
+
+        previewPanel.mouseReleased();
         draggingFormBar = false;
-        draggingListBar = false;
 
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.handleMouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        if (picker != null) {
+    protected boolean handleMouseScrolled(double mouseX, double mouseY, double delta) {
+        if (previewPanel.mouseScrolled(mouseX, mouseY, delta)) {
             return true;
         }
 
-        if (listEditor != null) {
-            listEditor.mouseScrolled(delta);
-            return true;
-        }
-
-        // Scrolling over the preview zooms the mosaic
-        if (inPreviewPanel(mouseX, mouseY)) {
-            final double zoom = Mth.clamp(previewZoom * (delta > 0 ? 1.15 : 1 / 1.15), 0.4, 2.0);
-            if (zoom != previewZoom) {
-                panX *= zoom / previewZoom;
-                panY *= zoom / previewZoom;
-                previewZoom = zoom;
-                clampPan();
-            }
-
-            return true;
-        }
-
-        if (mouseX >= listLeft() && mouseX < listLeft() + LIST_WIDTH) {
-            listScroll = Mth.clamp(listScroll - delta * 18, 0, maxListScroll());
+        if (entryList != null && entryList.mouseScrolled(mouseX, mouseY, delta)) {
             return true;
         }
 
@@ -1637,23 +1447,37 @@ public class FrameEditorScreen extends Screen {
             return true;
         }
 
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.handleMouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
-    public boolean keyPressed(int key, int scancode, int modifiers) {
-        if (picker != null) {
-            if (key == GLFW.GLFW_KEY_ESCAPE || key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
-                picker = null;
-                return true;
-            }
-            if (picker.keyPressed(key, scancode, modifiers)) {
-                return true;
-            }
-
+    protected boolean handleKeyPressed(int key, int scancode, int modifiers) {
+        if (entryList != null && entryList.isDraggingEntry() && key == GLFW.GLFW_KEY_ESCAPE) {
+            entryList.cancelDrag();
+            return true;
         }
 
-        if (listEditor != null && listEditor.keyPressed(key, scancode, modifiers)) {
+        if (key == GLFW.GLFW_KEY_F && hasControlDown() && searchBox != null) {
+            applyFocused();
+            setFocused(searchBox);
+            searchBox.setFocused(true);
+            return true;
+        }
+
+        if (hasControlDown() && key == GLFW.GLFW_KEY_S) {
+            applyFocused();
+            save();
+            return true;
+        }
+
+        if (hasAltDown() && (key == GLFW.GLFW_KEY_UP || key == GLFW.GLFW_KEY_DOWN)) {
+            moveEntry(selected + (key == GLFW.GLFW_KEY_UP ? -1 : 1));
+            rebuildRows();
+            if (entryList != null) {
+                entryList.setSelectedIndex(selected);
+                entryList.revealSelected();
+            }
+
             return true;
         }
 
@@ -1665,56 +1489,110 @@ public class FrameEditorScreen extends Screen {
             return true;
         }
 
-        return super.keyPressed(key, scancode, modifiers);
+        return super.handleKeyPressed(key, scancode, modifiers);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
-        if (picker != null) {
-            return picker.charTyped(chr, modifiers);
-        }
-
-        if (listEditor != null) {
-            return listEditor.charTyped(chr, modifiers);
-        }
-
+    protected boolean handleCharTyped(char chr, int modifiers) {
         if (focusedBox != null && focusedBox.charTyped(chr, modifiers)) {
             return true;
         }
 
-        return super.charTyped(chr, modifiers);
+        return super.handleCharTyped(chr, modifiers);
     }
 
     @Override
-    public void tick() {
-        if (picker != null) {
-            picker.tick();
+    protected void tickBeforeModals() {
+        if (entryList != null) {
+            entryList.tickDrag();
         }
 
-        if (listEditor != null) {
-            listEditor.tick();
+    }
+
+    @Override
+    protected void tickScreen() {
+        if (dirty && Util.getMillis() >= nextDraftSaveAt) {
+            preserveDraft();
+            nextDraftSaveAt = Util.getMillis() + 2000;
+        }
+
+        if (searchBox != null) {
+            searchBox.tick();
         }
 
         if (focusedBox != null) {
             focusedBox.tick();
         }
 
-        super.tick();
+        super.tickScreen();
     }
 
     private void applyFocused() {
+        if (searchBox != null && searchBox.isFocused()) {
+            searchBox.setFocused(false);
+            if (getFocused() == searchBox) {
+                setFocused(null);
+            }
+
+        }
+
         if (focusedBox != null) {
             focusedBox.setFocused(false);
             focusedBox = null;
+            refreshInheritedText();
+        }
+
+    }
+
+    private void refreshInheritedText() {
+        final JsonObject entry = selectedEntry();
+        if (entry == null) {
+            return;
+        }
+
+        for (FieldRow row : rows) {
+            if (row.spec == null || entry.has(row.spec.key()) || !(row.widget instanceof EditBox box) || box.isFocused()) {
+                continue;
+            }
+
+            box.setResponder(null);
+            box.setValue(readText(entry, row.spec));
+            box.setResponder(value -> writeText(entry, row.spec, value));
         }
 
     }
 
     @Override
     public void onClose() {
-        CustomFrameManager.setPreviewOverride(null);
-        TooltipAnimationState.clear();
-        minecraft.setScreen(parent);
+        applyFocused();
+        if (!preserveDraft()) {
+            return;
+        }
+
+        previewPanel.close();
+        returnToParent();
+    }
+
+    private boolean preserveDraft() {
+        if (!dirty || loadFailed) {
+            return true;
+        }
+
+        final String error = document.saveDraft();
+        draftError = error == null ? "" : error;
+        return error == null;
+    }
+
+    @Override
+    public void removed() {
+        applyFocused();
+        preserveDraft();
+        previewPanel.close();
+        super.removed();
+    }
+
+    void selectPreviewItem(ItemStack stack) {
+        previewPanel.selectStack(stack);
     }
 
     private void openListEditor(FieldRow row, int anchorX, int anchorY) {
@@ -1723,8 +1601,121 @@ public class FrameEditorScreen extends Screen {
         }
 
         applyFocused();
-        picker = null;
-        listEditor = new ListEditor(row, anchorX, anchorY);
+        modals.clear();
+        if (("items".equals(row.spec.key()) || "enchantments".equals(row.spec.key())) && row.widget instanceof EditBox box) {
+            final boolean enchantments = "enchantments".equals(row.spec.key());
+            final Set<String> values = new LinkedHashSet<>();
+            for (String part : box.getValue().split(",")) {
+                if (part.isBlank()) {
+                    continue;
+                }
+
+                ResourceLocation id = ResourceLocation.tryParse(part.trim());
+                final String value = id != null ? id.toString() : part.trim();
+                if (!values.contains(value)) {
+                    values.add(value);
+                }
+
+            }
+
+            List<SelectionPopup.Option> options = new ArrayList<>();
+            if (enchantments) {
+                for (final Enchantment enchantment : BuiltInRegistries.ENCHANTMENT) {
+                    String id = BuiltInRegistries.ENCHANTMENT.getKey(enchantment).toString();
+                    ItemStack book = EnchantedBookItem.createForEnchantment(new EnchantmentInstance(enchantment, 1));
+                    options.add(new SelectionPopup.Option(id, Component.translatable(enchantment.getDescriptionId()).getString(), id, book));
+                }
+
+            }
+            else for (Item item : BuiltInRegistries.ITEM) {
+                if (item == Items.AIR) {
+                    continue;
+                }
+
+                final String id = BuiltInRegistries.ITEM.getKey(item).toString();
+                final ItemStack stack = new ItemStack(item);
+                String name;
+                try {
+                    name = stack.getHoverName().getString();
+                }
+                catch (RuntimeException ignored) {
+                    name = id;
+                }
+
+                options.add(new SelectionPopup.Option(id, name, id, stack));
+            }
+
+            final Set<String> known = new HashSet<>();
+            for (final SelectionPopup.Option option : options) known.add(option.value());
+            for (String value : values) if (!known.contains(value)) options.add(new SelectionPopup.Option(value, value, value, ItemStack.EMPTY));
+            options.sort(Comparator.comparing(SelectionPopup.Option::label, String.CASE_INSENSITIVE_ORDER).thenComparing(SelectionPopup.Option::value));
+            modals.open(new SelectionPopup(width, height, Component.translatable("tooltipoverhaul.config.frames." + (enchantments ? "enchantment_catalog" : "item_catalog")),
+                    options, values::contains, value -> {
+                if (!values.remove(value)) {
+                    values.add(value);
+                }
+
+                box.setValue(String.join(", ", values));
+            }, true, accent));
+
+            return;
+        }
+
+        final EditBox box = (EditBox) row.widget;
+        modals.open(new StringListEditor(width, height, anchorX, anchorY, accent, Component.literal(fieldLabel(row.spec.key())), box.getValue(), null, box::setValue));
+    }
+
+    private void openFrameCatalog(FieldRow row) {
+        if (row.spec == null || !(row.widget instanceof EditBox box)) {
+            return;
+        }
+
+        applyFocused();
+        modals.clear();
+
+        final String current = box.getValue().trim();
+        modals.open(new SelectionPopup(width, height,
+                Component.translatable("tooltipoverhaul.config.frames.frame_catalog"), frameCatalogOptions(current), current::equals, box::setValue, false, accent));
+    }
+
+    static List<SelectionPopup.Option> frameCatalogOptions(String current) {
+        final List<SelectionPopup.Option> options = new ArrayList<>();
+        final Map<ResourceLocation, Resource> textures = Minecraft.getInstance().getResourceManager()
+                .listResources("textures/overlay", location -> location.getPath().endsWith(".png"));
+        for (Map.Entry<ResourceLocation, Resource> entry : textures.entrySet()) {
+            final ResourceLocation location = entry.getKey();
+            SelectionPopup.FramePreview preview = null;
+            try (InputStream stream = entry.getValue().open(); NativeImage image = NativeImage.read(stream)) {
+                if (image.getWidth() >= Constants.getOverlayFrameDimension()
+                        && image.getHeight() >= Constants.getOverlayFrameDimension()) {
+                    preview = new SelectionPopup.FramePreview(location, image.getWidth(), image.getHeight());
+                }
+
+            }
+            catch (Exception exception) {
+                TooltipOverhaul.LOGGER.warn("Frame editor could not preview {}: {}", location, exception.getMessage());
+            }
+
+            String filename = location.getPath().substring(location.getPath().lastIndexOf('/') + 1);
+            if (filename.endsWith(".png")) {
+                filename = filename.substring(0, filename.length() - 4);
+            }
+
+            if (filename.endsWith("_frame")) {
+                filename = filename.substring(0, filename.length() - 6);
+            }
+
+            options.add(new SelectionPopup.Option(location.toString(), prettify(filename), location.toString(), new ItemStack(Items.DIAMOND_SWORD), preview));
+        }
+
+        if (!current.isEmpty() && options.stream().noneMatch(option -> option.value().equals(current))) {
+            options.add(new SelectionPopup.Option(current, current, current, ItemStack.EMPTY));
+        }
+
+        options.sort(Comparator.comparing(SelectionPopup.Option::label, String.CASE_INSENSITIVE_ORDER)
+                .thenComparing(SelectionPopup.Option::value));
+
+        return options;
     }
 
     private void openPicker(FieldRow row, int partIndex, int anchorX, int anchorY) {
@@ -1733,7 +1724,6 @@ public class FrameEditorScreen extends Screen {
         }
 
         applyFocused();
-        listEditor = null;
 
         int initial = 0xFFFFFFFF;
         if (partIndex >= 0) {
@@ -1746,8 +1736,8 @@ public class FrameEditorScreen extends Screen {
 
         pickerRow = row;
         pickerPartIndex = partIndex;
-        picker = new ColorLevelPicker(anchorX, anchorY, HEADER_HEIGHT + 4, this.width, this.height, accent, initial, row.spec.kind() == Kind.COLOR_INT,
-                argb -> pickerPartIndex = applyPickedColor(pickerRow, pickerPartIndex, argb));
+        modals.open(new ColorLevelPicker(anchorX, anchorY, HEADER_HEIGHT + 4, this.width, this.height, accent, initial, row.spec.kind() == Kind.COLOR_INT,
+                argb -> pickerPartIndex = applyPickedColor(pickerRow, pickerPartIndex, argb)));
     }
 
     private int applyPickedColor(FieldRow row, int partIndex, int argb) {
@@ -1756,9 +1746,7 @@ public class FrameEditorScreen extends Screen {
         }
 
         final Kind kind = row.spec.kind();
-        final String formatted = kind == Kind.COLOR_INT || (argb >>> 24) != 0xFF
-                ? String.format("#%08X", argb)
-                : String.format("#%06X", argb & 0x00FFFFFF);
+        final String formatted = formatHex(argb, kind == Kind.COLOR_INT);
 
         if (kind != Kind.COLOR_LIST) {
             box.setValue(formatted);
@@ -1783,273 +1771,8 @@ public class FrameEditorScreen extends Screen {
         }
 
         box.setValue(String.join(", ", parts));
+
         return index;
-    }
-
-    private final class ListEditor {
-
-        private static final int ROW_H = 18;
-        private static final int PAD = 8;
-        private static final int MAX_VISIBLE = 8;
-
-        private final FieldRow row;
-        private final boolean itemsField;
-        private final List<String> values = new ArrayList<>();
-        private final StyledEditBox addBox;
-        private final int x;
-        private final int anchorY;
-        private final int w;
-        private int scroll = 0;
-
-        ListEditor(FieldRow row, int anchorX, int anchorY) {
-            this.row = row;
-            this.itemsField = row.spec != null && "items".equals(row.spec.key());
-
-            if (row.widget instanceof EditBox box) {
-                for (String part : box.getValue().split(",")) {
-                    if (!part.trim().isEmpty()) {
-                        values.add(part.trim());
-                    }
-
-                }
-
-            }
-
-            this.w = 230;
-            this.x = Mth.clamp(anchorX - w - 6, 4, FrameEditorScreen.this.width - w - 4);
-            this.anchorY = anchorY;
-
-            this.addBox = new StyledEditBox(minecraft.font, 0, 0, w - PAD * 2, 16, Component.empty(), accent);
-            this.addBox.setMaxLength(256);
-            this.addBox.setFocused(true);
-        }
-
-        private int visibleRows() {
-            return Math.max(1, Math.min(values.size(), MAX_VISIBLE));
-        }
-
-        private int height() {
-            return PAD + 13 + visibleRows() * ROW_H + 6 + 16 + PAD;
-        }
-
-        private int top() {
-            return Mth.clamp(anchorY - height() / 2, HEADER_HEIGHT + 4, Math.max(HEADER_HEIGHT + 4, FrameEditorScreen.this.height - height() - 4));
-        }
-
-        private int rowsTop() {
-            return top() + PAD + 13;
-        }
-
-        private void clampScroll() {
-            scroll = Mth.clamp(scroll, 0, Math.max(0, values.size() - MAX_VISIBLE));
-        }
-
-        private void sync() {
-            if (row.widget instanceof EditBox box) {
-                box.setValue(String.join(", ", values));
-            }
-
-        }
-
-        void render(GuiGraphics graphics, int mouseX, int mouseY) {
-            final int y0 = top();
-            final int y1 = y0 + height();
-
-            graphics.pose().pushPose();
-            graphics.pose().translate(0, 0, 400);
-
-            drawCard(graphics, x, y0, x + w, y1, 0xF8101012, withAlpha(dimAccent(accent), 0xFF));
-
-            graphics.drawString(font, row.spec != null ? fieldLabel(row.spec.key()) : "", x + PAD, y0 + 6, 0xFF888888, false);
-
-            if (values.isEmpty()) {
-                final String empty = I18n.get("tooltipoverhaul.config.frames.list.empty");
-                graphics.drawString(font, empty, x + PAD, rowsTop() + (ROW_H - font.lineHeight) / 2, 0xFF555555, false);
-            }
-
-            clampScroll();
-            for (int i = scroll; i < Math.min(values.size(), scroll + MAX_VISIBLE); i++) {
-                final int rowY = rowsTop() + (i - scroll) * ROW_H;
-                final boolean hovered = mouseX >= x + 4 && mouseX < x + w - 4 && mouseY >= rowY && mouseY < rowY + ROW_H;
-
-                if (hovered) {
-                    graphics.fill(x + 4, rowY, x + w - 4, rowY + ROW_H, 0xFF1B1B1F);
-                }
-
-                final String value = values.get(i);
-                boolean known = false;
-                if (itemsField) {
-                    final ResourceLocation id = ResourceLocation.tryParse(value);
-                    known = id != null && BuiltInRegistries.ITEM.containsKey(id);
-                    if (known) {
-                        drawItemSafe(graphics, new ItemStack(BuiltInRegistries.ITEM.get(id)), x + PAD, rowY + 1);
-                    }
-                    else {
-                        graphics.drawString(font, "?", x + PAD + 5, rowY + 5, 0xFFCC8040, false);
-                    }
-                }
-                else {
-                    graphics.fill(x + PAD + 6, rowY + 8, x + PAD + 9, rowY + 11, 0xFF585858);
-                }
-
-                final int textColor = !itemsField || known ? 0xFFD0D0D0 : 0xFFCC8040;
-                graphics.drawString(font, font.plainSubstrByWidth(value, w - PAD * 2 - 20 - 12), x + PAD + 20, rowY + (ROW_H - font.lineHeight) / 2, textColor, false);
-
-                if (hovered) {
-                    final boolean overDelete = mouseX >= x + w - PAD - 12 && mouseX < x + w - PAD;
-                    graphics.drawString(font, "\u00d7", x + w - PAD - 8, rowY + (ROW_H - font.lineHeight) / 2 + 2, overDelete ? 0xFFE06060 : 0xFF915050, false);
-                }
-
-            }
-
-            // Scrollbar when the list overflows
-            if (values.size() > MAX_VISIBLE) {
-                final int trackTop = rowsTop();
-                final int trackH = MAX_VISIBLE * ROW_H;
-                final int thumbH = Math.max(12, trackH * MAX_VISIBLE / values.size());
-                final int thumbY = trackTop + (trackH - thumbH) * scroll / (values.size() - MAX_VISIBLE);
-                graphics.fill(x + w - 5, trackTop, x + w - 3, trackTop + trackH, 0x14FFFFFF);
-                graphics.fill(x + w - 5, thumbY, x + w - 3, thumbY + thumbH, withAlpha(dimAccent(accent), 0xC0));
-            }
-
-            addBox.setX(x + PAD);
-            addBox.setY(y1 - PAD - 16);
-            addBox.render(graphics, mouseX, mouseY, 0);
-
-            if (addBox.getValue().isEmpty()) {
-                graphics.drawString(font, I18n.get("tooltipoverhaul.config.frames.list.add_hint"), x + PAD + 11, y1 - PAD - 16 + 4, 0xFF4A4A52, false);
-            }
-
-            graphics.pose().popPose();
-        }
-
-        boolean mouseClicked(double mouseX, double mouseY, int button) {
-            final int y0 = top();
-            if (mouseX < x || mouseX >= x + w || mouseY < y0 || mouseY >= y0 + height()) {
-                return false;
-            }
-
-            if (button != 0) {
-                return true;
-            }
-
-            for (int i = scroll; i < Math.min(values.size(), scroll + MAX_VISIBLE); i++) {
-                final int rowY = rowsTop() + (i - scroll) * ROW_H;
-                if (mouseX >= x + w - PAD - 12 && mouseX < x + w - PAD && mouseY >= rowY && mouseY < rowY + ROW_H) {
-                    values.remove(i);
-                    clampScroll();
-                    sync();
-                    playClickSound();
-                    return true;
-                }
-
-            }
-
-            addBox.mouseClicked(mouseX, mouseY, button);
-            addBox.setFocused(true);
-            return true;
-        }
-
-        void mouseScrolled(double delta) {
-            scroll -= (int) Math.signum(delta);
-            clampScroll();
-        }
-
-        boolean keyPressed(int key, int scancode, int modifiers) {
-            if (key == GLFW.GLFW_KEY_ESCAPE) {
-                listEditor = null;
-                return true;
-            }
-
-            if (key == GLFW.GLFW_KEY_ENTER || key == GLFW.GLFW_KEY_KP_ENTER) {
-                final String value = addBox.getValue().trim();
-                if (value.isEmpty()) {
-                    listEditor = null;
-                    return true;
-                }
-
-                values.add(value);
-                addBox.setValue("");
-                scroll = Math.max(0, values.size() - MAX_VISIBLE);
-                sync();
-                playClickSound();
-                return true;
-            }
-
-            return addBox.keyPressed(key, scancode, modifiers);
-        }
-
-        boolean charTyped(char chr, int modifiers) {
-            addBox.charTyped(chr, modifiers);
-            return true;
-        }
-
-        void tick() {
-            addBox.tick();
-        }
-
-    }
-
-    static class StringCycleButton extends AbstractWidget {
-
-        interface ChangeListener { void onChange(String value); }
-
-        private final String[] options;
-        private final int accent;
-        private final ChangeListener listener;
-        private int index;
-
-        StringCycleButton(int x, int y, int width, int height, String[] options, String current, int accent, ChangeListener listener) {
-            super(x, y, width, height, Component.empty());
-            this.options = options;
-            this.accent = accent;
-            this.listener = listener;
-
-            this.index = 0;
-            for (int i = 0; i < options.length; i++) {
-                if (options[i].equals(current)) {
-                    this.index = i;
-                    break;
-                }
-            }
-
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-            final Minecraft minecraft = Minecraft.getInstance();
-            final boolean inherit = index == 0 && "inherit".equals(options[0]);
-
-            final int bg = isHovered() ? 0xFF202024 : 0xFF1A1A1C;
-            final int border = isHovered() ? dimAccent(accent) : 0xFF2E2E32;
-            drawCard(graphics, getX(), getY(), getX() + width, getY() + height, bg, border);
-
-            String label = prettify(options[index]);
-            if (minecraft.font.width(label) > width - 12) {
-                label = minecraft.font.plainSubstrByWidth(label, width - 16) + "\u2026";
-            }
-
-            final int color = inherit ? 0xFF666666 : 0xFFE0E0E0;
-            graphics.drawString(minecraft.font, label, getX() + (width - minecraft.font.width(label)) / 2, getY() + (height - minecraft.font.lineHeight) / 2 + 1, color, false);
-        }
-
-        @Override
-        public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if (!visible || !clicked(mouseX, mouseY) || (button != 0 && button != 1)) {
-                return false;
-            }
-
-            index = Math.floorMod(index + (button == 0 ? 1 : -1), options.length);
-            listener.onChange(options[index]);
-            playClickSound();
-            return true;
-        }
-
-        @Override
-        protected void updateWidgetNarration(NarrationElementOutput output) {
-            ;;
-        }
-
     }
 
 }

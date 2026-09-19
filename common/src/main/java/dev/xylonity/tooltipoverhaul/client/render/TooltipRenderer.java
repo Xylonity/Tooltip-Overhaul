@@ -9,6 +9,7 @@ import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ public class TooltipRenderer {
         if (context == null) {
             return;
         }
+
         if (context.getComponents().isEmpty()) {
             return;
         }
@@ -34,22 +36,28 @@ public class TooltipRenderer {
         // The style is computed here so the context knows if its context pair already exists
         context.setTooltipLayers(new StyleFactory().create(context, context.getFrameData()));
 
-        TooltipSizeCalculator sizeCalculator = context.getSizeCalculator();
-        TooltipPositionCalculator positionCalculator = context.getPositionCalculator();
+        final TooltipSizeCalculator sizeCalculator = context.getSizeCalculator();
+        final TooltipPositionCalculator positionCalculator = context.getPositionCalculator();
 
-        int margin = 5;
+        final int margin = 5;
 
         // Uncapped size calculation
-        Vec2 uncappedSize = sizeCalculator.calculate();
+        final Vec2 uncappedSize = sizeCalculator.calculate();
 
-        int screenHeight = context.getScreenHeight();
+        final int screenHeight = context.getScreenHeight();
         int maxTooltipHeight = screenHeight - margin;
-        int cappedHeight = Math.min((int) uncappedSize.y, maxTooltipHeight);
+        final boolean scrollable = !TextUtils.shouldDisableScrolling(context);
+        // The configured cap only applies when the overflow can be scrolled into view, otherwise it would just cut content
+        if (scrollable) {
+            maxTooltipHeight = Math.min(maxTooltipHeight, screenHeight * Mth.clamp(TooltipsConfig.MAX_TOOLTIP_HEIGHT, 10, 100) / 100);
+        }
+
+        final int cappedHeight = Math.min((int) uncappedSize.y, maxTooltipHeight);
 
         context.setTooltipSize(new Vec2(uncappedSize.x, cappedHeight));
         context.setTooltipPosition(positionCalculator.calculate());
 
-        if (!TextUtils.shouldDisableScrolling(context)) {
+        if (scrollable) {
             TooltipScrollState.begin((int) uncappedSize.y, cappedHeight);
             TooltipScrollState.tick();
         }
@@ -61,12 +69,13 @@ public class TooltipRenderer {
 
     /**
      * Simple bridge to readjust the tooltip positions in case the equipped stack is enabled and any (or both) tooltip layouts are
-     * exceeding the screen margins. The init predicate is called to compute the default layout values.
+     * exceeding the screen margins. The init predicate is called to compute the default layout values
      */
     public void adjustLayout() {
         if (context == null) {
             return;
         }
+
         if (context.getComponents().isEmpty()) {
             return;
         }
@@ -79,9 +88,11 @@ public class TooltipRenderer {
         if (context == null) {
             return false;
         }
+
         if (context.getComponents().isEmpty()) {
             return false;
         }
+
         if (!RenderUtils.shouldRender(context)) {
             return false;
         }
@@ -94,15 +105,41 @@ public class TooltipRenderer {
             return false;
         }
 
-        // The main tooltip is cached every frame so an "out" animation can keep drawing it after the hover ends
+        // Still inside the configured appear delay
+        if (COUNTER < 0) {
+            return true;
+        }
+
+        int index = 0;
         if (context.isMainTooltip()) {
+            // A tooltip that is a prefix of a bigger one at the same spot is consumed (preventing that one bug where multiple tooltips were drawn at the same time)
+            if (TooltipFrameStack.superseded(context)) {
+                return true;
+            }
+
+            index = TooltipFrameStack.register(context);
+
+            // Tooltip cache so it can still be drawn after hovering (for the disappear animation)
             TooltipAnimationState.capture(context);
         }
 
         final float progress = AnimationUtils.clamp01(COUNTER / TooltipAnimator.duration(context));
-        TooltipAnimator.render(context, false, progress);
+        renderAtDepth(false, progress, index);
 
         return true;
+    }
+
+    private void renderAtDepth(boolean out, float progress, int index) {
+        context.getPose().pushPose();
+        context.getPose().translate(0, 0, Mth.clamp(TooltipsConfig.TOOLTIP_Z_OFFSET, 0, 700) + index * TooltipFrameStack.EXTRA_DEPTH);
+        try {
+            TooltipAnimator.render(context, out, progress);
+        }
+        finally {
+            context.flush();
+            context.getPose().popPose();
+        }
+
     }
 
     /**
@@ -112,17 +149,20 @@ public class TooltipRenderer {
         if (context == null) {
             return;
         }
+
         if (context.getComponents().isEmpty()) {
             return;
         }
+
         if (!RenderUtils.shouldRender(context)) {
             return;
         }
+
         if (context.getStack().isEmpty() && !TooltipsConfig.SHOW_TOOLTIP_WITHOUT_STACK) {
             return;
         }
 
-        TooltipAnimator.render(context, true, AnimationUtils.clamp01(progress));
+        renderAtDepth(true, AnimationUtils.clamp01(progress), 0);
     }
 
 }

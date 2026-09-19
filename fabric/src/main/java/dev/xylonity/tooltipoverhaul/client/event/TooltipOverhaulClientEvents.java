@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.event;
 import com.mojang.brigadier.CommandDispatcher;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
+import dev.xylonity.tooltipoverhaul.client.render.PinnedTooltipState;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipAnimationState;
 import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -17,6 +18,9 @@ public class TooltipOverhaulClientEvents {
 
     public static void init() {
         KeyBindingHelper.registerKeyBinding(TooltipOverhaulKeyMappings.COMPARE_TOOLTIP);
+        KeyBindingHelper.registerKeyBinding(TooltipOverhaulKeyMappings.OPEN_CONFIG);
+        KeyBindingHelper.registerKeyBinding(TooltipOverhaulKeyMappings.PIN_TOOLTIP);
+
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, commandBuildContext) ->
                 registerClientReloadCommand(dispatcher)
         );
@@ -25,7 +29,11 @@ public class TooltipOverhaulClientEvents {
         // tooltips) has been drawn, which is the only point that works for every screen type
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) ->
                 ScreenEvents.afterRender(screen).register((renderedScreen, graphics, mouseX, mouseY, tickDelta) ->
-                        TooltipAnimationState.tick(graphics)
+                        {
+                            TooltipAnimationState.tick(graphics);
+                            PinnedTooltipState.render(graphics, mouseX, mouseY);
+                        }
+
                 )
 
         );

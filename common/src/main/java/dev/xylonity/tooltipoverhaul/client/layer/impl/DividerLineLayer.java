@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.layer.impl;
 
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipLayout;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.Constants;
@@ -18,27 +19,27 @@ public interface DividerLineLayer extends ITooltipLayer {
             context.translate(0, 0, getLayerDepth().getZ());
             context.setLayerDepth(getLayerDepth());
 
-            boolean hasIcon = context.hasIcon();
-            boolean hasRating = RenderUtils.hasRating(context);
+            final boolean hasIcon = TooltipLayout.hasHeaderIcon(context);
+            final boolean hasRating = RenderUtils.hasRating(context);
 
             int y = (int) context.getTooltipPosition().y + context.getPaddingY();
-            int x = (int) context.getTooltipPosition().x + context.getPaddingX();
+            final int x = (int) context.getTooltipPosition().x + context.getPaddingX();
 
-            if (hasIcon) {
-                int dividerLinetopPadding = Constants.getDividerLineTopPadding(context);
-                y += Constants.getIconSize(context) + dividerLinetopPadding;
+            if (hasIcon || context.getLayoutStyle() == TooltipLayout.Style.COMPACT) {
+                final int dividerLinetopPadding = Constants.getDividerLineTopPadding(context);
+                y += TooltipLayout.headerHeight(context) + dividerLinetopPadding;
                 if (dividerLinetopPadding > 1) {
                     y += Constants.getDividerLineHeight(context);
                 }
 
             }
             else {
-                int titleHeight = context.getComponents().get(0).getHeight();
+                final int titleHeight = context.getComponents().get(0).getHeight();
                 y += titleHeight;
 
                 // If there is a rating text present, adds its height
                 if (hasRating) {
-                    Component rating = TextUtils.getRatingText(context);
+                    final Component rating = TextUtils.getRatingText(context);
                     y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
                 }
 

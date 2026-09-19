@@ -1,230 +1,78 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
-import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.phys.Vec2;
-import org.joml.Matrix4f;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.AmbientEffect;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Random;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.*;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
-public class CinderEffect implements EffectLayer {
-
-    private static final int CINDERS_CAP = 18;
-    private static final long PER_PARTICLE = 110L;
-
-    private static final float MIN_DISP = -1;
-    private static final float MAX_DISP = -4;
-    private static final float TOKYO_DRIFT = 8f;
-
-    private static final int COLOR_START = 0xCCFFE2A8;
-    private static final int COLOR_END = 0x99FFA060;
-
-    private static final Deque<Cinder> CINDERS = new ArrayDeque<>();
-    private static long lastSpawn = 0L;
+public class CinderEffect extends AmbientEffect {
 
     @Override
-    public void render(TooltipContext context, Vec2 position) {
-        int positionX = (int) position.x;
-        int positionY = (int) position.y;
-        int tooltipWidth = (int) context.getTooltipSize().x;
-        int tooltipHeight = (int) context.getTooltipSize().y;
-
-        long now = System.currentTimeMillis();
-        if (now - lastSpawn >= PER_PARTICLE && CINDERS.size() < CINDERS_CAP) {
-            spawn(tooltipWidth, tooltipHeight, now);
-            lastSpawn = now;
-        }
-
-        context.push(() -> {
-            context.enableScissor(
-                    positionX - context.getPaddingX() - 1,
-                    positionY - context.getPaddingY(),
-                    positionX + tooltipWidth + context.getPaddingX(),
-                    positionY + tooltipHeight + context.getPaddingY()
-            );
-
-            RenderSystem.enableBlend();
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE
-            );
-
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-            Matrix4f pose = context.getPose().last().pose();
-
-            CINDERS.removeIf(c -> !c.render(pose, 1 / 60f, now, positionX, positionY, tooltipWidth, tooltipHeight));
-
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.disableBlend();
-
-            context.getGraphics().disableScissor();
-        });
-
+    protected boolean clipToTooltip() {
+        return true;
     }
 
-    private static void spawn(int w, int h, long now) {
-        Random random = new Random();
-        float marginX = 6f;
-
-        float localX = marginX + random.nextFloat() * Math.max(2f, w - 2f * marginX);
-        float bottomY = h - 3f;
-        float localY = bottomY - random.nextFloat() * 4f + 5;
-
-        float vy = MIN_DISP + random.nextFloat() * (MAX_DISP - MIN_DISP);
-        float life = 450f + random.nextFloat() * 350f;
-        float size = 0.8f + random.nextFloat() * 1.2f;
-        float ax = (random.nextFloat() * 2f - 1f) * TOKYO_DRIFT;
-        float rot = random.nextFloat() * (float) Math.PI;
-        float twinklePhase = random.nextFloat() * (float) (Math.PI * 2.0);
-
-        if (CINDERS.size() >= CINDERS_CAP) {
-            CINDERS.pollFirst();
-        }
-
-        CINDERS.addLast(new Cinder(localX, localY, vy, ax, size, now, life, rot, twinklePhase));
+    @Override
+    protected float interiorVisibility() {
+        return 0.80f;
     }
 
-    private static final class Cinder {
-
-        private float localX;
-        private float localY;
-
-        private final float vy;
-        private final float ax;
-        private final float size;
-        private final float baseRot;
-        private final long start;
-        private final float lifetime;
-        private final float twinklePhase;
-
-        Cinder(float localX, float localY, float vy, float ax, float size, long start, float lifetime, float baseRot, float twinklePhase) {
-            this.localX = localX;
-            this.localY = localY;
-            this.vy = vy;
-            this.ax = ax;
-            this.size = size;
-            this.start = start;
-            this.lifetime = lifetime;
-            this.baseRot = baseRot;
-            this.twinklePhase = twinklePhase;
-        }
-
-        boolean render(Matrix4f pose, float dt, long now, float tooltipX, float tooltipY, float tooltipW, float tooltipH) {
-
-            float age = now - start;
-            if (age >= lifetime) {
-                return false;
-            }
-
-            localX += ax * dt * 0.25f;
-            localY += vy * dt;
-
-            float topLimit = tooltipH * 0.1f;
-            if (localY < topLimit) {
-                return false;
-            }
-
-            float bottomFactor = (localY - topLimit) / Math.max(1f, (tooltipH - topLimit));
-            bottomFactor = AnimationUtils.clamp01(bottomFactor);
-
-            float k = AnimationUtils.clamp01(age / lifetime);
-
-            float lifeFade = (float) Math.pow(1f - k, 1.3f);
-            float verticalFade = 0.4f + 0.6f * bottomFactor;
-            float visibility = lifeFade * verticalFade;
-            if (visibility <= 0f) {
-                return false;
-            }
-
-            float twinkle = 0.85f + 0.15f * (float) Math.sin((now - start) * 0.006f + twinklePhase);
-            float drop = 0.75f + 0.25f * (float) Math.sin(now * 0.015f + start * 0.003f);
-
-            int alphaCore = (int) (210 * visibility * twinkle * drop);
-            int alphaGlow = (int) (140 * visibility * twinkle * drop);
-
-            if (alphaCore <= 0 && alphaGlow <= 0) {
-                return true;
-            }
-
-            float colorT = 0.25f + 0.75f * (1f - k);
-            int coreColor = ColorUtils.lerpColor(COLOR_END, COLOR_START, colorT);
-            int glowColor = ColorUtils.lerpColor(COLOR_END, COLOR_START, 0.5f * colorT);
-
-            int cr = (coreColor >>> 16) & 0xFF;
-            int cg = (coreColor >>> 8) & 0xFF;
-            int cb = coreColor & 0xFF;
-
-            int gr = (glowColor >>> 16) & 0xFF;
-            int gg = (glowColor >>> 8) & 0xFF;
-            int gb = glowColor & 0xFF;
-
-            float rot = baseRot + (float) Math.sin((start * 0.0017f) + (now * 0.0011f) + localX * 0.03f) * 0.18f;
-
-            float baseLen = 0f + size * 2.2f;
-            float coreThick = 1f + size * 0.55f;
-            float glowThick = coreThick * 2f;
-            float lenGlow = baseLen * 1.2f;
-
-            float cx = tooltipX + localX;
-            float cy = tooltipY + localY;
-
-            // halo
-            drawStar(pose, cx, cy, lenGlow, glowThick, rot, gr, gg, gb, alphaGlow);
-            // internal
-            drawStar(pose, cx, cy, baseLen, coreThick, rot, cr, cg, cb, alphaCore);
-
-            return true;
-        }
-
+    private static Point ember(EffectCanvas canvas, int index, float age, float heightBlend) {
+        final float source = canvas.left - 3 + seed(index, 4) * (canvas.width + 6);
+        final float travel = (canvas.height + 26) * (0.55f + heightBlend * 0.35f + seed(index, 5) * (0.45f - heightBlend * 0.10f));
+        final float x = source + flow(index * 2.1, age * 2.4 + seed(index, 6) * 9) * (4 + age * 16) * parameter(TURBULENCE);
+        final float curl = sin(age * 8 + seed(index, 8) * TAU) * sin(age * Math.PI);
+        return new Point(x + (age * age * 5 + curl * 2.5f) * parameter(TURBULENCE), canvas.bottom + 2 - age * travel);
     }
 
-    private static void drawStar(Matrix4f pose, float cx, float cy, float len, float thickness, float rot, int r, int g, int b, int a) {
-        for (int i = 0; i < 4; i++) {
-            float rot2 = rot + i * (float) (Math.PI * 0.5);
+    @Override
+    protected void draw(EffectCanvas canvas) {
+        for (int layer = 0; layer < 2; layer++) {
+            final int layerIndex = layer;
+            canvas.ribbon(96, along -> {
+                final float convection = flow(along * 7 + layerIndex * 13, canvas.time * 0.38);
+                return new Knot(canvas.left - 5 + along * (canvas.width + 10), canvas.bottom - 1 + convection * 3 - layerIndex * 2, 4 + noise(along * 11, canvas.time * 0.45) * 6,
+                        layerIndex == 0 ? color(2, 0xFFEA4E21) : color(1, 0xFFFFA444), bell(along) * (layerIndex == 0 ? 0.23f : 0.12f));
+            });
 
-            float x2 = cx + (float) Math.cos(rot2) * len;
-            float y2 = cy + (float) Math.sin(rot2) * len;
-
-            drawSegment(pose, cx, cy, x2, y2, thickness, Math.max(0.6f, thickness * 0.5f), r, g, b, a);
         }
 
-    }
+        final float heightBlend = smooth((canvas.height - 74) / 100);
+        final float flightScale = (float) Math.sqrt(Math.max(1, (canvas.height + 26) / 100));
+        final float densityScale = (float) Math.sqrt(Math.max(1, canvas.height / 74) * Math.max(1, canvas.width / 220));
+        final int count = Math.min(effectCount(220), Math.round(canvas.particleCount(58) * densityScale));
 
-    private static void drawSegment(Matrix4f pose, float x1, float y1, float x2, float y2, float tStart, float tEnd, int r, int g, int b, int a) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        float len = (float) Math.max(0.001, Math.hypot(dx, dy));
+        for (int i = 0; i < count; i++) {
+            final float phase = cycle(canvas.time / ((3.2 + seed(i, 2) * 4) * flightScale) + seed(i, 3));
+            final float flicker = 0.72f + 0.28f * noise(i * 3.1, canvas.time * 3.2);
+            final float fade = smooth(phase / 0.16f) * smooth((1 - phase) / (0.32f - heightBlend * 0.14f)) * (1 - phase * (0.7f - heightBlend * 0.32f)) * flicker;
+            final Point point = ember(canvas, i, phase, heightBlend);
+            final float size = (0.55f + seed(i, 7) * seed(i, 7) * 1.35f) * (1 - phase * (0.4f - heightBlend * 0.15f));
+            final float warmUntil = 0.35f + heightBlend * 0.20f;
+            final int emberColor = phase < warmUntil ? mix(color(0, 0xFFFFEDBB), color(1, 0xFFFFA34D), phase / warmUntil)
+                    : mix(color(1, 0xFFFFA34D), color(2, 0xFF9C4840), smooth((phase - warmUntil) / (1 - warmUntil)));
+            if (i % 3 == 0 && parameter(TRAIL_LENGTH) > 0) {
+                final int index = i;
+                canvas.ribbon(12, along -> {
+                    final Point trailPoint = ember(canvas, index, Math.max(0, phase - (1 - along) * (0.045f + seed(index, 9) * 0.04f) * parameter(TRAIL_LENGTH) / flightScale), heightBlend);
+                    return new Knot(trailPoint.x(), trailPoint.y(), size * (0.12f + along * 0.65f), mix(color(2, 0xFFBC4431), emberColor, along), fade * along * along * 0.55f);
+                });
 
-        float nx = -dy / len;
-        float ny = dx / len;
+            }
 
-        float hsx = nx * tStart * 0.5f;
-        float hsy = ny * tStart * 0.5f;
-        float hex = nx * tEnd * 0.5f;
-        float hey = ny * tEnd * 0.5f;
+            canvas.glow(point.x(), point.y(), size * 4.5f, color(1, 0xFFFF6B24), fade * 0.34f);
 
-        BufferBuilder buf = Tesselator.getInstance().getBuilder();
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            if (i % 5 == 0) {
+                canvas.star(point.x(), point.y(), size * 1.55f, 4, 0.64f, i + phase * 4, emberColor, fade * 0.85f);
+            }
+            else {
+                canvas.mote(point.x(), point.y(), size, emberColor, fade);
+            }
 
-        buf.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-        buf.vertex(pose, x1 - hsx, y1 - hsy, 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x1 + hsx, y1 + hsy, 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x2 - hex, y2 - hey, 0).color(r, g, b, a).endVertex();
-        buf.vertex(pose, x2 + hex, y2 + hey, 0).color(r, g, b, a).endVertex();
+            canvas.glow(point.x(), point.y(), size * 0.7f, color(0, 0xFFFFF4DC), fade * (1 - smooth(phase / 0.6f)) * 0.6f);
+        }
 
-        BufferUploader.drawWithShader(buf.end());
     }
 
 }

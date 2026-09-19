@@ -53,8 +53,8 @@ sourceSets.main.resources.srcDir 'src/generated/resources'
 
 dependencies {
     compileOnly project(":common")
-    modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:15.20.0.112"
-    modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:15.20.0.112"
+    //modCompileOnly "mezz.jei:jei-${minecraft_version}-forge-api:15.20.0.112"
+    //modRuntimeOnly "mezz.jei:jei-${minecraft_version}-forge:15.20.0.112"
 
     // draconic evolution
 modImplementation ("curse.maven:draconic-evolution-223565:6793843")
@@ -106,9 +106,11 @@ modImplementation ("curse.maven:knight-lib-1105855:6821911")
 
 modImplementation ("curse.maven:itemzoom-261725:5043628")
 
+modImplementation ("curse.maven:iron-furnaces-237664:7888952")
+
 modImplementation ("curse.maven:biomancy-492939:5886758")
 
-modImplementation ("curse.maven:celestisynth-872712:6900952")
+modImplementation ("curse.maven:celestisynth-872712:7686018")
 modImplementation ("curse.maven:playeranimator-658587:4587214")
 
 modImplementation ("curse.maven:born-in-chaos-686437:6833957")
@@ -137,10 +139,12 @@ modImplementation("curse.maven:just-enough-effect-descriptions-jeed-532286:61729
 modImplementation("curse.maven:lendercataclysm-551586:6906993")
 modImplementation("curse.maven:lionfish-api-1001614:5922047")
 
+modImplementation("curse.maven:tameable-beasts-646425:7408040")
+
 modImplementation("curse.maven:tough-as-nails-246391:5815863")
 modImplementation("curse.maven:glitchcore-955399:5787839")
-//compileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
-//runtimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
+modCompileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
+modRuntimeOnly "dev.emi:emi-forge:1.1.22+1.20.1"
     annotationProcessor("org.spongepowered:mixin:0.8.5-SNAPSHOT:processor")
 }
 
