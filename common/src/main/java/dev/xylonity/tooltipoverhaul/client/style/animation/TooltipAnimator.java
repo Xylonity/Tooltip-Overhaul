@@ -29,27 +29,40 @@ public final class TooltipAnimator {
     private static final float CARD_DOWN_ANGLE = 12f;
     private static final float SHAKE_AMPLITUDE = 4f;
 
-    public static float duration(@Nullable TooltipContext context) {
-        final float duration = context != null && context.getFrameData() != null
-                ? context.getFrameData().getTooltipAnimationDuration()
-                : TooltipsConfig.TOOLTIP_ANIMATION_DURATION;
+    public static final String MATCH_APPEAR = "match_appear";
 
+    public static float duration(@Nullable TooltipContext context) {
+        final float duration = context != null && context.getFrameData() != null ? context.getFrameData().getTooltipAnimationDuration() : TooltipsConfig.TOOLTIP_ANIMATION_DURATION;
         return Math.max(duration, 0.0001f);
     }
 
     public static TooltipAnimation animation(@Nullable TooltipContext context) {
-        final String name = context != null && context.getFrameData() != null
-                ? context.getFrameData().getTooltipAppearAnimation()
-                : TooltipsConfig.TOOLTIP_APPEAR_ANIMATION;
+        return animation(context, false);
+    }
 
-        return TooltipAnimation.fromString(name);
+    /**
+     * Resolves the appear or disappear animation. The disappear one falls back to the appear one through match_appear
+     */
+    public static TooltipAnimation animation(@Nullable TooltipContext context, boolean out) {
+        if (TooltipsConfig.REDUCED_MOTION || context != null && context.isPinned()) {
+            return TooltipAnimation.fromString("none");
+        }
+
+        final boolean framed = context != null && context.getFrameData() != null;
+        final String appear = framed ? context.getFrameData().getTooltipAppearAnimation() : TooltipsConfig.TOOLTIP_APPEAR_ANIMATION;
+        if (!out) {
+            return TooltipAnimation.fromString(appear);
+        }
+
+        final String disappear = framed ? context.getFrameData().getTooltipDisappearAnimation() : TooltipsConfig.TOOLTIP_DISAPPEAR_ANIMATION;
+        return TooltipAnimation.fromString(MATCH_APPEAR.equalsIgnoreCase(disappear == null ? "" : disappear.trim()) ? appear : disappear);
     }
 
     /**
      * Draws the context's layers wrapped in the configured animation
      */
     public static void render(TooltipContext context, boolean out, float progress) {
-        final TooltipAnimation animation = animation(context);
+        final TooltipAnimation animation = animation(context, out);
         final Transform transform = computeTransform(animation, out, AnimationUtils.clamp01(progress));
 
         final boolean faded = transform.alpha < 1f;
@@ -177,6 +190,7 @@ public final class TooltipAnimator {
     }
 
     private static final class Transform {
+
         private float scaleX = 1f;
         private float scaleY = 1f;
         private float alpha = 1f;

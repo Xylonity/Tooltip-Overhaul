@@ -44,7 +44,7 @@ public final class ConfigManager {
     });
 
     private static final ScheduledExecutorService SCHEDULED = Executors.newScheduledThreadPool(1, r -> {
-        Thread thread = new Thread(r, "TooltipOverhaul-ConfigSchedule");
+        final Thread thread = new Thread(r, "TooltipOverhaul-ConfigSchedule");
         thread.setDaemon(true);
         return thread;
     });
@@ -100,7 +100,7 @@ public final class ConfigManager {
         }
 
         String fileName = meta.file();
-        Path subDir = CONFIG_DIR.resolve(fileName);
+        final Path subDir = CONFIG_DIR.resolve(fileName);
         Path tomlPath = subDir.resolve(fileName + ".toml");
 
         try {
@@ -130,18 +130,20 @@ public final class ConfigManager {
     }
 
     private static void apply(Class<?> clazz, CommentedFileConfig config, boolean init) {
-        Set<String> seenCats = new HashSet<>();
-        Set<String> validPaths = new HashSet<>();
+        final Set<String> seenCats = new HashSet<>();
+        final Set<String> validPaths = new HashSet<>();
 
         for (Field field : clazz.getDeclaredFields()) {
-            ConfigEntry e = field.getAnnotation(ConfigEntry.class);
-            if (e == null) continue;
+            final ConfigEntry configEntry = field.getAnnotation(ConfigEntry.class);
+            if (configEntry == null) {
+                continue;
+            }
 
             field.setAccessible(true);
-            String category = e.category();
+            String category = configEntry.category();
             String entry = field.getName();
             String path = category.isEmpty() ? entry : category + "." + entry;
-            String target = category.isEmpty() ? entry : category;
+            final String target = category.isEmpty() ? entry : category;
 
             validPaths.add(path);
 
@@ -149,6 +151,15 @@ public final class ConfigManager {
             if (init && !category.isEmpty() && !config.contains(path) && config.contains(entry) && !(config.get(entry) instanceof CommentedConfig)) {
                 config.set(path, config.<Object>get(entry));
                 config.remove(entry);
+            }
+
+            // The preview triangle toggle is now a three-way selector, so existing choices are kept
+            if (clazz == TooltipsConfig.class && entry.equals("PREVIEW_PANEL_SIDE_TRIANGLES") && config.get(path) instanceof Boolean enabled) {
+                config.set(path, enabled ? "style_2" : "none");
+            }
+
+            if (clazz == TooltipsConfig.class && entry.equals("PREVIEW_PANEL_SIDE_TRIANGLES") && "style_3".equals(config.get(path))) {
+                config.set(path, "none");
             }
 
             Object def;
@@ -165,19 +176,22 @@ public final class ConfigManager {
                     config.setComment(target, wrapAndIndent(buildCategoryBanner(category)));
                 }
 
-                Object rawInit = config.get(path);
-                Object oldDefault = parseDefFromComment(config.getComment(path), field.getType());
+                final Object rawInit = config.get(path);
+                final Object oldDefault = parseDefFromComment(config.getComment(path), field.getType());
 
                 if (!config.contains(path) || (oldDefault != null && same(rawInit, oldDefault))) {
                     config.set(path, def);
                 }
 
-                config.setComment(path, wrapAndIndent(buildEntryComment(e, def)));
+                config.setComment(path, wrapAndIndent(buildEntryComment(configEntry, def)));
             }
 
             Object raw = config.get(path);
-            Object val = clamp(raw, e, field.getType());
-            if (val == null) val = def;
+            Object val = clamp(raw, configEntry, field.getType());
+            if (val == null) {
+                val = def;
+            }
+
             try {
                 setPrimitive(field, val);
             }
@@ -195,26 +209,28 @@ public final class ConfigManager {
     }
 
     private static void removeNonExistent(CommentedConfig node, String prefix, Set<String> validPaths) {
-        Set<String> keys = new HashSet<>(node.valueMap().keySet());
+        final Set<String> keys = new HashSet<>(node.valueMap().keySet());
 
         for (String key : keys) {
-            String fullPath = prefix.isEmpty() ? key : prefix + "." + key;
+            final String fullPath = prefix.isEmpty() ? key : prefix + "." + key;
 
             Object value = node.get(key);
 
             if (value instanceof CommentedConfig nested) {
                 removeNonExistent(nested, fullPath, validPaths);
 
-                boolean hasAnyValidChild = validPaths.stream().anyMatch(p -> p.equals(fullPath) || p.startsWith(fullPath + "."));
+                final boolean hasAnyValidChild = validPaths.stream().anyMatch(p -> p.equals(fullPath) || p.startsWith(fullPath + "."));
 
                 if (nested.valueMap().isEmpty() && !hasAnyValidChild) {
                     node.remove(key);
                 }
+
             }
             else {
                 if (!validPaths.contains(fullPath)) {
                     node.remove(key);
                 }
+
             }
 
         }
@@ -237,47 +253,49 @@ public final class ConfigManager {
         WATCHER.submit(() -> {
             try {
                 for (Path configFile : FILE2CLASS.keySet()) {
-                    Path parent = configFile.getParent();
+                    final Path parent = configFile.getParent();
                     if (parent != null && !WATCHED_DIRS.containsKey(parent)) {
                         try {
-                            WatchKey key = parent.register(WATCH,
-                                    StandardWatchEventKinds.ENTRY_MODIFY,
-                                    StandardWatchEventKinds.ENTRY_CREATE,
-                                    StandardWatchEventKinds.ENTRY_DELETE);
+                            WatchKey key = parent.register(WATCH, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
                             WATCHED_DIRS.put(parent, key);
                         }
                         catch (IOException e) {
                             e.printStackTrace();
                         }
+
                     }
 
                 }
 
                 while (RUN_WATCHER && !Thread.currentThread().isInterrupted()) {
-                    WatchKey key = WATCH.take();
-                    Path direct = (Path) key.watchable();
+                    final WatchKey key = WATCH.take();
+                    final Path direct = (Path) key.watchable();
                     for (WatchEvent<?> event : key.pollEvents()) {
-                        WatchEvent.Kind<?> kind = event.kind();
-                        if (kind == StandardWatchEventKinds.OVERFLOW) continue;
+                        final WatchEvent.Kind<?> kind = event.kind();
+                        if (kind == StandardWatchEventKinds.OVERFLOW) {
+                            continue;
+                        }
 
-                        Path file = direct.resolve((Path) event.context());
-                        Class<?> clazz = FILE2CLASS.get(file);
+                        final Path file = direct.resolve((Path) event.context());
+                        final Class<?> clazz = FILE2CLASS.get(file);
 
-                        if (clazz == null || !file.toString().endsWith(".toml")) continue;
+                        if (clazz == null || !file.toString().endsWith(".toml")) {
+                            continue;
+                        }
 
-                        long now = System.currentTimeMillis();
-                        long until = IGNORE_UNTIL.getOrDefault(file, 0L);
+                        final long now = System.currentTimeMillis();
+                        final long until = IGNORE_UNTIL.getOrDefault(file, 0L);
                         if (now < until) {
                             continue;
                         }
 
-                        ScheduledFuture<?> old = PENDING.remove(file);
+                        final ScheduledFuture<?> old = PENDING.remove(file);
                         if (old != null) {
                             old.cancel(false);
                         }
 
                         PENDING.put(file, SCHEDULED.schedule(() -> {
-                            CommentedFileConfig cfg = OPEN.get(clazz);
+                            final CommentedFileConfig cfg = OPEN.get(clazz);
                             if (cfg == null) {
                                 return;
                             }
@@ -290,11 +308,14 @@ public final class ConfigManager {
                             catch (Throwable ignored) {
                                 ;;
                             }
+
                         }, 300, TimeUnit.MILLISECONDS));
+
                     }
 
                     key.reset();
                 }
+
             }
             catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
@@ -306,17 +327,24 @@ public final class ConfigManager {
                 catch (IOException ignored) {
                     ;;
                 }
+
             }
 
         });
 
     }
 
-    private static Object parseDefFromComment(String s, Class<?> clazz) {
-        if (s == null) return null;
-        Matcher m = Pattern.compile("Default:\\s*([^\\|\\n]+)").matcher(s);
-        if (!m.find()) return null;
-        String raw = m.group(1).trim();
+    private static Object parseDefFromComment(String comment, Class<?> clazz) {
+        if (comment == null) {
+            return null;
+        }
+
+        final Matcher matcher = Pattern.compile("Default:\\s*([^\\|\\n]+)").matcher(comment);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        final String raw = matcher.group(1).trim();
         try {
             return switch (clazz.getName()) {
                 case "int" -> Integer.parseInt(raw);
@@ -334,7 +362,10 @@ public final class ConfigManager {
     }
 
     private static boolean same(Object a, Object b) {
-        if (a == null || b == null) return false;
+        if (a == null || b == null) {
+            return false;
+        }
+
         if (a instanceof Number n1 && b instanceof Number n2) {
             return Math.abs(n1.doubleValue() - n2.doubleValue()) < 1e-9;
         }
@@ -343,47 +374,52 @@ public final class ConfigManager {
     }
 
     private static String buildCategoryBanner(String category) {
-        String title = (category.isEmpty() ? "GENERAL" : category.toUpperCase()) + " SETTINGS";
+        final String title = (category.isEmpty() ? "GENERAL" : category.toUpperCase()) + " SETTINGS";
         return title.toLowerCase().replace(" settings", "") + " §§";
     }
 
     private static String buildEntryComment(ConfigEntry entry, Object defaultValue) {
-        String base = entry.comment().trim();
-        String note = entry.note().trim();
+        final String base = entry.comment().trim();
+        final String note = entry.note().trim();
 
-        boolean isNumber = defaultValue instanceof Number;
-        boolean isFloating = defaultValue instanceof Double || defaultValue instanceof Float;
+        final boolean isNumber = defaultValue instanceof Number;
+        final boolean isFloating = defaultValue instanceof Double || defaultValue instanceof Float;
 
         String defVal = isNumber && isFloating
                 ? hasDecimals(((Number) defaultValue).doubleValue(), true)
                 : String.valueOf(defaultValue);
 
-        StringBuilder sb = new StringBuilder(base).append("\n\nDefault: ").append(defVal);
+        final StringBuilder sb = new StringBuilder(base).append("\n\nDefault: ").append(defVal);
         if (isNumber) {
-            String minVal = hasDecimals(entry.min(), isFloating);
-            String maxVal = hasDecimals(entry.max(), isFloating);
+            final String minVal = hasDecimals(entry.min(), isFloating);
+            final String maxVal = hasDecimals(entry.max(), isFloating);
             sb.append("\nRange: ").append(minVal).append(" ~ ").append(maxVal);
         }
 
-        if (!note.isEmpty()) sb.append("\n\nNote: ").append(note);
+        if (!note.isEmpty()) {
+            sb.append("\n\nNote: ").append(note);
+        }
 
         return sb.toString();
     }
 
-    private static String hasDecimals(double d, boolean forceDecimal) {
-        if (Double.isInfinite(d) || Double.isNaN(d)) return Double.toString(d);
-        long asLong = (long) d;
-        if (d == asLong) {
+    private static String hasDecimals(double value, boolean forceDecimal) {
+        if (Double.isInfinite(value) || Double.isNaN(value)) {
+            return Double.toString(value);
+        }
+
+        final long asLong = (long) value;
+        if (value == asLong) {
             return forceDecimal ? asLong + ".0" : Long.toString(asLong);
         }
 
-        return Double.toString(d);
+        return Double.toString(value);
     }
 
     private static String wrapText(String text) {
-        StringBuilder out = new StringBuilder();
+        final StringBuilder out = new StringBuilder();
         for (String paragraph : text.split("\n")) {
-            String[] words = paragraph.split(" ");
+            final String[] words = paragraph.split(" ");
             int col = 0;
             for (String w : words) {
                 if (col + w.length() > 130) {
@@ -405,23 +441,26 @@ public final class ConfigManager {
     }
 
     private static String wrapAndIndent(String comment) {
-        String wrapped = wrapText(comment);
-        StringBuilder s = new StringBuilder();
+        final String wrapped = wrapText(comment);
+        final StringBuilder builder = new StringBuilder();
         for (String line : wrapped.split("\n")) {
-            s.append(" ").append(line).append("\n");
+            builder.append(" ").append(line).append("\n");
         }
 
-        return s.substring(0, s.length() - 1);
+        return builder.substring(0, builder.length() - 1);
     }
 
-    private static Object clamp(Object raw, ConfigEntry e, Class<?> type) {
-        if (!(raw instanceof Number num)) return raw;
-        double d = Math.max(e.min(), Math.min(e.max(), num.doubleValue()));
+    private static Object clamp(Object raw, ConfigEntry entry, Class<?> type) {
+        if (!(raw instanceof Number num)) {
+            return raw;
+        }
+
+        final double clamped = Math.max(entry.min(), Math.min(entry.max(), num.doubleValue()));
         return switch (type.getName()) {
-            case "int" -> (int) d;
-            case "long" -> (long) d;
-            case "float" -> (float) d;
-            case "double" -> d;
+            case "int" -> (int) clamped;
+            case "long" -> (long) clamped;
+            case "float" -> (float) clamped;
+            case "double" -> clamped;
             default -> raw;
         };
 
@@ -444,35 +483,35 @@ public final class ConfigManager {
     }
 
     public static void save(Class<?> clazz) {
-        CommentedFileConfig config = OPEN.get(clazz);
+        final CommentedFileConfig config = OPEN.get(clazz);
         if (config == null) {
             return;
         }
 
-        AutoConfig meta = clazz.getAnnotation(AutoConfig.class);
+        final AutoConfig meta = clazz.getAnnotation(AutoConfig.class);
         if (meta == null) {
             return;
         }
 
-        String fileName = meta.file();
-        Path tomlPath = CONFIG_DIR.resolve(fileName).resolve(fileName + ".toml");
+        final String fileName = meta.file();
+        final Path tomlPath = CONFIG_DIR.resolve(fileName).resolve(fileName + ".toml");
 
         IGNORE_UNTIL.put(tomlPath, System.currentTimeMillis() + 800L);
 
         for (Field field : clazz.getDeclaredFields()) {
-            ConfigEntry rawEntry = field.getAnnotation(ConfigEntry.class);
+            final ConfigEntry rawEntry = field.getAnnotation(ConfigEntry.class);
             if (rawEntry == null) {
                 continue;
             }
 
             field.setAccessible(true);
 
-            String category = rawEntry.category();
-            String entry = field.getName();
-            String path = category.isEmpty() ? entry : category + "." + entry;
+            final String category = rawEntry.category();
+            final String entry = field.getName();
+            final String path = category.isEmpty() ? entry : category + "." + entry;
 
             try {
-                Object value = field.get(null);
+                final Object value = field.get(null);
                 config.set(path, value);
             }
             catch (Exception ignored) {

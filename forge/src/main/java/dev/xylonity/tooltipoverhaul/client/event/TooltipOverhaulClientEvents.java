@@ -2,6 +2,7 @@ package dev.xylonity.tooltipoverhaul.client.event;
 
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.command.ReloadCommand;
+import dev.xylonity.tooltipoverhaul.client.render.PinnedTooltipState;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipAnimationState;
 import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,6 +29,7 @@ public class TooltipOverhaulClientEvents {
         @SubscribeEvent
         public static void onScreenRenderPost(ScreenEvent.Render.Post event) {
             TooltipAnimationState.tick(event.getGuiGraphics());
+            PinnedTooltipState.render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
         }
 
     }
@@ -38,6 +40,8 @@ public class TooltipOverhaulClientEvents {
         @SubscribeEvent
         public static void registerKeyMappingsEvent(RegisterKeyMappingsEvent event) {
             event.register(TooltipOverhaulKeyMappings.COMPARE_TOOLTIP);
+            event.register(TooltipOverhaulKeyMappings.OPEN_CONFIG);
+            event.register(TooltipOverhaulKeyMappings.PIN_TOOLTIP);
         }
 
     }

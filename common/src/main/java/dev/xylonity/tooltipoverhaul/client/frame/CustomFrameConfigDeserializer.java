@@ -1,13 +1,14 @@
 package dev.xylonity.tooltipoverhaul.client.frame;
 
 import com.google.gson.*;
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * JSON core deserializer. The first member name of the json array must be the literal "frames", otherwise the
- * dedicated config file won't be read
+ * Resolves templates and isolates malformed rules so valid rules in the file still load
  */
 public class CustomFrameConfigDeserializer implements JsonDeserializer<CustomFrameConfig> {
 
@@ -18,13 +19,24 @@ public class CustomFrameConfigDeserializer implements JsonDeserializer<CustomFra
             throw new JsonParseException("Expected JSON object for CustomFrameConfig");
         }
 
-        JsonObject file = json.getAsJsonObject();
-
+        final JsonObject file = json.getAsJsonObject();
         if (!file.has("frames") || !file.get("frames").isJsonArray()) {
             return new CustomFrameConfig(List.of());
         }
 
-        List<CustomFrameData> frames = file.getAsJsonArray("frames").asList().stream().map(element -> context.<CustomFrameData>deserialize(element, CustomFrameData.class)).toList();
+        final List<CustomFrameData> frames = new ArrayList<>();
+        int index = 0;
+        for (final JsonElement element : file.getAsJsonArray("frames")) {
+            try {
+                frames.add(context.deserialize(FrameTemplates.resolve(file, element.getAsJsonObject()), CustomFrameData.class));
+            }
+            catch (final RuntimeException exception) {
+                TooltipOverhaul.LOGGER.warn("Skipping invalid frame #{}: {}", index + 1, exception.getMessage());
+            }
+
+            index++;
+        }
+
         return new CustomFrameConfig(frames);
     }
 

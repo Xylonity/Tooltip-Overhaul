@@ -1,28 +1,37 @@
 package dev.xylonity.tooltipoverhaul.client.style;
 
-import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
+import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
+import dev.xylonity.tooltipoverhaul.client.layer.impl.IconBackgroundLayer;
+import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameData;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipLayout;
 import dev.xylonity.tooltipoverhaul.client.style.background.DefaultBackground;
+import dev.xylonity.tooltipoverhaul.client.style.background.CompactFooter;
 import dev.xylonity.tooltipoverhaul.client.style.badge.DefaultEquippedBadge;
-import dev.xylonity.tooltipoverhaul.client.style.divider.GradientDividerLine;
-import dev.xylonity.tooltipoverhaul.client.style.divider.LinearDividerLine;
-import dev.xylonity.tooltipoverhaul.client.style.divider.StaticDividerLine;
+import dev.xylonity.tooltipoverhaul.client.style.divider.*;
 import dev.xylonity.tooltipoverhaul.client.style.effect.*;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCatalog;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectRuntime;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectSettings;
+import dev.xylonity.tooltipoverhaul.client.style.preview.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.icon.DefaultIcon;
 import dev.xylonity.tooltipoverhaul.client.style.icon.background.*;
 import dev.xylonity.tooltipoverhaul.client.style.inner.GradientInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.inner.StaticInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.overlay.DefaultOverlay;
-import dev.xylonity.tooltipoverhaul.client.style.preview.background.DefaultPreviewBackground;
 import dev.xylonity.tooltipoverhaul.client.style.preview.inner.DefaultPreviewGradientInnerOverlay;
 import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewArmorStand;
 import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewPlayerRenderer;
 import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.DefaultPreviewStackRenderer;
+import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultPreviewShadow;
 import dev.xylonity.tooltipoverhaul.client.style.shadow.DefaultShadow;
 import dev.xylonity.tooltipoverhaul.client.style.text.DefaultText;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.CircularHoleVignette;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.CircularVignette;
+import dev.xylonity.tooltipoverhaul.client.style.vignette.LinearVignette;
+import dev.xylonity.tooltipoverhaul.client.style.vignette.ShapedVignette;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
@@ -69,9 +78,9 @@ public class StyleFactory {
         // Vignette effects
         boolean hasVignette = RenderUtils.hasVignette(context);
         if (hasVignette) {
-            List<String> rawVignetteEntries = context.getFrameData().vignettes();
+            final List<String> rawVignetteEntries = context.getFrameData().vignettes();
             if (!rawVignetteEntries.isEmpty()) {
-                StringBuilder rawKeys = new StringBuilder();
+                final StringBuilder rawKeys = new StringBuilder();
                 for (String rawVignette : rawVignetteEntries) {
                     rawKeys.append(rawVignette).append(",");
                 }
@@ -86,27 +95,31 @@ public class StyleFactory {
 
         layers.add(new DefaultOverlay());
 
-        assignEffects(context, layers, colors);
+        if (!RenderUtils.effectsBehindText(context)) {
+            assignEffects(context, layers, LayerDepth.EFFECT);
+        }
 
         return layers;
     }
 
     private List<ITooltipLayer> createForRarity(TooltipContext context) {
 
-        List<ITooltipLayer> layers = new ArrayList<>();
+        final List<ITooltipLayer> layers = new ArrayList<>();
 
-        int[] colors = ColorUtils.getColorsPerRarity(context);
+        final int[] colors = ColorUtils.getColorsPerRarity(context);
         assignDefaultLayers(context, layers, colors);
 
         // Vignette effects
-        boolean hasVignette = RenderUtils.hasVignette(context);
+        final boolean hasVignette = RenderUtils.hasVignette(context);
         if (hasVignette) {
             parseVignetteEntries(TooltipsConfig.VIGNETTES, layers);
         }
 
         layers.add(new DefaultOverlay());
 
-        assignEffects(context, layers, colors);
+        if (!RenderUtils.effectsBehindText(context)) {
+            assignEffects(context, layers, LayerDepth.EFFECT);
+        }
 
         return layers;
     }
@@ -114,6 +127,14 @@ public class StyleFactory {
     private void assignDefaultLayers(TooltipContext context, List<ITooltipLayer> layers, int[] colors) {
 
         layers.add(new DefaultBackground());
+        if (RenderUtils.effectsBehindText(context)) {
+            assignEffects(context, layers, LayerDepth.BACKGROUND_EFFECT);
+        }
+
+        if (TooltipLayout.footerHeight(context) > 0) {
+            layers.add(new CompactFooter());
+        }
+
         layers.add(new DefaultText());
 
         if (RenderUtils.hasShadow(context)) {
@@ -129,13 +150,20 @@ public class StyleFactory {
 
         // If the icon is enabled
         if (context.hasIcon()) {
-            String iconBackgroundType = RenderUtils.getIconBackgroundType(context);
-            switch (iconBackgroundType) {
-                case "focus" -> layers.add(new FocusIconBackground());
-                case "void" -> layers.add(new VoidIconBackground());
-                case "slot" -> layers.add(new SlotIconBackground());
-                case "slot_border" -> layers.add(new SlotBorderIconBackground());
-                case "glow" -> layers.add(new GlowingIconBackground());
+            final String iconBackgroundType = RenderUtils.getIconBackgroundType(context);
+            IconBackgroundLayer background = switch (iconBackgroundType) {
+                case "focus" -> new FocusIconBackground();
+                case "void" -> new VoidIconBackground();
+                case "slot" -> new SlotIconBackground();
+                case "slot_border" -> new SlotBorderIconBackground();
+                case "glow" -> new GlowingIconBackground();
+                default -> null;
+            };
+            if (TooltipLayout.hasExternalIcon(context)) {
+                layers.add(new DetachedIconPlate(background));
+            }
+            else if (background != null) {
+                layers.add(background);
             }
 
             layers.add(new DefaultIcon());
@@ -143,22 +171,30 @@ public class StyleFactory {
 
         // If the divider line is enabled
         if (context.hasDividerLine() && context.getComponents().size() > 1) {
-            String dividerLineType = RenderUtils.getDividerLineType(context);
+            final String dividerLineType = RenderUtils.getDividerLineType(context);
             switch (dividerLineType) {
                 case "gradient" -> layers.add(new GradientDividerLine());
                 case "static" -> layers.add(new StaticDividerLine());
                 case "linear" -> layers.add(new LinearDividerLine());
+                case "dashed" -> layers.add(new PatternDividerLine(4, 3));
+                case "dotted" -> layers.add(new PatternDividerLine(1, 2));
+                case "ornament" -> layers.add(new OrnamentDividerLine());
+                case "gradient_ornament" -> layers.add(new GradientOrnamentDividerLine());
             }
 
         }
 
-        boolean hasPreviewOfTieredItem = RenderUtils.hasPreviewOfTieredItem(context);
-        boolean hasPreviewOfArmorItem = RenderUtils.hasPreviewOfArmorItem(context);
-        if (hasPreviewOfTieredItem || hasPreviewOfArmorItem) {
+        final boolean hasPreviewOfStack = RenderUtils.hasPreviewOfStack(context);
+        final boolean hasPreviewOfArmorItem = RenderUtils.hasPreviewOfArmorItem(context);
+        if (hasPreviewOfStack || hasPreviewOfArmorItem) {
+            if (RenderUtils.hasShadow(context)) {
+                layers.add(new DefaultPreviewShadow());
+            }
+
             layers.add(new DefaultPreviewBackground());
             layers.add(new DefaultPreviewGradientInnerOverlay(colors[0], colors[1], colors[2]));
 
-            if (hasPreviewOfTieredItem) {
+            if (hasPreviewOfStack) {
                 layers.add(new DefaultPreviewStackRenderer());
             }
             else {
@@ -168,46 +204,37 @@ public class StyleFactory {
                 else {
                     layers.add(new DefaultPreviewPlayerRenderer());
                 }
+
             }
 
         }
 
-        if (!context.isMainTooltip()) {
+        if (!context.isMainTooltip() && !context.isPinned()) {
             layers.add(new DefaultEquippedBadge(colors[0], colors[1], colors[2]));
         }
 
     }
 
     private void parseVignetteEntries(String key, List<ITooltipLayer> layers) {
-        List<VignetteEntry> vignetteEntries = VignetteEntry.Parser.from(key);
+        final List<VignetteEntry> vignetteEntries = VignetteEntry.Parser.from(key);
         for (VignetteEntry entry : vignetteEntries) {
             switch (entry.type()) {
                 case "circular" -> layers.add(new CircularVignette(entry));
                 case "hole" -> layers.add(new CircularHoleVignette(entry));
+                case "ellipse", "diamond", "ring" -> layers.add(new ShapedVignette(entry));
+                case "linear" -> layers.add(new LinearVignette(entry));
             }
+
         }
 
     }
 
-    private void assignEffects(TooltipContext context, List<ITooltipLayer> layers, int[] colors) {
-        for (String part : RenderUtils.getEffect(context).split("\\s*[;,]\\s*")) {
-            switch (part.trim().toLowerCase()) {
-                case "bubbles" -> layers.add(new BubblesEffect());
-                case "cinder" -> layers.add(new CinderEffect());
-                case "crystals" -> layers.add(new CrystalsEffect());
-                case "fireflies" -> layers.add(new FirefliesEffect());
-                case "echo" -> layers.add(new EchoEffect());
-                case "galaxy" -> layers.add(new GalaxyEffect());
-                case "magic_orbs" -> layers.add(new MagicOrbsEffect());
-                case "speed_lines" -> layers.add(new SpeedLinesEffect());
-                case "nebula" -> layers.add(new NebulaEffect());
-                case "spiral" -> layers.add(new TimeSpiralEffect());
-                case "white_dust" -> layers.add(new WhiteDustEffect());
-                case "metal_shining" -> layers.add(new MetalShiningEffect());
-                case "rim_light" -> layers.add(new RimLightEffect(0x88154c79, 0x0));
-                case "ripples" -> layers.add(new RipplesEffect());
-                case "sonar" -> layers.add(new SonarEffect());
-                case "stars" -> layers.add(new StarsEffect());
+    private void assignEffects(TooltipContext context, List<ITooltipLayer> layers, LayerDepth depth) {
+        final EffectSettings settings = context.getFrameData() == null ? EffectSettings.INHERIT : context.getFrameData().effectSettings();
+        for (final String part : RenderUtils.getEffect(context).split("\\s*[;,]\\s*")) {
+            final EffectLayer effect = EffectCatalog.create(part);
+            if (effect != null) {
+                layers.add(EffectRuntime.wrap(part, effect, settings, depth));
             }
 
         }

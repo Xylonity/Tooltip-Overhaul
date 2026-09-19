@@ -6,14 +6,16 @@ import net.minecraft.world.phys.Vec2;
 
 public class DefaultShadow implements ShadowLayer {
 
+    public static final int COLOR = 0x80000000;
+
     @Override
     public void render(TooltipContext context, Vec2 position) {
-        int x0 = (int) position.x - 1;
-        int y0 = (int) position.y;
-        int x1 = (int) (position.x + context.getTooltipSize().x + 4);
-        int y1 = (int) (position.y + context.getTooltipSize().y + 4);
+        final int x0 = (int) position.x - 1;
+        final int y0 = (int) position.y;
+        final int x1 = (int) (position.x + context.getTooltipSize().x + 4);
+        final int y1 = (int) (position.y + context.getTooltipSize().y + 4);
 
-        int bgColor = 0x80000000;
+        final int bgColor = COLOR;
 
         // Background
         context.getGraphics().fill(x0, y0, x1, y1, 0, bgColor);

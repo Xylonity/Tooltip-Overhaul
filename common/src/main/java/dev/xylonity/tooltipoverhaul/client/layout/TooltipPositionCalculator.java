@@ -21,10 +21,11 @@ public class TooltipPositionCalculator {
         boolean isMainTooltip = context.isMainTooltip();
 
         int paddingX = context.getPaddingX();
+        int leftOverflow = TooltipLayout.leftOverflow(context);
         int paddingY = context.getPaddingY();
-        int tooltipWidth = (int) context.getTooltipSize().x;
+        final int tooltipWidth = (int) context.getTooltipSize().x;
         int tooltipHeight = (int) context.getTooltipSize().y;
-        int screenWidth = context.getScreenWidth();
+        final int screenWidth = context.getScreenWidth();
         int screenHeight = context.getScreenHeight();
 
         // Packed up translates the model-view stack and hands widget-local mouse coordinates to renderTooltipInternal,
@@ -37,12 +38,12 @@ public class TooltipPositionCalculator {
         final int mouseY = context.getMouseY() + viewOffsetY;
 
         // Initial position (with offset)
-        float posX = mouseX + (isMainTooltip ? 12 : -12) + PositionUtils.getMainPanelPosition(context, TextAxis.X);
+        float posX = mouseX + (isMainTooltip ? 12 + leftOverflow : -12) + PositionUtils.getMainPanelPosition(context, TextAxis.X);
         float posY = mouseY - 12 + PositionUtils.getMainPanelPosition(context, TextAxis.Y);
 
         if (isMainTooltip) {
-            TooltipContext equippedContext = context.getOtherTooltipContext();
-            boolean hasEquippedContext = equippedContext != null;
+            final TooltipContext equippedContext = context.getOtherTooltipContext();
+            final boolean hasEquippedContext = equippedContext != null;
 
             // Just if the equipped stack is not available
             if (!hasEquippedContext) {
@@ -51,11 +52,11 @@ public class TooltipPositionCalculator {
                 // Bedrock-like centering (if the tooltip fits on neither side of the cursor, centers it horizontally
                 // and places it above (or below) the cursor so the hovered item stays visible)
                 if (TooltipsConfig.BEDROCK_CENTERING) {
-                    final boolean fitsRight = mouseX + 12 + tooltipWidth <= screenWidth;
-                    final boolean fitsLeft = mouseX - 12 - tooltipWidth >= paddingX;
+                    final boolean fitsRight = mouseX + 12 + tooltipWidth + leftOverflow <= screenWidth;
+                    final boolean fitsLeft = mouseX - 12 - tooltipWidth - leftOverflow >= paddingX;
 
                     if (!fitsRight && !fitsLeft) {
-                        posX = (screenWidth - tooltipWidth) / 2f + PositionUtils.getMainPanelPosition(context, TextAxis.X);
+                        posX = (screenWidth - tooltipWidth + leftOverflow) / 2f + PositionUtils.getMainPanelPosition(context, TextAxis.X);
 
                         final float offsetY = PositionUtils.getMainPanelPosition(context, TextAxis.Y);
                         if (mouseY - 12 - tooltipHeight >= paddingY) {
@@ -85,8 +86,8 @@ public class TooltipPositionCalculator {
             }
 
             // Clamps to the left border of the screen
-            if (posX < paddingX) {
-                posX = paddingX;
+            if (posX < paddingX + leftOverflow) {
+                posX = paddingX + leftOverflow;
             }
 
             // If it exceeds the bottom border, increase the height
@@ -106,6 +107,10 @@ public class TooltipPositionCalculator {
 
         }
 
+        if (isMainTooltip && context.getLayoutStyle() == TooltipLayout.Style.FLOATING && context.getOtherTooltipContext() == null) {
+            posX = FloatingLayout.adjustPanelX(context, posX);
+        }
+
         return new Vec2(posX - viewOffsetX, posY - viewOffsetY);
     }
 
@@ -118,38 +123,40 @@ public class TooltipPositionCalculator {
 
         Vec2 newPosition = context.getTooltipPosition();
 
-        boolean isMainTooltip = context.isMainTooltip();
+        final boolean isMainTooltip = context.isMainTooltip();
 
-        int paddingX = context.getPaddingX();
-        int paddingY = context.getPaddingY();
-        int mouseY = context.getMouseY();
-        int tooltipHeight = (int) context.getTooltipSize().y;
-        int screenHeight = context.getScreenHeight();
+        final int paddingX = context.getPaddingX();
+        final int leftOverflow = TooltipLayout.leftOverflow(context);
+        final int paddingY = context.getPaddingY();
+        final int mouseY = context.getMouseY();
+        final int tooltipHeight = (int) context.getTooltipSize().y;
+        final int screenHeight = context.getScreenHeight();
 
         // Initial position (with offset)
         float posY = mouseY - 12;
 
-        TooltipContext otherContext = context.getOtherTooltipContext();
+        final TooltipContext otherContext = context.getOtherTooltipContext();
 
-        Vec2 otherContextPosition = otherContext != null ? otherContext.getTooltipPosition() : null;
-        Vec2 otherContextSize = otherContext != null ? otherContext.getTooltipSize() : null;
+        final Vec2 otherContextPosition = otherContext != null ? otherContext.getTooltipPosition() : null;
+        final Vec2 otherContextSize = otherContext != null ? otherContext.getTooltipSize() : null;
 
         if (isMainTooltip) {
 
             if (otherContextPosition != null && otherContextSize != null) {
-                if (otherContextPosition.x <= paddingX * 2) {
-                    newPosition = new Vec2(otherContextPosition.x + otherContextSize.x + 12 * 2, newPosition.y);
+                if (otherContextPosition.x <= otherContext.getPaddingX() * 2 + TooltipLayout.leftOverflow(otherContext)) {
+                    newPosition = new Vec2(otherContextPosition.x + otherContextSize.x + 12 * 2 + leftOverflow, newPosition.y);
                 }
+
             }
 
             if (otherContext != null && !otherContext.isMainTooltip()) {
-                int equippedHeight = otherContextSize != null ? (int) otherContextSize.y : 0;
-                float equippedPosY = mouseY - 12;
+                final int equippedHeight = otherContextSize != null ? (int) otherContextSize.y : 0;
+                final float equippedPosY = mouseY - 12;
 
                 // Checks if the equipped tooltip would be clamped at the bottom
-                boolean equippedClampedAtBottom = equippedPosY + equippedHeight + paddingY > screenHeight;
+                final boolean equippedClampedAtBottom = equippedPosY + equippedHeight + paddingY > screenHeight;
                 // Checks if the equipped tooltip would be clamped at the top
-                boolean equippedClampedAtTop = equippedPosY < paddingY;
+                final boolean equippedClampedAtTop = equippedPosY < paddingY;
 
                 if (equippedClampedAtBottom || equippedClampedAtTop) {
                     // Using the same Y position as the equipped tooltip will have after clamping
@@ -195,17 +202,18 @@ public class TooltipPositionCalculator {
 
             // Hooks the second tooltip to the main tooltip X position
             if (otherContextPosition != null && otherContextSize != null) {
-                newPosition = new Vec2(0, context.getTooltipPosition().y).add(new Vec2(otherContextPosition.x - 24 - context.getTooltipSize().x, 0));
+                newPosition = new Vec2(0, context.getTooltipPosition().y).add(new Vec2(otherContextPosition.x - TooltipLayout.leftOverflow(otherContext) - 24 - context.getTooltipSize().x, 0));
                 newPosition = new Vec2(newPosition.x, otherContextPosition.y);
 
-                if (newPosition.x < context.getPaddingX()) {
-                    newPosition = new Vec2(context.getPaddingX() * 2, newPosition.y);
+                if (newPosition.x < context.getPaddingX() + leftOverflow) {
+                    newPosition = new Vec2(context.getPaddingX() * 2 + leftOverflow, newPosition.y);
                 }
+
             }
 
             // Vertically aligns the tooltip under a certain margin. That is, if the main tooltip is too high or too
             // low, the equippable tooltip is aligned with respect to the margins of the screen
-            int margin = 100;
+            final int margin = 100;
             if (otherContextPosition != null && otherContextSize != null) {
                 if (posY != otherContextPosition.y) {
                     int difference = (int) (posY - otherContextPosition.y);

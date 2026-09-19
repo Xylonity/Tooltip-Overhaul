@@ -1,8 +1,11 @@
 package dev.xylonity.tooltipoverhaul.client.layer.impl;
 
 import dev.xylonity.tooltipoverhaul.client.layer.ITooltipLayer;
+import dev.xylonity.tooltipoverhaul.client.layout.FloatingLayout;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipLayout;
 import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.preview.PreviewPanelDecorations;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
@@ -19,26 +22,35 @@ public interface PreviewBackgroundLayer extends ITooltipLayer {
             context.translate(0, 0, getLayerDepth().getZ());
             context.setLayerDepth(getLayerDepth());
 
-            int margin = 22;
-            Vec2 position = context.getTooltipPosition();
-            int sizeX = RenderUtils.calculateSecondPanelSize(context, TextAxis.X);
-            int sizeY = RenderUtils.calculateSecondPanelSize(context, TextAxis.Y);
-            int tooltipSizeX = (int) context.getTooltipSize().x;
-            int x0 = (int) (position.x - margin);
-            int y0 = (int) (position.y - 2);
-            int x1 = (int) (position.x - margin - sizeX - 4);
-            int y1 = (int) (position.y + sizeY);
+            if (context.getLayoutStyle() == TooltipLayout.Style.FLOATING) {
+                final FloatingLayout layout = context.getFloatingLayout();
+                final Vec2 position = context.getTooltipPosition();
+                render(context, position.add(layout.previewStart()), position.add(layout.previewEnd()));
+                return;
+            }
 
-            Vec2 originalPos;
-            Vec2 finalPos;
+            final int leftOverflow = TooltipLayout.leftOverflow(context);
+            final int sideExtent = RenderUtils.hasPreviewPanelSideTriangles(context) ? PreviewPanelDecorations.TRIANGLE_WIDTH : 0;
+            final int margin = 22 + leftOverflow + sideExtent;
+            final Vec2 position = context.getTooltipPosition();
+            final int sizeX = RenderUtils.calculateSecondPanelSize(context, TextAxis.X);
+            final int sizeY = RenderUtils.calculateSecondPanelSize(context, TextAxis.Y);
+            final int tooltipSizeX = (int) context.getTooltipSize().x;
+            final int x0 = (int) (position.x - margin);
+            final int y0 = (int) (position.y - 2);
+            final int x1 = (int) (position.x - margin - sizeX - 4);
+            final int y1 = (int) (position.y + sizeY);
 
-            int extraX = PositionUtils.getSecondPanelPosition(context, TextAxis.X);
-            int extraY = PositionUtils.getSecondPanelPosition(context, TextAxis.Y);
+            final Vec2 originalPos;
+            final Vec2 finalPos;
 
-            // Reposition the preview panel components if there is insufficient space at the left
-            if (x1 < 0 && TooltipsConfig.AUTO_REPOSITION_PREVIEW_PANEL) {
-                originalPos = new Vec2(x0 + tooltipSizeX + margin * 2 + context.getPaddingX() + sizeX - extraX, y0 + extraY);
-                finalPos = new Vec2(x1 + tooltipSizeX + margin * 2 + context.getPaddingX() + sizeX - extraX, y1 + extraY);
+            final int extraX = PositionUtils.getSecondPanelPosition(context, TextAxis.X);
+            final int extraY = PositionUtils.getSecondPanelPosition(context, TextAxis.Y);
+
+            // Repositions the preview panel components if there is insufficient space at the left
+            if (x1 - sideExtent < 0 && TooltipsConfig.AUTO_REPOSITION_PREVIEW_PANEL) {
+                originalPos = new Vec2(x0 + tooltipSizeX + margin * 2 - leftOverflow + context.getPaddingX() + sizeX - extraX, y0 + extraY);
+                finalPos = new Vec2(x1 + tooltipSizeX + margin * 2 - leftOverflow + context.getPaddingX() + sizeX - extraX, y1 + extraY);
             }
             else {
                 originalPos = new Vec2(x0 + extraX, y0 + extraY);

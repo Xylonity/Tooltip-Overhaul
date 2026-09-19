@@ -6,6 +6,9 @@ import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
+import net.minecraft.resources.ResourceLocation;
 
 public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrameData> {
 
@@ -16,67 +19,82 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
             throw new JsonParseException("Failed loading custom_frames JSON, invalid object for CustomFrameData");
         }
 
-        JsonObject entry = json.getAsJsonObject();
+        final JsonObject entry = json.getAsJsonObject();
 
-        List<String> items = parseStringList(entry, "items");
-        List<String> tags = parseStringList(entry, "tags");
-        Optional<String> namespace = parseString(entry, "namespace");
+        final List<String> items = parseStringList(entry, "items");
+        final List<String> tags = parseStringList(entry, "tags");
+        for (String id : Stream.concat(items.stream(), tags.stream()).toList()) {
+            if (ResourceLocation.tryParse(id) == null) {
+                throw new JsonParseException("Invalid item or tag ID: " + id);
+            }
+
+        }
+
+        final Optional<String> namespace = parseString(entry, "namespace");
         List<String> rarities = parseStringOrList(entry, "rarity");
         if (rarities.isEmpty()) {
             rarities = parseStringOrList(entry, "rarities");
         }
 
-        Optional<String> texture = parseString(entry, "texture");
-        Optional<Integer> backgroundColor = parseInt(entry, "backgroundColor");
-        Optional<String> borderType = parseString(entry, "borderType");
-        Optional<String> innerFrameCornerType = parseString(entry, "innerFrameCornerType");
-        Optional<String> backgroundCornerType = parseString(entry, "backgroundCornerType");
-        Optional<CustomFrameData.GradientType> gradientType = parseEnum(entry, "gradientType", CustomFrameData.GradientType.class);
-        Optional<List<String>> gradientColors = parseOptionalStringList(entry, "gradientColors");
-        Optional<String> itemRating = parseString(entry, "itemRating");
-        Optional<String> colorItemRating = parseString(entry, "colorItemRating");
+        final Optional<String> texture = parseString(entry, "texture");
+        final Optional<Integer> backgroundColor = parseInt(entry, "backgroundColor");
+        final Optional<String> borderType = parseString(entry, "borderType");
+        final Optional<String> innerFrameCornerType = parseString(entry, "innerFrameCornerType");
+        final Optional<String> backgroundCornerType = parseString(entry, "backgroundCornerType");
+        final Optional<CustomFrameData.GradientType> gradientType = parseEnum(entry, "gradientType", CustomFrameData.GradientType.class);
+        final Optional<List<String>> gradientColors = parseOptionalStringList(entry, "gradientColors");
+        final Optional<String> itemRating = parseString(entry, "itemRating");
+        final Optional<String> colorItemRating = parseString(entry, "colorItemRating");
 
-        Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
-        Optional<String> titleAlignment = parseString(entry, "titleAlignment");
-        Optional<Integer> tooltipPositionX = parseInt(entry, "tooltipPositionX");
-        Optional<Integer> tooltipPositionY = parseInt(entry, "tooltipPositionY");
-        Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
-        Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
-        Optional<Integer> dividerLineTopPadding = parseInt(entry, "dividerLineTopPadding");
-        Optional<Integer> dividerLineBottomPadding = parseInt(entry, "dividerLineBottomPadding");
-        Optional<Float> iconSize = parseFloat(entry, "iconSize");
-        Optional<Float> iconRotatingSpeed = parseFloat(entry, "iconRotatingSpeed");
-        Optional<String> iconAppearAnimation = parseString(entry, "iconAppearAnimation");
-        Optional<String> tooltipAppearAnimation = parseString(entry, "tooltipAppearAnimation");
-        Optional<Float> tooltipAnimationDuration = parseFloat(entry, "tooltipAnimationDuration");
-        Optional<Integer> secondPanelX = parseInt(entry, "secondPanelX");
-        Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
-        Optional<Integer> secondPanelSizeX = parseInt(entry, "secondPanelSizeX");
-        Optional<Integer> secondPanelSizeY = parseInt(entry, "secondPanelSizeY");
-        Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
-        Optional<String> dividerLineType = parseString(entry, "dividerLineType");
-        Optional<String> dividerLineColor = parseString(entry, "dividerLineColor");
+        final Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
+        final Optional<String> titleAlignment = parseString(entry, "titleAlignment");
+        final Optional<String> tooltipLayout = parseString(entry, "tooltipLayout");
+        final Optional<Boolean> compactShowModName = parseBool(entry, "compactShowModName");
+        final Optional<String> compactModNameColor = parseString(entry, "compactModNameColor");
+        final Optional<Integer> tooltipPositionX = parseInt(entry, "tooltipPositionX");
+        final Optional<Integer> tooltipPositionY = parseInt(entry, "tooltipPositionY");
+        final Optional<Integer> mainPanelPaddingX = parseInt(entry, "mainPanelPaddingX");
+        final Optional<Integer> mainPanelPaddingY = parseInt(entry, "mainPanelPaddingY");
+        final Optional<Integer> dividerLineTopPadding = parseInt(entry, "dividerLineTopPadding");
+        final Optional<Integer> dividerLineBottomPadding = parseInt(entry, "dividerLineBottomPadding");
+        final Optional<Float> iconSize = parseFloat(entry, "iconSize");
+        final Optional<Float> iconRotatingSpeed = parseFloat(entry, "iconRotatingSpeed");
+        final Optional<String> iconAppearAnimation = parseString(entry, "iconAppearAnimation");
+        final Optional<String> tooltipAppearAnimation = parseString(entry, "tooltipAppearAnimation");
+        final Optional<String> tooltipDisappearAnimation = parseString(entry, "tooltipDisappearAnimation");
+        final Optional<Float> tooltipAnimationDuration = parseFloat(entry, "tooltipAnimationDuration");
+        final Optional<Integer> secondPanelX = parseInt(entry, "secondPanelX");
+        final Optional<Integer> secondPanelY = parseInt(entry, "secondPanelY");
+        final Optional<Integer> secondPanelSizeX = parseInt(entry, "secondPanelSizeX");
+        final Optional<Integer> secondPanelSizeY = parseInt(entry, "secondPanelSizeY");
+        final Optional<Float> secondPanelRendererSpeed = parseFloat(entry, "secondPanelRendererSpeed");
+        final Optional<String> dividerLineType = parseString(entry, "dividerLineType");
+        final Optional<String> dividerLineColor = parseString(entry, "dividerLineColor");
 
-        Optional<String> particles = parseString(entry, "particles");
-        Optional<String> specialEffect = parseString(entry, "specialEffect");
-        List<String> vignettes = parseStringList(entry, "vignettes");
+        final Optional<String> particles = parseString(entry, "particles");
+        final Optional<String> specialEffect = parseString(entry, "specialEffect");
+        final List<String> vignettes = parseStringList(entry, "vignettes");
 
-        Optional<String> iconBackgroundType = parseString(entry, "iconBackgroundType");
+        final Optional<String> iconBackgroundType = parseString(entry, "iconBackgroundType");
 
-        Optional<Boolean> showSecondPanel = parseBool(entry, "showSecondPanel");
-        Optional<Boolean> showRating = parseBool(entry, "showRating");
+        final Optional<Boolean> showSecondPanel = parseBool(entry, "showSecondPanel");
+        final Optional<Boolean> showRating = parseBool(entry, "showRating");
 
-        Optional<Boolean> showShadow = parseBool(entry, "showShadow");
+        final Optional<Boolean> showShadow = parseBool(entry, "showShadow");
+        final Optional<Boolean> effectsBehindText = parseBool(entry, "effectsBehindText");
 
-        Optional<Boolean> usePlayerSkinInPreview = parseBool(entry, "usePlayerSkinInPreview");
-        Optional<String> previewPanelModel = parseString(entry, "previewPanelModel");
+        final Optional<Boolean> usePlayerSkinInPreview = parseBool(entry, "usePlayerSkinInPreview");
+        final Optional<String> previewPanelModel = parseString(entry, "previewPanelModel");
 
-        Optional<Boolean> disableIcon = parseBool(entry, "disableIcon");
-        Optional<Boolean> disableScrolling = parseBool(entry, "disableScrolling");
-        Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
-        Optional<Boolean> disableDividerLine = parseBool(entry, "disableDividerLine");
+        final Optional<Boolean> disableIcon = parseBool(entry, "disableIcon");
+        final Optional<Boolean> disableScrolling = parseBool(entry, "disableScrolling");
+        final Optional<Boolean> disableTooltip = parseBool(entry, "disableTooltip");
+        final Optional<Boolean> disableDividerLine = parseBool(entry, "disableDividerLine");
 
         return new CustomFrameData(
+                parseInt(entry, "priority").orElse(0),
+                FrameConditions.parse(entry),
+                dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectSettings.parse(entry),
                 items,
                 tags,
                 namespace,
@@ -92,6 +110,9 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 colorItemRating,
                 ratingAlignment,
                 titleAlignment,
+                tooltipLayout,
+                compactShowModName,
+                compactModNameColor,
                 tooltipPositionX,
                 tooltipPositionY,
                 mainPanelPaddingX,
@@ -102,6 +123,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 iconRotatingSpeed,
                 iconAppearAnimation,
                 tooltipAppearAnimation,
+                tooltipDisappearAnimation,
                 tooltipAnimationDuration,
                 secondPanelX,
                 secondPanelY,
@@ -114,11 +136,17 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 specialEffect,
                 vignettes,
                 iconBackgroundType,
+                parseString(entry, "iconBackgroundColor"),
+                parseString(entry, "iconBorderColor"),
                 usePlayerSkinInPreview,
                 previewPanelModel,
+                parseString(entry, "previewPanelSideTriangles"),
+                parseString(entry, "previewPanelCornerType"),
+                parseString(entry, "previewPanelBackgroundCornerType"),
                 showSecondPanel,
                 showRating,
                 showShadow,
+                effectsBehindText,
                 disableIcon,
                 disableScrolling,
                 disableTooltip,
@@ -128,9 +156,11 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
     }
 
     private List<String> parseStringList(JsonObject content, String field) {
-        if (!content.has(field)) return List.of();
+        if (!content.has(field)) {
+            return List.of();
+        }
 
-        JsonElement ele = content.get(field);
+        final JsonElement ele = content.get(field);
         if (ele.isJsonArray()) {
             return ele.getAsJsonArray().asList().stream().filter(JsonElement::isJsonPrimitive).map(JsonElement::getAsString).toList();
         }
@@ -143,7 +173,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
             return List.of();
         }
 
-        JsonElement element = content.get(field);
+        final JsonElement element = content.get(field);
         if (element.isJsonPrimitive()) {
             final String value = element.getAsString().trim();
             return value.isEmpty() ? List.of() : List.of(value);
@@ -153,26 +183,38 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
     }
 
     private Optional<Boolean> parseBool(JsonObject content, String field) {
-        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return Optional.empty();
+        }
 
         JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive()) {
-            if (elem.getAsJsonPrimitive().isBoolean()) return Optional.of(elem.getAsBoolean());
+            if (elem.getAsJsonPrimitive().isBoolean()) {
+                return Optional.of(elem.getAsBoolean());
+            }
 
-            String s = elem.getAsString().trim().toLowerCase();
-            if ("true".equals(s)) return Optional.of(true);
-            if ("false".equals(s)) return Optional.of(false);
+            final String text = elem.getAsString().trim().toLowerCase();
+            if ("true".equals(text)) {
+                return Optional.of(true);
+            }
+
+            if ("false".equals(text)) {
+                return Optional.of(false);
+            }
+
         }
 
         return Optional.empty();
     }
 
     private Optional<String> parseString(JsonObject content, String field) {
-        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return Optional.empty();
+        }
 
         JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive()) {
-            String value = elem.getAsString();
+            final String value = elem.getAsString();
             return value.trim().isEmpty() ? Optional.empty() : Optional.of(value);
         }
 
@@ -180,11 +222,13 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
     }
 
     private Optional<List<String>> parseOptionalStringList(JsonObject content, String field) {
-        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return Optional.empty();
+        }
 
         JsonElement elem = content.get(field);
         if (elem.isJsonArray()) {
-            List<String> list = elem.getAsJsonArray().asList().stream().filter(JsonElement::isJsonPrimitive).map(JsonElement::getAsString).toList();
+            final List<String> list = elem.getAsJsonArray().asList().stream().filter(JsonElement::isJsonPrimitive).map(JsonElement::getAsString).toList();
             return list.isEmpty() ? Optional.empty() : Optional.of(list);
         }
 
@@ -192,7 +236,9 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
     }
 
     private Optional<Integer> parseInt(JsonObject content, String field) {
-        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return Optional.empty();
+        }
 
         JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isNumber()) {
@@ -203,7 +249,9 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
     }
 
     private Optional<Float> parseFloat(JsonObject content, String field) {
-        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return Optional.empty();
+        }
 
         JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive() && elem.getAsJsonPrimitive().isNumber()) {
@@ -214,9 +262,11 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
     }
 
     private <T extends Enum<T>> Optional<T> parseEnum(JsonObject content, String field, Class<T> enumClass) {
-        if (!content.has(field) || content.get(field).isJsonNull()) return Optional.empty();
+        if (!content.has(field) || content.get(field).isJsonNull()) {
+            return Optional.empty();
+        }
 
-        JsonElement elem = content.get(field);
+        final JsonElement elem = content.get(field);
         if (elem.isJsonPrimitive()) {
             try {
                 return Optional.of(Enum.valueOf(enumClass, elem.getAsString().toUpperCase().replace('-', '_')));
@@ -225,6 +275,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 TooltipOverhaul.LOGGER.warn("Invalid enum value for {}: {}", field, elem.getAsString());
                 return Optional.empty();
             }
+
         }
 
         return Optional.empty();

@@ -1,185 +1,89 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.phys.Vec2;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.AmbientEffect;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Random;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.*;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
-public class RipplesEffect implements EffectLayer {
-
-    private static final int RIPPLE_AMOUNT = 4;
-    private static final int RING_SEGMENTS = 48;
-    private static final float THICKNESS = 8f;
-    private static final float GLOW = 1.75f;
-    private static final float TWEAKING = 1.2f;
-    private static final float TWEAKING_MULTIPLIER = 10f;
-    private static final long PER_RIPPLE = 220;
-
-    private static final int[] DEFAULT_COLORS = {
-            0x66FFFFFF,
-            0x88A0D8FF,
-            0x66FFD6FF
-    };
-
-    private static final Deque<Ripple> RIPPLES = new ArrayDeque<>();
-    private static long lastSpawn = 0;
+public class RipplesEffect extends AmbientEffect {
 
     @Override
-    public void render(TooltipContext context, Vec2 position) {
-        int positionX = (int) position.x;
-        int positionY = (int) position.y;
-        int tooltipWidth = (int) context.getTooltipSize().x;
-        int tooltipHeight = (int) context.getTooltipSize().y;
-
-        context.push(() -> {
-            context.enableScissor(
-                    positionX - context.getPaddingX() - 1,
-                    positionY - context.getPaddingY(),
-                    positionX + tooltipWidth + context.getPaddingX(),
-                    positionY + tooltipHeight + context.getPaddingY()
-            );
-            //context.translate(0, 0, context.getLayerDepth().getZ());
-
-            long now = System.currentTimeMillis();
-            if (now - lastSpawn >= PER_RIPPLE && RIPPLES.size() < RIPPLE_AMOUNT) {
-                spawnRipple(positionX, positionY, tooltipWidth, tooltipHeight, now);
-                lastSpawn = now;
-            }
-
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-
-            RIPPLES.removeIf(r -> !r.updateAndRender(context, now));
-
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-            RenderSystem.disableBlend();
-
-            context.getGraphics().disableScissor();
-        });
-
+    protected boolean clipToTooltip() {
+        return true;
     }
 
-    private void spawnRipple(int x, int y, int width, int height, long now) {
-        Random random = new Random();
-        float margin = 10f;
-        float centerX = x + margin + random.nextFloat() * (width - 2 * margin);
-        float centerY = y + margin + random.nextFloat() * (height - 2 * margin);
-
-        float speed = AnimationUtils.lerp(0.75f, 1.35f, random.nextFloat());
-        float thickness = THICKNESS * AnimationUtils.lerp(0.85f, 1.35f, random.nextFloat());
-        float tweakingAmount = random.nextFloat() * (float) (Math.PI * 2);
-
-        if (RIPPLES.size() >= RIPPLE_AMOUNT) {
-            RIPPLES.pollFirst();
-        }
-
-        RIPPLES.addLast(new Ripple(centerX, centerY, 0.5f * (float) Math.hypot(width, height), DEFAULT_COLORS[random.nextInt(DEFAULT_COLORS.length)], now, speed, thickness, tweakingAmount));
+    @Override
+    protected float interiorVisibility() {
+        return 0.78f;
     }
 
-    private record Ripple(float centerX, float centerY, float maxRadius, int baseColor, long birth, float speed, float thickness, float tweaking) {
+    @Override
+    protected void draw(EffectCanvas canvas) {
+        final float reach = Math.max(32, Math.min(120, (float) Math.hypot(canvas.width, canvas.height) * 0.42f));
+        for (int source = 0; source < effectCount(3); source++) {
+            final double clock = canvas.time / 4.2 + source / 3.0;
+            final float phase = cycle(clock);
 
-        boolean updateAndRender(TooltipContext context, long nowMs) {
-                float lifetime = Math.max(0f, nowMs - birth);
+            final int event = (int) Math.floor(clock) * 3 + source;
 
-                // animation duration
-                float duration = Math.max(800f, 1200f * (maxRadius / 120f));
+            final float x = canvas.left + canvas.width * (0.12f + seed(event, 1) * 0.76f);
+            final float y = canvas.top + canvas.height * (0.12f + seed(event, 2) * 0.76f);
 
-                float t = lifetime / duration;
-                float clamped = Math.min(1f, t);
+            final float extent = reach * (0.8f + seed(event, 3) * 0.35f) * parameter(EXPANSION);
+            final float rotation = seed(event, 4) * TAU + phase * 0.5f;
+            final float awakening = smooth(phase / 0.06f) * (1 - smooth(phase / 0.48f));
 
-                float eased = AnimationUtils.easeOutCubic(clamped);
-                float rad = eased * maxRadius * speed;
+            canvas.glow(x, y, 13, color(1, 0xFF9981DD), awakening * 0.25f);
+            canvas.sparkle(x, y, 3.5f, rotation, color(2, 0xFFE4D8FF), awakening * 0.78f);
 
-                float alpha = AnimationUtils.clamp01(1.2f - clamped * 1.2f) * 0.85f;
+            for (int wave = 0; wave < (int) parameter(WAVE_COUNT); wave++) {
+                float age = (phase - wave * 0.13f) / (1 - wave * 0.13f);
+                if (age <= 0 || age >= 1) {
+                    continue;
+                }
 
-                // main halo
-                draw(context, centerX, centerY, rad - thickness * 0.5f, rad + thickness * 0.5f, baseColor, alpha, tweaking, nowMs);
+                final float radius = radius(age, extent);
+                final float fade = smooth(age / 0.08f) * (float) Math.pow(1 - age, 1.3);
+                final float strength = wave == 0 ? 1 : 0.48f;
+                final int segments = Math.max(96, Math.min(224, (int) (radius * 4)));
+                for (int pass = 0; pass < 2; pass++) {
+                    final boolean halo = pass == 0;
+                    canvas.ribbon(segments, along -> {
+                        float angle = along * TAU;
+                        final float wobbled = radius * (1 + sin(angle * 5 + rotation) * 0.009f);
+                        final float iridescence = 0.5f + 0.5f * sin(angle * 2 - rotation + age * 3);
+                        int color = iridescence < 0.5f ? mix(color(0, 0xFF8ACDDF), color(1, 0xFFAD91EE), iridescence * 2)
+                                : mix(color(1, 0xFFAD91EE), color(2, 0xFFF0BBDD), iridescence * 2 - 1);
+                        final float shimmer = 0.72f + 0.28f * cos(angle * 3 + rotation - age * 4);
+                        return new Knot(x + cos(angle) * wobbled, y + sin(angle) * wobbled,
+                                Math.min(wobbled * 0.4f, halo ? 5.5f : 1.15f), color, fade * strength * shimmer * (halo ? 0.20f : 0.72f));
+                    });
 
-                // external halo
-                draw(context, centerX, centerY, rad + thickness * 0.4f, rad + thickness * (0.4f + GLOW), baseColor, alpha * 0.55f, tweaking + 1.3f, nowMs);
+                }
 
-                return t < 1.05f;
             }
 
-            private void draw(TooltipContext context, float centerX, float centerY, float innerR, float outerR, int color, float alphaPeak, float wobblePhase, long now) {
-
-                if (outerR <= 1f) {
-                    return;
+            // Sparks that drift along the wave
+            for (int spark = 0; spark < 5; spark++) {
+                final float delay = 0.10f + seed(event * 5 + spark, 11) * 0.16f;
+                final float age = (phase - delay) / 0.65f;
+                if (age <= 0 || age >= 1) {
+                    continue;
                 }
 
-                if (innerR < 0f) {
-                    innerR = 0f;
-                }
-                if (outerR - innerR <= 0.5f) {
-                    outerR = innerR + 0.5f;
-                }
-
-                int alpha = (color >>> 24) & 0xFF;
-                int red = (color >>> 16) & 0xFF;
-                int green = (color >>> 8) & 0xFF;
-                int blue = color & 0xFF;
-
-                float alphaNorm = AnimationUtils.clamp01(alphaPeak) * (alpha / 255f);
-
-                float time = now / 1000f;
-                float tweaking = (float) Math.toRadians(TWEAKING_MULTIPLIER) * (float) Math.sin(2 * Math.PI * TWEAKING * time + wobblePhase);
-
-                Tesselator tesselator = Tesselator.getInstance();
-                BufferBuilder buf = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-
-                RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-                int segments = Math.max(16, RING_SEGMENTS);
-                float midR = innerR + (outerR - innerR) * 0.5f;
-
-                // inner -> mid
-                for (int i = 0; i <= segments; i++) {
-                    float theta = (float) (2 * Math.PI * (i / (float) segments));
-                    float w = theta + tweaking * (float) Math.sin(theta * 3.0f);
-                    float func1 = (float) Math.sin(w);
-                    float func2 = (float) Math.cos(w);
-
-                    buf.addVertex(context.getPose().last().pose(), centerX + func2 * midR, centerY + func1 * midR, 0).setColor(red, green, blue, (int) (alphaNorm * 255f));
-                    buf.addVertex(context.getPose().last().pose(), centerX + func2 * innerR, centerY + func1 * innerR, 0).setColor(red, green, blue, 0);
-                }
-
-                try (MeshData data = buf.buildOrThrow()) {
-                    BufferUploader.drawWithShader(data);
-                }
-
-                // mid -> out
-                BufferBuilder buf2 = tesselator.begin(VertexFormat.Mode.TRIANGLE_STRIP, DefaultVertexFormat.POSITION_COLOR);
-                for (int i = 0; i <= segments; i++) {
-                    float theta = (float) (2 * Math.PI * (i / (float) segments));
-                    float w = theta + tweaking * (float) Math.sin(theta * 3.0f);
-                    float func1 = (float) Math.sin(w);
-                    float func2 = (float) Math.cos(w);
-
-                    buf2.addVertex(context.getPose().last().pose(), centerX + func2 * outerR, centerY + func1 * outerR, 0).setColor(red, green, blue, 0);
-                    buf2.addVertex(context.getPose().last().pose(), centerX + func2 * midR, centerY + func1 * midR, 0).setColor(red, green, blue, (int) (alphaNorm * 255f));
-                }
-
-                try (MeshData data = buf2.buildOrThrow()) {
-                    BufferUploader.drawWithShader(data);
-                }
+                final float angle = rotation + spark * TAU / 5 + age * 0.20f;
+                final float glintRadius = radius(phase, extent) + age * 3;
+                final float alpha = bell(age) * (0.35f + seed(event * 5 + spark, 12) * 0.25f);
+                canvas.sparkle(x + cos(angle) * glintRadius, y + sin(angle) * glintRadius, 1.7f + seed(spark, 13) * 1.1f, angle * 0.35f, color(2, 0xFFE6D9FF), alpha);
             }
 
         }
+
+    }
+
+    private static float radius(float age, float extent) {
+        return 1 + (1 - (float) Math.pow(1 - age, 1.65)) * extent;
+    }
 
 }

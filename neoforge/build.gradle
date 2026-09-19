@@ -61,6 +61,8 @@ dependencies {
     implementation "curse.maven:architectury-api-419699:5786327"
     implementation "curse.maven:owo-lib-532610:6785734"
 
+    //implementation "curse.maven:apothic-attributes-898963:8502288"
+
     implementation "curse.maven:oritech-1030830:7786123"
     implementation "curse.maven:athena-841890:6669522"
     implementation "curse.maven:geckolib-388172:7707149"

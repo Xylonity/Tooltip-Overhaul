@@ -5,11 +5,17 @@ import dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigSc
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectFieldRenderer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.minecraftforge.client.event.RegisterShadersEvent;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.client.ConfigScreenHandler;
 import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.GameShuttingDownEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -45,6 +51,25 @@ public class TooltipOverhaulForge {
 
             modBus.addListener(ClientEntrypoint::onClientSetup);
             modBus.addListener(ClientEntrypoint::onRegisterClientReloads);
+            modBus.addListener(ClientEntrypoint::onRegisterShaders);
+
+            MinecraftForge.EVENT_BUS.addListener(ClientEntrypoint::onShutdown);
+        }
+
+        private static void onShutdown(GameShuttingDownEvent event) {
+            EffectFieldRenderer.reset();
+        }
+
+        private static void onRegisterShaders(RegisterShadersEvent event) {
+            EffectFieldRenderer.reset();
+            try {
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), EffectFieldRenderer.SHADER_ID,
+                        DefaultVertexFormat.POSITION), EffectFieldRenderer::setShader);
+            }
+            catch (Exception failure)  {
+                TooltipOverhaul.LOGGER.warn("Could not load effect shader...", failure);
+            }
+
         }
 
         private static void onClientSetup(final FMLClientSetupEvent event) {
@@ -66,6 +91,7 @@ public class TooltipOverhaulForge {
                     CustomFrameManager.reset();
                     CustomFrameManager.initialize(rm);
                 }
+
             });
         }
 

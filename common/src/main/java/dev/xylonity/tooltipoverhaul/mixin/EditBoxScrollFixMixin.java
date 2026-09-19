@@ -1,6 +1,6 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
-import dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigScreen;
+import dev.xylonity.tooltipoverhaul.client.screen.config.StyledEditBox;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
@@ -27,7 +27,7 @@ abstract class EditBoxScrollFixMixin {
 
     @Inject(method = "setHighlightPos", at = @At("TAIL"))
     private void tooltipoverhaul$keepCursorVisible(int position, CallbackInfo ci) {
-        if (!(((Object) this) instanceof TooltipOverhaulConfigScreen.StyledEditBox) || cursorPos != highlightPos) {
+        if (!(((Object) this) instanceof StyledEditBox) || cursorPos != highlightPos) {
             return;
         }
 
@@ -40,7 +40,7 @@ abstract class EditBoxScrollFixMixin {
 
     @Inject(method = "renderHighlight", at = @At("HEAD"), cancellable = true)
     private void tooltipoverhaul$skipHighlight(GuiGraphics graphics, int minX, int minY, int maxX, int maxY, CallbackInfo ci) {
-        if (((Object) this) instanceof TooltipOverhaulConfigScreen.StyledEditBox && cursorPos == highlightPos) {
+        if (((Object) this) instanceof StyledEditBox && cursorPos == highlightPos) {
             ci.cancel();
         }
 

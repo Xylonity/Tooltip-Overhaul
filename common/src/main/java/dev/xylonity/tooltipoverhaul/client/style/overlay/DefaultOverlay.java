@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.style.overlay;
 
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.OverlayLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
@@ -25,35 +26,38 @@ public class DefaultOverlay implements OverlayLayer {
     @Override
     public void render(TooltipContext context, Vec2 position) {
 
-        String rawTexturePath = RenderUtils.getOverlayLocation(context);
+        final String rawTexturePath = RenderUtils.getOverlayLocation(context);
         if (rawTexturePath == null || rawTexturePath.isBlank() || rawTexturePath.isEmpty()) {
             return;
         }
 
-        ResourceLocation textureLocation = TooltipOverhaul.rawPathOf(rawTexturePath);
-        TextureMetadata textureMetadata = getTextureMetadata(textureLocation);
+        final ResourceLocation textureLocation = TooltipOverhaul.rawPathOf(rawTexturePath);
+        final TextureMetadata textureMetadata = getTextureMetadata(textureLocation);
 
-        int textureWidth = textureMetadata.width();
-        int textureHeight = textureMetadata.height();
-        int frameAmount = textureMetadata.frames();
+        final int textureWidth = textureMetadata.width();
+        final int textureHeight = textureMetadata.height();
+        final int frameAmount = textureMetadata.frames();
 
-        int idx = frameAmount > 1 ? (int) ((System.currentTimeMillis() / Constants.getOverlayFrameTime()) % frameAmount) : 0;
-        int frameOffset = idx * Constants.getOverlayFrameDimension();
+        final int idx = frameAmount > 1 ? (int) ((System.currentTimeMillis() / Constants.getOverlayFrameTime()) % frameAmount) : 0;
+        final int frameOffset = idx * Constants.getOverlayFrameDimension();
 
-        int x = (int) position.x;
-        int y = (int) position.y;
+        final int x = (int) position.x;
+        final int y = (int) position.y;
         int width = (int) context.getTooltipSize().x;
-        int height = (int) context.getTooltipSize().y;
+        final int height = (int) context.getTooltipSize().y;
 
-        int baseOffset = -25;
+        final int baseOffset = -25;
 
-        int leftX = x + baseOffset;
-        int rightX = x + width - 20;
-        int topY = y + baseOffset + 1;
-        int bottomY = y + height - 20;
+        final int leftX = x + baseOffset;
+        final int rightX = x + width - 20;
+        final int topY = y + baseOffset + 1;
+        final int bottomY = y + height - 20;
 
-        int centerX = leftX + (width / 2) + 2;
-        int centerY = topY + (height / 2) + 3;
+        final int centerX = leftX + (width / 2) + 2;
+        final int centerY = topY + (height / 2) + 3;
+
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
 
         // TOP LEFT
         context.getGraphics().blit(textureLocation, leftX, topY, 0, frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
@@ -79,20 +83,21 @@ public class DefaultOverlay implements OverlayLayer {
         // BOTTOM
         context.getGraphics().blit(textureLocation, centerX, bottomY, BLOCK_DIMENSION, BLOCK_DIMENSION * 2 + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
 
+        RenderSystem.disableBlend();
     }
 
     private static TextureMetadata getTextureMetadata(ResourceLocation texture) {
-        int frameDimension = Constants.getOverlayFrameDimension();
+        final int frameDimension = Constants.getOverlayFrameDimension();
         return TEXTURES.computeIfAbsent(texture, tex -> {
             try {
-                Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(tex);
+                final Optional<Resource> resource = Minecraft.getInstance().getResourceManager().getResource(tex);
                 if (resource.isEmpty()) {
                     return new TextureMetadata(frameDimension, frameDimension, 1);
                 }
 
                 try (InputStream inputStream = resource.get().open(); NativeImage img = NativeImage.read(inputStream)) {
-                    int width = img.getWidth();
-                    int heigth = img.getHeight();
+                    final int width = img.getWidth();
+                    final int heigth = img.getHeight();
 
                     if (width < frameDimension) {
                         TooltipOverhaul.LOGGER.warn("Texture width {} is smaller than expected {} for {}", width, frameDimension, tex);
@@ -115,6 +120,12 @@ public class DefaultOverlay implements OverlayLayer {
 
     }
 
-    private record TextureMetadata(int width, int height, int frames) { ;; }
+    private record TextureMetadata(
+            int width,
+            int height,
+            int frames
+    ) {
+        ;;
+    }
 
 }

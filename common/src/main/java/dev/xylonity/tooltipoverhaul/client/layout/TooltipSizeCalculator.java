@@ -20,19 +20,22 @@ public class TooltipSizeCalculator {
     }
 
     public Vec2 calculate() {
+        if (context.getLayoutStyle() == TooltipLayout.Style.COMPACT) {
+            return calculateCompact();
+        }
 
-        boolean hasIcon = context.hasIcon();
-        boolean hasRating = RenderUtils.hasRating(context);
-        boolean hasDividerLine = context.hasDividerLine();
+        final boolean hasIcon = TooltipLayout.hasHeaderIcon(context);
+        final boolean hasRating = RenderUtils.hasRating(context);
+        final boolean hasDividerLine = context.hasDividerLine();
 
-        List<ClientTooltipComponent> components = context.getComponents();
-        Font font = context.getFont();
+        final List<ClientTooltipComponent> components = context.getComponents();
+        final Font font = context.getFont();
 
-        int paddingX = context.getPaddingX();
-        int paddingY = context.getPaddingY();
+        final int paddingX = context.getPaddingX();
+        final int paddingY = context.getPaddingY();
 
         // Offset to the right if the icon is active
-        int iconOffset = hasIcon ? (Constants.getIconSize(context) + Constants.getIconTitleSeparation(context)) : 0;
+        final int iconOffset = TooltipLayout.titleInset(context);
 
         // Computes approximated width and height using the component amount
         int width = components.get(0).getWidth(font) + paddingX * 2 + iconOffset;
@@ -47,17 +50,19 @@ public class TooltipSizeCalculator {
 
         // Computes the new width if the rating is larger than the tooltip's width and adds extra height in case the icon is not present
         if (hasRating) {
-            Component rating = TextUtils.getRatingText(context);
+            final Component rating = TextUtils.getRatingText(context);
             width = Math.max(width, font.width(rating) + paddingX * 2 + iconOffset);
 
             if (!hasIcon) {
                 height += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
             }
+
         }
 
         // If the tooltip has an icon active, subtracts the title component height (which is approximately 10)
         if (hasIcon) {
-            height += Constants.getIconSize(context) - 10;
+            height += TooltipLayout.headerHeight(context) - 10;
+            width = Math.max(width, Constants.getIconSize(context) + paddingX * 2);
         }
 
         //
@@ -74,21 +79,50 @@ public class TooltipSizeCalculator {
         return new Vec2(width, height);
     }
 
+    private Vec2 calculateCompact() {
+        final List<ClientTooltipComponent> components = context.getComponents();
+        final Font font = context.getFont();
+        final int padding = context.getPaddingX() * 2;
+        int bodyWidth = 0;
+        int bodyHeight = 0;
+        for (int i = 1; i < components.size(); i++) {
+            bodyWidth = Math.max(bodyWidth, components.get(i).getWidth(font));
+            bodyHeight += components.get(i).getHeight();
+        }
+
+        int width = Math.max(components.get(0).getWidth(font) + TooltipLayout.titleInset(context), bodyWidth) + padding;
+        // Lets short names fit naturally without making the panel too wide for long mod names
+        int footerWidth = Math.min(font.width(context.getCompactModName()), 96);
+        if (RenderUtils.hasRating(context)) {
+            if (footerWidth > 0) {
+                footerWidth += TooltipLayout.footerTextGap();
+            }
+
+            footerWidth += font.width(TextUtils.getRatingText(context));
+        }
+
+        width = Math.max(width, footerWidth + padding);
+
+        final int height = TooltipLayout.compactBodyTop(context) + bodyHeight + context.getPaddingY();
+        return new Vec2(width, height + TooltipLayout.footerHeight(context));
+    }
+
     public Vec2 adjustSize() {
 
         Vec2 newSize = context.getTooltipSize();
 
-        boolean isMainTooltip = context.isMainTooltip();
-        TooltipContext otherContext = context.getOtherTooltipContext();
+        final boolean isMainTooltip = context.isMainTooltip();
+        final TooltipContext otherContext = context.getOtherTooltipContext();
 
-        Vec2 otherContextPosition = otherContext != null ? otherContext.getTooltipPosition() : null;
-        Vec2 otherContextSize = otherContext != null ? otherContext.getTooltipSize() : null;
+        final Vec2 otherContextPosition = otherContext != null ? otherContext.getTooltipPosition() : null;
+        final Vec2 otherContextSize = otherContext != null ? otherContext.getTooltipSize() : null;
 
         if (isMainTooltip) {
             if (otherContextPosition != null && otherContextSize != null) {
                 if (otherContextPosition.x == context.getPaddingX() && context.getTooltipPosition().x + context.getTooltipSize().x > context.getScreenWidth()) {
                     newSize = new Vec2(context.getScreenWidth() - context.getPaddingX() - context.getTooltipPosition().x, newSize.y);
                 }
+
             }
 
         }

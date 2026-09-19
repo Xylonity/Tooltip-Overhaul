@@ -5,6 +5,12 @@ import dev.xylonity.tooltipoverhaul.client.screen.config.TooltipOverhaulConfigSc
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectFieldRenderer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.client.renderer.ShaderInstance;
+import net.neoforged.neoforge.client.event.RegisterShadersEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.GameShuttingDownEvent;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -41,6 +47,25 @@ public class TooltipOverhaulNeoForge {
 
             modBus.addListener(ClientEntrypoint::onClientSetup);
             modBus.addListener(ClientEntrypoint::onRegisterClientReloads);
+            modBus.addListener(ClientEntrypoint::onRegisterShaders);
+
+            NeoForge.EVENT_BUS.addListener(ClientEntrypoint::onShutdown);
+        }
+
+        private static void onShutdown(GameShuttingDownEvent event) {
+            EffectFieldRenderer.reset();
+        }
+
+        private static void onRegisterShaders(RegisterShadersEvent event) {
+            EffectFieldRenderer.reset();
+            try {
+                event.registerShader(new ShaderInstance(event.getResourceProvider(), EffectFieldRenderer.SHADER_ID,
+                        DefaultVertexFormat.POSITION), EffectFieldRenderer::setShader);
+            }
+            catch (Exception failure)  {
+                TooltipOverhaul.LOGGER.warn("Could not load effect shader...", failure);
+            }
+
         }
 
         private static void onClientSetup(final FMLClientSetupEvent event) {

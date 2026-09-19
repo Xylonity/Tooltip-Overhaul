@@ -16,13 +16,15 @@ public class StaticInnerOverlay implements InnerOverlayLayer {
 
     @Override
     public void render(TooltipContext context, Vec2 position) {
-        int x0 = (int) (context.getTooltipPosition().x - 3);
-        int y0 = (int) (context.getTooltipPosition().y - 2);
-        int width = (int) (context.getTooltipSize().x + 5);
-        int height = (int) (context.getTooltipSize().y + 4);
+        final int x0 = (int) (context.getTooltipPosition().x - 3);
+        final int y0 = (int) (context.getTooltipPosition().y - 2);
+        final int width = (int) (context.getTooltipSize().x + 5);
+        final int height = (int) (context.getTooltipSize().y + 4);
 
         // The notch background leaves the corner pixels of the inner rect transparent
-        final int trim = RenderUtils.getBackgroundCornerType(context).equals("notch") ? 1 : 0;
+        final String cornerType = RenderUtils.getInnerFrameCornerType(context);
+        final int trim = Math.max(RenderUtils.getBackgroundCornerType(context).equals("notch") ? 1 : 0, RenderUtils.cornerTrim(cornerType));
+        final int sideTrim = Math.max(1, trim);
 
         // Top
         context.getGraphics().fill(x0 + trim, y0, x0 + width - trim, y0 + 1, color);
@@ -31,12 +33,12 @@ public class StaticInnerOverlay implements InnerOverlayLayer {
         context.getGraphics().fill(x0 + trim, y0 + height - 1, x0 + width - trim, y0 + height, color);
 
         // Left
-        context.getGraphics().fill(x0, y0 + trim, x0 + 1, y0 + height - trim, color);
+        context.getGraphics().fill(x0, y0 + sideTrim, x0 + 1, y0 + height - sideTrim, color);
 
         // Right
-        context.getGraphics().fill(x0 + width - 1, y0 + trim, x0 + width, y0 + height - trim, color);
+        context.getGraphics().fill(x0 + width - 1, y0 + sideTrim, x0 + width, y0 + height - sideTrim, color);
 
-        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color, color, ColorUtils.getBackgroundColor(context), RenderUtils.getInnerFrameCornerType(context), trim == 1);
+        RenderUtils.applyFrameCorners(context.getGraphics(), x0, y0, width, height, color, color, cornerType);
     }
 
 }

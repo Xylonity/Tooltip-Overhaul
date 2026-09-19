@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import net.minecraft.client.renderer.GameRenderer;
@@ -12,6 +13,9 @@ import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
 import java.util.Random;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectRuntime;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.parameter;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
 public class FirefliesEffect implements EffectLayer {
 
@@ -19,13 +23,12 @@ public class FirefliesEffect implements EffectLayer {
     private static final int GLOW_COLOR = 0xFFD8E86A;
 
     private static final int FIREFLY_COUNT = 12;
-    private static final int GLOW_SEGMENTS = 10;
 
-    private static final float[][] FIREFLIES = new float[FIREFLY_COUNT][6];
+    private static final float[][] FIREFLIES = new float[FIREFLY_COUNT * 5][6];
 
     static {
         final Random random = new Random(77777L);
-        for (int i = 0; i < FIREFLY_COUNT; i++) {
+        for (int i = 0; i < FIREFLIES.length; i++) {
             FIREFLIES[i][0] = 0.25f + random.nextFloat() * 0.55f; // Horizontal speed
             FIREFLIES[i][1] = 0.20f + random.nextFloat() * 0.50f; // Vertical speed
             FIREFLIES[i][2] = 0.55f + random.nextFloat() * 0.55f; // Horizontal radial seed
@@ -44,13 +47,14 @@ public class FirefliesEffect implements EffectLayer {
         final int tooltipHeight = (int) context.getTooltipSize().y;
 
         final long now = System.currentTimeMillis();
-        final float time = (now - context.getStartTime()) / 9000f;
+        final float time = (float) (EffectRuntime.seconds(context) / 9);
 
         final float centerX = positionX + tooltipWidth * 0.5f;
         final float centerY = positionY + tooltipHeight * 0.5f;
         final float radiusX = tooltipWidth * 0.5f + 14.0f;
         final float radiusY = tooltipHeight * 0.5f + 10.0f;
 
+        context.flush();
         context.push(() -> {
             RenderSystem.enableBlend();
             RenderSystem.blendFuncSeparate(
@@ -69,7 +73,8 @@ public class FirefliesEffect implements EffectLayer {
             final Matrix4f pose = context.getPose().last().pose();
             final Tesselator tesselator = Tesselator.getInstance();
 
-            for (final float[] firefly : FIREFLIES) {
+            for (int i = 0; i < Math.round(FIREFLY_COUNT * EffectRuntime.density()); i++) {
+                final float[] firefly = FIREFLIES[i];
                 renderFirefly(tesselator, pose, centerX, centerY, radiusX, radiusY, time, firefly);
             }
 
@@ -89,9 +94,9 @@ public class FirefliesEffect implements EffectLayer {
     private void renderFirefly(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radiusX, float radiusY, float time, float[] firefly) {
         final float speedX = firefly[0];
         final float speedY = firefly[1];
-        final float radialSeedX = firefly[2];
-        final float radialSeedY = firefly[3];
-        final float blinkSpeed = firefly[4];
+        final float radialSeedX = firefly[2] * parameter(ORBIT_RADIUS);
+        final float radialSeedY = firefly[3] * parameter(ORBIT_RADIUS);
+        final float blinkSpeed = firefly[4] * parameter(TWINKLE_SPEED);
         final float phase = firefly[5];
 
         // Independent horizontal and vertical oscillations trace a wandering path
@@ -100,43 +105,32 @@ public class FirefliesEffect implements EffectLayer {
 
         // Cubed sine keeps them dark most of the cycle
         final float blinkBase = (float) Math.sin(time * blinkSpeed * Math.PI * 22.0f + phase);
-        final float blink = blinkBase > 0 ? blinkBase * blinkBase * blinkBase : 0.0f;
+        final float blink = 1 - parameter(TWINKLE_DEPTH) + (blinkBase > 0 ? blinkBase * blinkBase * blinkBase : 0) * parameter(TWINKLE_DEPTH);
         if (blink < 0.03f) {
             return;
         }
 
         // Soft halo
         final float glowRadius = 2.6f + 2.4f * blink;
-        final int glowAlpha = AnimationUtils.clamp255((int) (150 * blink));
 
-        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-
-        bufferBuilder.addVertex(pose, x, y, 0).setColor(ColorUtils.red(GLOW_COLOR), ColorUtils.green(GLOW_COLOR), ColorUtils.blue(GLOW_COLOR), glowAlpha);
-        for (int i = 0; i <= GLOW_SEGMENTS; i++) {
-            final float angle = (i / (float) GLOW_SEGMENTS) * (float) Math.PI * 2.0f;
-            bufferBuilder.addVertex(pose, x + (float) Math.cos(angle) * glowRadius, y + (float) Math.sin(angle) * glowRadius, 0)
-                    .setColor(ColorUtils.red(GLOW_COLOR), ColorUtils.green(GLOW_COLOR), ColorUtils.blue(GLOW_COLOR), 0);
-        }
-
-        try (MeshData data = bufferBuilder.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
+        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
+        EffectCanvas canvas = new EffectCanvas(bufferBuilder, pose, centerX - radiusX, centerY - radiusY, radiusX * 2, radiusY * 2, time * 9.0, 1);
+        canvas.glow(x, y, glowRadius * 1.45f, EffectRuntime.color(1, GLOW_COLOR), blink * 0.5f);
+        canvas.glow(x, y, glowRadius * 0.55f, EffectRuntime.color(2, CORE_COLOR), blink * 0.35f);
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 
         // Bright core
-        final float half = 0.8f + 0.5f * blink;
+        final float half = (0.8f + 0.5f * blink) * parameter(SIZE);
         final int coreAlpha = AnimationUtils.clamp255((int) (255 * blink));
 
         bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        bufferBuilder.addVertex(pose, x, y - half, 0).setColor(ColorUtils.red(CORE_COLOR), ColorUtils.green(CORE_COLOR), ColorUtils.blue(CORE_COLOR), coreAlpha);
-        bufferBuilder.addVertex(pose, x + half, y, 0).setColor(ColorUtils.red(CORE_COLOR), ColorUtils.green(CORE_COLOR), ColorUtils.blue(CORE_COLOR), coreAlpha);
-        bufferBuilder.addVertex(pose, x, y + half, 0).setColor(ColorUtils.red(CORE_COLOR), ColorUtils.green(CORE_COLOR), ColorUtils.blue(CORE_COLOR), coreAlpha);
-        bufferBuilder.addVertex(pose, x - half, y, 0).setColor(ColorUtils.red(CORE_COLOR), ColorUtils.green(CORE_COLOR), ColorUtils.blue(CORE_COLOR), coreAlpha);
+        bufferBuilder.addVertex(pose, x, y - half, 0).setColor(ColorUtils.red(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.green(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.blue(EffectRuntime.color(0, CORE_COLOR)), EffectRuntime.alpha(coreAlpha));
+        bufferBuilder.addVertex(pose, x + half, y, 0).setColor(ColorUtils.red(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.green(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.blue(EffectRuntime.color(0, CORE_COLOR)), EffectRuntime.alpha(coreAlpha));
+        bufferBuilder.addVertex(pose, x, y + half, 0).setColor(ColorUtils.red(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.green(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.blue(EffectRuntime.color(0, CORE_COLOR)), EffectRuntime.alpha(coreAlpha));
+        bufferBuilder.addVertex(pose, x - half, y, 0).setColor(ColorUtils.red(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.green(EffectRuntime.color(0, CORE_COLOR)), ColorUtils.blue(EffectRuntime.color(0, CORE_COLOR)), EffectRuntime.alpha(coreAlpha));
 
-        try (MeshData data = bufferBuilder.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
-
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 
 }

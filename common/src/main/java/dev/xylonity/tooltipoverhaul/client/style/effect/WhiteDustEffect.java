@@ -12,6 +12,9 @@ import net.minecraft.world.phys.Vec2;
 import org.joml.Matrix4f;
 
 import java.util.Random;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectRuntime;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.parameter;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.GLYPH_SIZE;
 
 public class WhiteDustEffect implements EffectLayer {
 
@@ -26,7 +29,7 @@ public class WhiteDustEffect implements EffectLayer {
     private static final float[][] PARTICLES = new float[PARTICLE_COUNT][5];
 
     static {
-        Random random = new Random(33333L);
+        final Random random = new Random(33333L);
 
         for (int i = 0; i < RUNE_COUNT; i++) {
             RUNES[i][0] = (float) i / RUNE_COUNT; // Angle seed
@@ -47,17 +50,17 @@ public class WhiteDustEffect implements EffectLayer {
 
     @Override
     public void render(TooltipContext context, Vec2 position) {
-        int positionX = (int) position.x;
-        int positionY = (int) position.y;
-        int tooltipWidth = (int) context.getTooltipSize().x;
-        int tooltipHeight = (int) context.getTooltipSize().y;
+        final int positionX = (int) position.x;
+        final int positionY = (int) position.y;
+        final int tooltipWidth = (int) context.getTooltipSize().x;
+        final int tooltipHeight = (int) context.getTooltipSize().y;
 
-        long now = System.currentTimeMillis();
-        float time = (now - context.getStartTime()) / 12000f;
-        float timeLoop = time % 1f;
+        final long now = System.currentTimeMillis();
+        final float time = (float) (EffectRuntime.seconds(context) / 12);
+        final float timeLoop = time % 1f;
 
-        float centerX = positionX + tooltipWidth * 0.5f;
-        float centerY = positionY + tooltipHeight * 0.5f;
+        final float centerX = positionX + tooltipWidth * 0.5f;
+        final float centerY = positionY + tooltipHeight * 0.5f;
         float radius = (float) Math.hypot(tooltipWidth, tooltipHeight) * 0.55f;
 
         context.push(() -> {
@@ -78,8 +81,8 @@ public class WhiteDustEffect implements EffectLayer {
 
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            Matrix4f pose = context.getPose().last().pose();
-            Tesselator tesselator = Tesselator.getInstance();
+            final Matrix4f pose = context.getPose().last().pose();
+            final Tesselator tesselator = Tesselator.getInstance();
 
             // Dust
             renderDust(tesselator, pose, centerX, centerY, radius, time);
@@ -105,64 +108,67 @@ public class WhiteDustEffect implements EffectLayer {
 
     private void renderDust(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radius, float tGlobal) {
 
-        BufferBuilder buf = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        final BufferBuilder buf = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        for (float[] particle : PARTICLES) {
-            float angleSeed = particle[0];
-            float radialSeed = particle[1];
-            float sizeSeed = particle[2];
-            float speed = particle[3];
+        for (int index = 0; index < Math.round(PARTICLE_COUNT * EffectRuntime.density()); index++) {
+            final float[] particle = PARTICLES[index % PARTICLES.length];
+            float angleSeed = particle[0] + (index / PARTICLES.length) * 0.618034f;
+            final float radialSeed = particle[1];
+            final float sizeSeed = particle[2];
+            final float speed = particle[3];
             float phase = particle[4];
 
             float angle = angleSeed * (float) Math.PI * 2.0f + tGlobal * speed * (float) Math.PI * 2.0f;
 
-            float fadeRadius = 0.6f + 0.4f * (float) Math.sin(tGlobal * Math.PI * 2.4f + phase);
-            float starRadius = radius * radialSeed * fadeRadius;
+            final float fadeRadius = 0.6f + 0.4f * (float) Math.sin(tGlobal * Math.PI * 2.4f + phase);
+            final float starRadius = radius * radialSeed * fadeRadius;
 
             float starX = centerX + (float) Math.cos(angle) * starRadius;
             float starY = centerY + (float) Math.sin(angle) * starRadius;
 
-            float twinkleBase = (float) Math.sin((tGlobal * 6.0f + phase) * Math.PI);
-            float twinkle = 0.35f + 0.65f * Math.abs(twinkleBase);
+            final float twinkleBase = (float) Math.sin((tGlobal * 6.0f + phase) * Math.PI);
+            final float twinkle = 0.35f + 0.65f * Math.abs(twinkleBase);
 
             float size = sizeSeed * (0.6f + 0.4f * twinkle);
 
-            int alphaCenter = AnimationUtils.clamp255((int) (255 * twinkle));
-            int alphaEdge = AnimationUtils.clamp255((int) (200 * twinkle));
+            final int alphaCenter = AnimationUtils.clamp255((int) (255 * twinkle));
+            final int alphaEdge = AnimationUtils.clamp255((int) (200 * twinkle));
 
-            float half = size * 0.5f;
+            final float half = size * 0.5f;
 
-            buf.addVertex(pose, starX, starY - half, 0).setColor(ColorUtils.red(PARTICLE_COLOR), ColorUtils.green(PARTICLE_COLOR), ColorUtils.blue(PARTICLE_COLOR), alphaEdge);
-            buf.addVertex(pose, starX + half, starY, 0).setColor(ColorUtils.red(PARTICLE_COLOR), ColorUtils.green(PARTICLE_COLOR), ColorUtils.blue(PARTICLE_COLOR), alphaCenter);
-            buf.addVertex(pose, starX, starY + half, 0).setColor(ColorUtils.red(PARTICLE_COLOR), ColorUtils.green(PARTICLE_COLOR), ColorUtils.blue(PARTICLE_COLOR), alphaEdge);
-            buf.addVertex(pose, starX - half, starY, 0).setColor(ColorUtils.red(PARTICLE_COLOR), ColorUtils.green(PARTICLE_COLOR), ColorUtils.blue(PARTICLE_COLOR), alphaCenter);
+            buf.addVertex(pose, starX, starY - half, 0).setColor(ColorUtils.red(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.green(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.blue(EffectRuntime.color(2, PARTICLE_COLOR)), EffectRuntime.alpha(alphaEdge));
+            buf.addVertex(pose, starX + half, starY, 0).setColor(ColorUtils.red(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.green(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.blue(EffectRuntime.color(2, PARTICLE_COLOR)), EffectRuntime.alpha(alphaCenter));
+            buf.addVertex(pose, starX, starY + half, 0).setColor(ColorUtils.red(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.green(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.blue(EffectRuntime.color(2, PARTICLE_COLOR)), EffectRuntime.alpha(alphaEdge));
+            buf.addVertex(pose, starX - half, starY, 0).setColor(ColorUtils.red(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.green(EffectRuntime.color(2, PARTICLE_COLOR)), ColorUtils.blue(EffectRuntime.color(2, PARTICLE_COLOR)), EffectRuntime.alpha(alphaCenter));
         }
 
-        try (MeshData data = buf.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
+        final MeshData mesh = buf.build();
+        if (mesh != null) {
+            BufferUploader.drawWithShader(mesh);
         }
+
     }
 
     private void renderStars(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radius, float time) {
-        for (int i = 0; i < RUNE_COUNT; i++) {
-            float[] rune = RUNES[i];
-            float angleSeed  = rune[0];
-            float radial = rune[1];
-            float orbitSpeed = rune[2];
-            float phase = rune[3];
+        for (int i = 0; i < Math.round(RUNE_COUNT * EffectRuntime.density()); i++) {
+            final float[] rune = RUNES[i % RUNES.length];
+            final float angleSeed = rune[0] + (i / RUNES.length) * 0.618034f;
+            final float radial = rune[1];
+            final float orbitSpeed = rune[2];
+            final float phase = rune[3];
 
             float angle = angleSeed * (float) Math.PI * 2.0f + time * orbitSpeed * (float) Math.PI * 2.0f;
 
-            float orbitRadius = radius * radial * (0.9f + 0.1f * (float) Math.sin(time * Math.PI * 3.5f + phase));
+            final float orbitRadius = radius * radial * (0.9f + 0.1f * (float) Math.sin(time * Math.PI * 3.5f + phase));
 
-            float dustX = centerX + (float) Math.cos(angle) * orbitRadius;
-            float dustY = centerY + (float) Math.sin(angle) * orbitRadius;
+            final float dustX = centerX + (float) Math.cos(angle) * orbitRadius;
+            final float dustY = centerY + (float) Math.sin(angle) * orbitRadius;
 
-            float runeRotation = phase + time * (float) Math.PI * 1.7f;
-            float glow = 0.65f + 0.35f * (float) Math.sin((time * 4.0f + phase) * Math.PI * 2.0f);
+            final float runeRotation = phase + time * (float) Math.PI * 1.7f;
+            final float glow = 0.65f + 0.35f * (float) Math.sin((time * 4.0f + phase) * Math.PI * 2.0f);
             float size = 5.0f * (0.8f + 0.4f * glow);
 
-            int type = (i % 4 == 3) ? 3 : (i % 3);
+            final int type = (i % 4 == 3) ? 3 : (i % 3);
             star(tesselator, pose, dustX, dustY, size, runeRotation, glow, type);
         }
 
@@ -170,84 +176,78 @@ public class WhiteDustEffect implements EffectLayer {
 
     private void star(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float size, float rotation, float glow, int type) {
         if (type == 3) {
-            float glowSize = size * 1.6f;
-            float coreSize = size * 0.9f;
+            final float glowSize = size * 1.6f;
+            final float coreSize = size * 0.9f;
 
-            drawStar(tesselator, pose, centerX, centerY, glowSize, RUNE_COLOR, 0.5f * glow);
-            drawStar(tesselator, pose, centerX, centerY, coreSize, RUNE_COLOR, glow);
+            drawStar(tesselator, pose, centerX, centerY, glowSize, EffectRuntime.color(0, RUNE_COLOR), 0.5f * glow);
+            drawStar(tesselator, pose, centerX, centerY, coreSize, EffectRuntime.color(0, RUNE_COLOR), glow);
         }
 
     }
 
     private void drawStar(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float size, int color, float alphaMult) {
 
-        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        final BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 
         int alpha = AnimationUtils.clamp255((int) (ColorUtils.alpha(color) * alphaMult));
-        bufferBuilder.addVertex(pose, centerX, centerY, 0).setColor(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), alpha);
+        bufferBuilder.addVertex(pose, centerX, centerY, 0).setColor(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), EffectRuntime.alpha(alpha));
 
         for (int i = 0; i <= 8; i++) {
-            float angle = (i / 8.0f) * (float) Math.PI * 2.0f;
-            float radius = size * (i % 2 == 0 ? 1.0f : 0.4f);
+            final float angle = (i / 8.0f) * (float) Math.PI * 2.0f;
+            final float radius = size * (i % 2 == 0 ? 1.0f : 0.4f);
 
-            float starX = centerX + (float) Math.cos(angle) * radius;
-            float starY = centerY + (float) Math.sin(angle) * radius;
+            final float starX = centerX + (float) Math.cos(angle) * radius;
+            final float starY = centerY + (float) Math.sin(angle) * radius;
 
-            int edgeAlpha = AnimationUtils.clamp255((int) (alpha * 0.2f));
-            bufferBuilder.addVertex(pose, starX, starY, 0).setColor(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), edgeAlpha);
+            final int edgeAlpha = AnimationUtils.clamp255((int) (alpha * 0.2f));
+            bufferBuilder.addVertex(pose, starX, starY, 0).setColor(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), EffectRuntime.alpha(edgeAlpha));
         }
 
-        try (MeshData data = bufferBuilder.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
     }
 
     private void renderGlyphs(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radius, float time) {
 
-        float envelope = (float) Math.sin(time * Math.PI);
+        final float envelope = (float) Math.sin(time * Math.PI);
         if (envelope < 0.05f) {
             return;
         }
 
-        float rawV = (float) Math.pow(envelope, 1.2f);
+        final float rawV = (float) Math.pow(envelope, 1.2f);
 
-        float size = radius * 0.24f * (0.9f + 0.2f * rawV);
+        final float size = radius * 0.24f * (0.9f + 0.2f * rawV) * parameter(GLYPH_SIZE);
 
-        int alphaMain = AnimationUtils.clamp255((int) (ColorUtils.alpha(GLYPH_COLOR) * rawV));
-        int alphaSoft = AnimationUtils.clamp255((int) (ColorUtils.alpha(GLYPH_COLOR) * 0.4f * rawV));
+        final int alphaMain = AnimationUtils.clamp255((int) (ColorUtils.alpha(EffectRuntime.color(1, GLYPH_COLOR)) * rawV));
+        final int alphaSoft = AnimationUtils.clamp255((int) (ColorUtils.alpha(EffectRuntime.color(1, GLYPH_COLOR)) * 0.4f * rawV));
 
-        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
+        final BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR);
 
         bufferBuilder.addVertex(pose, centerX - size, centerY, 0)
-                .setColor(ColorUtils.red(GLYPH_COLOR), ColorUtils.green(GLYPH_COLOR), ColorUtils.blue(GLYPH_COLOR), alphaMain);
+                .setColor(ColorUtils.red(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.green(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.blue(EffectRuntime.color(1, GLYPH_COLOR)), EffectRuntime.alpha(alphaMain));
         bufferBuilder.addVertex(pose, centerX + size, centerY, 0)
-                .setColor(ColorUtils.red(GLYPH_COLOR), ColorUtils.green(GLYPH_COLOR), ColorUtils.blue(GLYPH_COLOR), alphaMain);
+                .setColor(ColorUtils.red(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.green(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.blue(EffectRuntime.color(1, GLYPH_COLOR)), EffectRuntime.alpha(alphaMain));
 
         bufferBuilder.addVertex(pose, centerX, centerY - size, 0)
-                .setColor(ColorUtils.red(GLYPH_COLOR), ColorUtils.green(GLYPH_COLOR), ColorUtils.blue(GLYPH_COLOR), alphaMain);
+                .setColor(ColorUtils.red(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.green(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.blue(EffectRuntime.color(1, GLYPH_COLOR)), EffectRuntime.alpha(alphaMain));
         bufferBuilder.addVertex(pose, centerX, centerY + size, 0)
-                .setColor(ColorUtils.red(GLYPH_COLOR), ColorUtils.green(GLYPH_COLOR), ColorUtils.blue(GLYPH_COLOR), alphaMain);
+                .setColor(ColorUtils.red(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.green(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.blue(EffectRuntime.color(1, GLYPH_COLOR)), EffectRuntime.alpha(alphaMain));
 
-        try (MeshData data = bufferBuilder.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
+        BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 
-        BufferBuilder bufferBuilder2 = tesselator.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        final BufferBuilder ring = tesselator.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
 
-        int innerSeg = 24;
-        float innerRad = size * 0.7f;
+        final int innerSeg = 24;
+        final float innerRad = size * 0.7f;
         for (int i = 0; i <= innerSeg; i++) {
-            float alpha = (i / (float) innerSeg) * (float) Math.PI * 2.0f;
-            float x = centerX + (float) Math.cos(alpha) * innerRad;
-            float y = centerY + (float) Math.sin(alpha) * innerRad;
+            final float alpha = (i / (float) innerSeg) * (float) Math.PI * 2.0f;
+            final float x = centerX + (float) Math.cos(alpha) * innerRad;
+            final float y = centerY + (float) Math.sin(alpha) * innerRad;
 
-            bufferBuilder2.addVertex(pose, x, y, 0)
-                    .setColor(ColorUtils.red(GLYPH_COLOR), ColorUtils.green(GLYPH_COLOR), ColorUtils.blue(GLYPH_COLOR), alphaSoft);
+            ring.addVertex(pose, x, y, 0)
+                    .setColor(ColorUtils.red(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.green(EffectRuntime.color(1, GLYPH_COLOR)), ColorUtils.blue(EffectRuntime.color(1, GLYPH_COLOR)), EffectRuntime.alpha(alphaSoft));
         }
 
-        try (MeshData data = bufferBuilder2.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
+        BufferUploader.drawWithShader(ring.buildOrThrow());
     }
 
 }

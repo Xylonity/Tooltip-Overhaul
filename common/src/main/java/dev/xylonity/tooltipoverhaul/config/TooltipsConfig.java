@@ -7,6 +7,64 @@ import dev.xylonity.tooltipoverhaul.config.wrapper.ConfigEntry;
 public final class TooltipsConfig {
 
     @ConfigEntry(
+            category = "effects",
+            min = 0.0,
+            max = 10.0,
+            comment = "Effect animation speed multiplier. Zero freezes effects."
+    )
+    public static float EFFECT_SPEED = 1f;
+
+    @ConfigEntry(
+            category = "effects",
+            min = 0.0,
+            max = 1.0,
+            comment = "Effect opacity multiplier. Zero hides effects."
+    )
+    public static float EFFECT_INTENSITY = 1f;
+
+    @ConfigEntry(
+            category = "effects",
+            min = 0.0,
+            max = 5.0,
+            comment = "Particle density multiplier."
+    )
+    public static float EFFECT_DENSITY = 1f;
+
+    @ConfigEntry(
+            category = "effects",
+            comment = "Freezes decorative effects and disable tooltip/icon movement, including custom frame overrides."
+    )
+    public static boolean REDUCED_MOTION = false;
+
+    @ConfigEntry(
+            category = "effects",
+            comment = "Render effects right over the background, behind the text, icon and frame, instead of on top of " +
+                    "everything."
+    )
+    public static boolean EFFECTS_BEHIND_TEXT = false;
+
+    @ConfigEntry(
+            category = "layout",
+            comment = "Tooltip layout. Options: classic (icon inside), badge (icon halfway across the left frame), floating " +
+                    "(compact header, external icon above the 3D preview), compact (small icon beside the title and rating specified in a subtle footer)."
+    )
+    public static String TOOLTIP_LAYOUT = "classic";
+
+    @ConfigEntry(
+            category = "layout",
+            comment = "Show the item's mod name on the left of Compact's footer, with the rating on the right. Long names are " +
+                    "shortened to fit. The mod name is moved from the body when already present."
+    )
+    public static boolean COMPACT_SHOW_MOD_NAME = true;
+
+    @ConfigEntry(
+            category = "layout",
+            color = true,
+            comment = "Color of the mod name in Compact's footer, in ARGB format (#AARRGGBB). Defaults to dark gray."
+    )
+    public static String COMPACT_MOD_NAME_COLOR = "#FF555555";
+
+    @ConfigEntry(
             category = "preview",
             comment = "Render a 3D preview of tiered items (swords, axes, etc.) on the left side of the tooltip."
     )
@@ -34,10 +92,25 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "general",
+            comment = "Automatically scroll overflowed tooltips after three seconds. Manual scrolling disables it until the tooltip changes."
+    )
+    public static boolean AUTO_SCROLL_TOOLTIPS = true;
+
+    @ConfigEntry(
+            category = "general",
             comment = "Always show the equipment comparison tooltip when hovering a comparable item, " +
                     "without needing to hold the compare key (Left Shift by default)."
     )
     public static boolean ALWAYS_SHOW_COMPARISON = false;
+
+    @ConfigEntry(
+            category = "general",
+            min = 1,
+            max = 6,
+            slider = true,
+            comment = "Maximum number of tooltips that can be pinned at the same time. Pinning past the limit replaces the oldest one."
+    )
+    public static int MAX_PINNED_TOOLTIPS = 3;
 
     @ConfigEntry(
             category = "divider",
@@ -97,6 +170,31 @@ public final class TooltipsConfig {
     public static int TOOLTIP_POSITION_Y = 0;
 
     @ConfigEntry(
+            category = "layout",
+            min = 0,
+            max = 700,
+            comment = "Depth (Z) offset of the whole hovered tooltip. Vanilla draws toasts (advancements, recipes) at 800, " +
+                    "so the default keeps the tooltip over them."
+    )
+    public static int TOOLTIP_Z_OFFSET = 400;
+
+    @ConfigEntry(
+            category = "layout",
+            min = 10,
+            max = 100,
+            comment = "Maximum tooltip height as a percentage of the screen height."
+    )
+    public static int MAX_TOOLTIP_HEIGHT = 100;
+
+    @ConfigEntry(
+            category = "layout",
+            min = 20,
+            max = 100,
+            comment = "Maximum tooltip width as a percentage of the screen width."
+    )
+    public static int MAX_TOOLTIP_WIDTH = 100;
+
+    @ConfigEntry(
             category = "divider",
             comment = "Extra padding above the divider line"
     )
@@ -110,12 +208,14 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "style",
+            options = { "gradient", "glint", "static" },
             comment = "Default inner overlay style for tooltips. Options: glint, static (monochrome), gradient."
     )
     public static String DEFAULT_INNER_OVERLAY_TYPE = "gradient";
 
     @ConfigEntry(
             category = "style",
+            options = { "default", "rounded", "bevel", "inner", "cut", "thick", "bracket", "block", "notch", "weld", "gem" },
             comment = "Corner style for the inner frame of the tooltip. Options: default (square), rounded (corner " +
                     "pixel removed), bevel (45 degree diagonal cut), inner (extra pixel in the inner corner), cut (2px " +
                     "chamfer), thick (solid triangular corner, top-right only), bracket (inner corner bracket), " +
@@ -126,6 +226,7 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "style",
+            options = { "default", "square", "rounded", "notch" },
             comment = "Corner style for the outer background border of the tooltip. Options: default (vanilla notch), " +
                     "square (sharp 90 degree), rounded, notch (rectangular inner offset, matches the " +
                     "inner frame notch style)."
@@ -173,27 +274,51 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "text",
+            options = { "left", "middle", "right" },
             comment = "Title alignment. Options: left, middle, right."
     )
     public static String TITLE_X_ALIGNMENT = "left";
 
     @ConfigEntry(
             category = "text",
+            options = { "left", "middle", "right" },
             comment = "Rating alignment. Options: left, middle, right."
     )
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
             category = "effects",
-            comment = "Effects. Options: bubbles, cinder, crystals, echo, fireflies, galaxy, magic_orbs, speed_lines, nebula, spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars. You can chain effects together, for example: 'white_dust, nebula'"
+            comment = "Effects. Options: bubbles, cinder, crystals, echo, fireflies, galaxy, magic_orbs, speed_lines, nebula, " +
+                    "spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars, fireflies_2, steel_shining, floating_stars, " +
+                    "prism, snowfall, opal, aurora, fluorite, astral, comets, storm, sunbeams, fireworks, eruption, " +
+                    "searchlights, blasts, firebreath, shield, lasers, missiles, wisps. You can chain effects together, for example: " +
+                    "'white_dust, nebula'"
     )
     public static String EFFECTS = "";
 
     @ConfigEntry(
             category = "icon",
+            options = { "focus", "void", "slot", "slot_border", "glow" },
             comment = "Icon background type. Options: focus, void, slot, slot_border and glow"
     )
     public static String ICON_BACKGROUND_TYPE = "slot_border";
+
+    @ConfigEntry(
+            category = "icon",
+            color = true,
+            options = { "default" },
+            comment = "Icon background color in #AARRGGBB. Use 'default' for the original color of each background type."
+    )
+    public static String ICON_BACKGROUND_COLOR = "default";
+
+    @ConfigEntry(
+            category = "icon",
+            color = true,
+            options = { "default" },
+            comment = "Icon border color in #AARRGGBB, used by the slot_border, focus and glow backgrounds. Use 'default' " +
+                    "for the original color of each background type."
+    )
+    public static String ICON_BORDER_COLOR = "default";
 
     @ConfigEntry(
             category = "text",
@@ -209,6 +334,19 @@ public final class TooltipsConfig {
     public static boolean SHOW_MOD_NAME = false;
 
     @ConfigEntry(
+            category = "text",
+            comment = "Show the remaining and maximum durability of damaged items without enabling advanced tooltips (F3+H)."
+    )
+    public static boolean SHOW_ITEM_DURABILITY = false;
+
+    @ConfigEntry(
+            category = "text",
+            comment = "Show the item's registry name (e.g. minecraft:diamond_sword) as a dark gray line without enabling " +
+                    "advanced tooltips (F3+H)."
+    )
+    public static boolean SHOW_REGISTRY_NAME = false;
+
+    @ConfigEntry(
             category = "icon",
             comment = "Disable the item icon."
     )
@@ -222,16 +360,15 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "effects",
-            comment = "Vignette entries for gradient overlays around the tooltip background. " +
-                    "Each vignette must be written in parentheses in this exact order: " +
-                    "(type, position, color, radius, extraPositionX, extraPositionY). " +
-                    "Example: (circular, top_left, #FF567823, 0.4, 0, 0). " +
-                    "You can define multiple vignettes by separating them with commas: " +
-                    "(...), (...), (...). " +
-                    "type = vignette shape (options: circular, hole). position = anchor on the tooltip " +
-                    "(e.g. top_left, top_right, middle, right, bottom_left). color = ARGB hex in #AARRGGBB. " +
-                    "radius = relative size factor (e.g. radius 0.4). extraPositionX / extraPositionY = " +
-                    "additional pixel offset from the chosen position."
+            comment = "Vignette entries for gradient overlays around the tooltip background. Each vignette must be written in " +
+                    "parentheses in this exact order: (type, position, color, radius, extraPositionX, extraPositionY). " +
+                    "Example: (circular, top_left, #FF567823, 0.4, 0, 0). You can define multiple vignettes by separating them " +
+                    "with commas: (...), (...), (...). type = vignette shape (options: circular, hole, ellipse, diamond, " +
+                    "ring, linear). position = anchor on the tooltip (e.g. top_left, top_right, middle, right, bottom_left); for " +
+                    "linear it is the edge the fade starts from (top_*, bottom_*, left, right; middle fades top and bottom). color = " +
+                    "ARGB hex in #AARRGGBB. radius = relative size factor (e.g. radius 0.4); for linear, the fade depth as a fraction " +
+                    "of the panel. extraPositionX / extraPositionY = additional offset as a percentage of the tooltip height / width, " +
+                    "respectively."
     )
     public static String VIGNETTES = "";
 
@@ -243,10 +380,35 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "animations",
-            comment = "Animation played when a tooltip appears (on hover) and disappears. Options: none, fade, pop, " +
-                    "rise, unfold, zoom, slide, swing, emerge, squash, card, shake."
+            options = { "none", "fade", "pop", "rise", "unfold", "zoom", "slide", "swing", "emerge", "squash", "card", "shake" },
+            comment = "Animation played when a tooltip appears (on hover). Options: none, fade, pop, rise, unfold, zoom, " +
+                    "slide, swing, emerge, squash, card, shake."
     )
     public static String TOOLTIP_APPEAR_ANIMATION = "none";
+
+    @ConfigEntry(
+            category = "animations",
+            options = { "match_appear", "none", "fade", "pop", "rise", "unfold", "zoom", "slide", "swing", "emerge", "squash", "card", "shake" },
+            comment = "Animation played when a tooltip disappears. Options: match_appear (same as the appear animation), " +
+                    "none, fade, pop, rise, unfold, zoom, slide, swing, emerge, squash, card, shake."
+    )
+    public static String TOOLTIP_DISAPPEAR_ANIMATION = "match_appear";
+
+    @ConfigEntry(
+            category = "animations",
+            min = 0,
+            max = 5,
+            comment = "Seconds the cursor must rest on an item before its tooltip (and its appear animation) shows up, so " +
+                    "sweeping across an inventory doesn't flash tooltips. 0 shows them immediately."
+    )
+    public static float TOOLTIP_APPEAR_DELAY = 0f;
+
+    @ConfigEntry(
+            category = "animations",
+            comment = "Replay the appear animation when moving straight from one item to another. Disable it to keep the " +
+                    "tooltip settled while sweeping across slots, only animating when it appears from nothing."
+    )
+    public static boolean TOOLTIP_ANIMATE_ON_SWITCH = false;
 
     @ConfigEntry(
             category = "animations",
@@ -269,21 +431,44 @@ public final class TooltipsConfig {
     @ConfigEntry(
             category = "divider",
             color = true,
+            options = { "match_inner_frame_color", "match_item_name_color" },
             comment = "Divider line color. Options: 'match_inner_frame_color', 'match_item_name_color' or a hex ARGB color (e.g., 0xA0EFEFEF)."
     )
     public static String DIVIDER_LINE_COLOR = "match_inner_frame_color";
 
     @ConfigEntry(
             category = "divider",
-            comment = "Divider line type. Options: 'gradient', 'static', 'linear'"
+            options = { "gradient", "static", "linear", "dashed", "dotted", "ornament", "gradient_ornament" },
+            comment = "Divider line type. Options: 'gradient', 'static', 'linear', 'dashed', 'dotted', 'ornament', 'gradient_ornament'"
     )
     public static String DIVIDER_LINE_TYPE = "gradient";
 
     @ConfigEntry(
             category = "preview",
+            options = { "armor_stand", "player_skin" },
             comment = "Preview model to render in the second panel. Options: armor_stand, player_skin."
     )
     public static String PREVIEW_PANEL_MODEL = "armor_stand";
+
+    @ConfigEntry(
+            category = "preview",
+            comment = "Side triangles. Options: none, style_1 (filled vertical strips), style_2 (outline only)."
+    )
+    public static String PREVIEW_PANEL_SIDE_TRIANGLES = "style_1";
+
+    @ConfigEntry(
+            category = "preview",
+            comment = "Preview corner type, independent of the main tooltip. Options: default, rounded, bevel, inner, cut, " +
+                    "thick, bracket, block, notch, weld, gem."
+    )
+    public static String PREVIEW_PANEL_CORNER_TYPE = "default";
+
+    @ConfigEntry(
+            category = "preview",
+            comment = "Preview background corners, independent of the border and main tooltip. Options: default (vanilla notch), " +
+                    "square, rounded, notch. Pair notch with the preview border's notch corners."
+    )
+    public static String PREVIEW_PANEL_BACKGROUND_CORNER_TYPE = "default";
 
     @ConfigEntry(
             category = "preview",

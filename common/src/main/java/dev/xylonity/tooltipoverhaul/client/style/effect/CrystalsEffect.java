@@ -1,169 +1,116 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import dev.xylonity.tooltipoverhaul.client.layer.impl.EffectLayer;
-import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
-import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
-import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.world.phys.Vec2;
-import org.joml.Matrix4f;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.AmbientEffect;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 
-import java.util.Random;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.*;
+import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
 
-public class CrystalsEffect implements EffectLayer {
+public class CrystalsEffect extends AmbientEffect {
 
-    private static final int[][] CRYSTAL_COLORS = {
-            { 0xFFA0E8FF, 0xFFE0F8FF },
-            { 0xFFC0A0FF, 0xFFE8DCFF },
-            { 0xFFA8FFD8, 0xFFE0FFF0 }
-    };
-
-    private static final int GLINT_COLOR = 0xFFFFFFFF;
-    private static final int CRYSTAL_COUNT = 6;
-
-    private static final float[][] CRYSTALS = new float[CRYSTAL_COUNT][6];
-
-    static {
-        final Random random = new Random(22222L);
-        for (int i = 0; i < CRYSTAL_COUNT; i++) {
-            CRYSTALS[i][0] = (i / (float) CRYSTAL_COUNT) * (float) Math.PI * 2.0f + random.nextFloat() * 0.5f; // Anchor angle
-            CRYSTALS[i][1] = 3.0f + random.nextFloat() * 1.8f; // Size
-            CRYSTALS[i][2] = 0.7f + random.nextFloat() * 0.7f; // Bob speed
-            CRYSTALS[i][3] = (random.nextFloat() - 0.5f) * 0.8f; // Base tilt
-            CRYSTALS[i][4] = 0.4f + random.nextFloat() * 0.5f; // Tilt sway speed
-            CRYSTALS[i][5] = random.nextFloat() * (float) Math.PI * 2.0f; // Phase
-        }
-
+    @Override
+    protected boolean hasMaterial() {
+        return true;
     }
 
     @Override
-    public void render(TooltipContext context, Vec2 position) {
-        final int positionX = (int) position.x;
-        final int positionY = (int) position.y;
-        final int tooltipWidth = (int) context.getTooltipSize().x;
-        final int tooltipHeight = (int) context.getTooltipSize().y;
+    protected void drawMaterial(EffectCanvas canvas) {
+        crystals(canvas, true);
+    }
 
-        final long now = System.currentTimeMillis();
-        final float time = (now - context.getStartTime()) / 1000f;
-
-        final float centerX = positionX + tooltipWidth * 0.5f;
-        final float centerY = positionY + tooltipHeight * 0.5f;
-        final float radiusX = tooltipWidth * 0.5f + 9.0f;
-        final float radiusY = tooltipHeight * 0.5f + 7.0f;
-
-        context.push(() -> {
-            RenderSystem.enableBlend();
-            RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-
-            RenderSystem.disableDepthTest();
-            RenderSystem.depthMask(false);
-            RenderSystem.disableCull();
-
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-
-            final Matrix4f pose = context.getPose().last().pose();
-            final Tesselator tesselator = Tesselator.getInstance();
-
-            for (int i = 0; i < CRYSTAL_COUNT; i++) {
-                renderCrystal(tesselator, pose, centerX, centerY, radiusX, radiusY, time, i);
-            }
-
-            RenderSystem.depthMask(true);
-            RenderSystem.enableDepthTest();
-            RenderSystem.blendFunc(
-                    GlStateManager.SourceFactor.SRC_ALPHA,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-            );
-
-            RenderSystem.disableBlend();
-            RenderSystem.enableCull();
-        });
+    @Override
+    protected void draw(EffectCanvas canvas) {
+        crystals(canvas, false);
+        for (int index = 0; index < effectCount(16); index++) {
+            final float phase = cycle(canvas.time * 0.065 + seed(index, 11));
+            final Point point = canvas.edge(seed(index, 12), 3 + sin(phase * Math.PI) * 8);
+            canvas.mote(point.x() + sin(canvas.time * 0.3 + index) * 2, point.y() - phase * 4, 0.35f + seed(index, 13) * 0.5f, color(2, 0xFFE2D4FF), life(phase) * 0.55f);
+        }
 
     }
 
-    private void renderCrystal(Tesselator tesselator, Matrix4f pose, float centerX, float centerY, float radiusX, float radiusY, float time, int index) {
-        final float[] crystal = CRYSTALS[index];
-        final float anchorAngle = crystal[0];
-        final float size = crystal[1];
-        final float bobSpeed = crystal[2];
-        final float baseTilt = crystal[3];
-        final float tiltSwaySpeed = crystal[4];
-        final float phase = crystal[5];
+    private static void crystals(EffectCanvas canvas, boolean material) {
+        final int count = canvas.particleCount(9);
+        for (int index = 0; index < count; index++) {
+            final Point point = canvas.edge(seed(index, 1), 2 + seed(index, 2) * 6);
 
-        // Anchored around the tooltip, floating up and down in place
-        final float x = centerX + (float) Math.cos(anchorAngle) * radiusX;
-        final float y = centerY + (float) Math.sin(anchorAngle) * radiusY + (float) Math.sin(time * bobSpeed * (float) Math.PI + phase) * 2.2f;
+            final float x = point.x() + flow(index, canvas.time * 0.12) * 3;
+            final float y = point.y() + sin(canvas.time * (0.35 + seed(index, 3) * 0.15) + index * 2) * 2;
+            final float length = 3.3f + seed(index, 4) * 3.5f;
+            final float angle = (seed(index, 5) - 0.5f) * 1.2f + sin(canvas.time * 0.24 + index) * 0.18f;
 
-        // Slight tilting
-        final float rotation = baseTilt + (float) Math.sin(time * tiltSwaySpeed * (float) Math.PI + phase) * 0.35f;
-        final float cos = (float) Math.cos(rotation);
-        final float sin = (float) Math.sin(rotation);
+            shard(canvas, x, y, length, angle, index, 1, material);
 
-        final int[] palette = CRYSTAL_COLORS[index % CRYSTAL_COLORS.length];
-        final int baseColor = palette[0];
-        final int highlightColor = palette[1];
+            if (index % 3 == 0) {
+                shard(canvas, x + 2, y + length * 0.4f, length * 0.52f, angle + 0.55f, index + 17, 0.8f, material);
+            }
 
-        // Hexagon outline
-        final float width = size * 0.55f;
-        final float[][] outline = {
-                { 0.0f, -size },
-                { width, -size * 0.4f },
-                { width, size * 0.4f },
-                { 0.0f, size },
-                { -width, size * 0.4f },
-                { -width, -size * 0.4f }
-        };
-
-        BufferBuilder bufferBuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR);
-
-        for (int i = 0; i < outline.length; i++) {
-            final float[] a = outline[i];
-            final float[] b = outline[(i + 1) % outline.length];
-
-            final int facetColor = (i % 2 == 0) ? baseColor : highlightColor;
-
-            bufferBuilder.addVertex(pose, x, y, 0)
-                    .setColor(ColorUtils.red(highlightColor), ColorUtils.green(highlightColor), ColorUtils.blue(highlightColor), 235);
-            bufferBuilder.addVertex(pose, x + a[0] * cos - a[1] * sin, y + a[0] * sin + a[1] * cos, 0)
-                    .setColor(ColorUtils.red(facetColor), ColorUtils.green(facetColor), ColorUtils.blue(facetColor), 220);
-            bufferBuilder.addVertex(pose, x + b[0] * cos - b[1] * sin, y + b[0] * sin + b[1] * cos, 0)
-                    .setColor(ColorUtils.red(facetColor), ColorUtils.green(facetColor), ColorUtils.blue(facetColor), 220);
         }
 
-        try (MeshData data = bufferBuilder.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
+    }
+
+    private static void shard(EffectCanvas canvas, float x, float y, float size, float angle, int index, float alpha, boolean material) {
+        final float baseSize = size;
+
+        size *= parameter(SIZE);
+
+        final float turn = (float) canvas.time * 0.28f * parameter(ROTATION_SPEED) + index * 1.9f;
+        final float breadth = size * (0.28f + 0.12f * cos(turn));
+
+        size *= parameter(STRETCH);
+
+        final float ridge = sin(turn) * breadth * 0.6f;
+
+        final float dx = cos(angle);
+        final float dy = sin(angle);
+
+        final float[] sx = {0, breadth, breadth, 0, -breadth, -breadth};
+        final float[] sy = {-size, -size * 0.38f, size * 0.40f, size, size * 0.38f, -size * 0.40f};
+        final float glint = (float) Math.pow(0.5f + 0.5f * cos(turn - 0.7), 7);
+
+        if (!material) {
+            canvas.haze(x, y, baseSize * 1.5f, baseSize * 1.8f * parameter(STRETCH), color(0, 0xFFB5A5EA), alpha * (0.12f + glint * 0.12f));
         }
 
-        final float glintBase = (float) Math.sin(time * 1.6f + phase * 3.0f);
-        final float glint = glintBase > 0 ? glintBase * glintBase * glintBase * glintBase : 0.0f;
-        if (glint < 0.05f) {
+        final float mx = x + ridge * dx;
+        final float my = y + ridge * dy;
+        for (int side = 0; side < 6; side++) {
+            int next = (side + 1) % 6;
+            final float ax = x + sx[side] * dx - sy[side] * dy, ay = y + sx[side] * dy + sy[side] * dx;
+            final float bx = x + sx[next] * dx - sy[next] * dy, by = y + sx[next] * dy + sy[next] * dx;
+
+            final float light = 0.28f + 0.40f * Math.max(0, cos(turn + side * TAU / 6));
+
+            if (material) {
+                int color = mix(color(0, 0xFF543278), color(0, 0xFFA995DD), light);
+                if (side % 3 == 1) {
+                    color = mix(color(0, 0xFF354E80), color(1, 0xFF9FD2E0), light);
+                }
+
+                canvas.triangle(mx, my, ax, ay, bx, by, color, alpha * 0.98f, alpha * 0.88f, alpha * 0.93f);
+            }
+            else {
+                final float facet = (float) Math.pow(Math.max(0, cos(turn + side * TAU / 6 - 0.6)), 8);
+                canvas.triangle(mx, my, ax, ay, bx, by, color(2, 0xFFECE7FF), alpha * facet * 0.30f, alpha * facet * 0.06f, alpha * facet * 0.18f);
+                canvas.line(ax, ay, bx, by, 0.22f, 0.22f, color(2, 0xFFDAD3FF), alpha * light * 0.28f, alpha * light * 0.28f);
+            }
+
+        }
+
+        if (material) {
+            // Outline
+            for (int facet = 0; facet < 6; facet++) {
+                final int next = (facet + 1) % 6;
+                canvas.line(x + sx[facet] * dx - sy[facet] * dy, y + sx[facet] * dy + sy[facet] * dx,
+                        x + sx[next] * dx - sy[next] * dy, y + sx[next] * dy + sy[next] * dx,
+                        0.72f, 0.72f, color(0, 0xFF30283F), alpha * 0.8f, alpha * 0.8f);
+            }
+
             return;
         }
 
-        final float glintX = x + (-width * 0.4f) * cos - (-size * 0.45f) * sin;
-        final float glintY = y + (-width * 0.4f) * sin + (-size * 0.45f) * cos;
-        final float glintHalf = 0.7f + 1.1f * glint;
-        final int glintAlpha = AnimationUtils.clamp255((int) (245 * glint));
-
-        bufferBuilder = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-
-        bufferBuilder.addVertex(pose, glintX, glintY - glintHalf, 0).setColor(ColorUtils.red(GLINT_COLOR), ColorUtils.green(GLINT_COLOR), ColorUtils.blue(GLINT_COLOR), glintAlpha);
-        bufferBuilder.addVertex(pose, glintX + glintHalf, glintY, 0).setColor(ColorUtils.red(GLINT_COLOR), ColorUtils.green(GLINT_COLOR), ColorUtils.blue(GLINT_COLOR), glintAlpha);
-        bufferBuilder.addVertex(pose, glintX, glintY + glintHalf, 0).setColor(ColorUtils.red(GLINT_COLOR), ColorUtils.green(GLINT_COLOR), ColorUtils.blue(GLINT_COLOR), glintAlpha);
-        bufferBuilder.addVertex(pose, glintX - glintHalf, glintY, 0).setColor(ColorUtils.red(GLINT_COLOR), ColorUtils.green(GLINT_COLOR), ColorUtils.blue(GLINT_COLOR), glintAlpha);
-
-        try (MeshData data = bufferBuilder.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
-
+        canvas.line(x + size * dy, y - size * dx, mx, my, 0.45f, 0.35f, color(2, 0xFFF2E6FF), alpha * 0.8f, alpha * 0.35f);
+        canvas.star(x + size * dy, y - size * dx, 2.2f + glint * 1.2f, 4, 0.20f, angle + 0.2f, color(2, 0xFFFBF6FF), alpha * (0.16f + glint * 0.7f));
     }
 
 }

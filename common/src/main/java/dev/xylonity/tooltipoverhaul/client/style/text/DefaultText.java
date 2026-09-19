@@ -2,7 +2,9 @@ package dev.xylonity.tooltipoverhaul.client.style.text;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.PoseStack;
+import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.TextLayer;
+import dev.xylonity.tooltipoverhaul.client.layout.TooltipLayout;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.*;
 import net.minecraft.client.Minecraft;
@@ -20,30 +22,38 @@ public class DefaultText implements TextLayer {
     @Override
     public void render(TooltipContext context, Vec2 position) {
 
-        List<ClientTooltipComponent> components = context.getComponents();
+        final List<ClientTooltipComponent> components = context.getComponents();
 
         Font font = context.getFont();
-        PoseStack poseStack = context.getPose();
+        final PoseStack poseStack = context.getPose();
         GuiGraphics graphics = context.getGraphics();
 
-        boolean hasIcon = context.hasIcon();
-        boolean hasDividerLine = context.hasDividerLine();
-        boolean hasRating = RenderUtils.hasRating(context);
+        final boolean hasIcon = TooltipLayout.hasHeaderIcon(context);
+        final boolean hasDividerLine = context.hasDividerLine();
+        final boolean hasRating = RenderUtils.hasRating(context);
 
-        int paddingX = context.getPaddingX();
-        int paddingY = context.getPaddingY();
+        final int paddingX = context.getPaddingX();
+        final int paddingY = context.getPaddingY();
 
         int x = (int) (position.x + paddingX);
         int y = (int) (position.y + paddingY + 1);
 
-        // Some tooltips (Origins recipe badges, info icons, etc.) may provide a single non-text component as the tooltip content.
+        // Some tooltips (Origins recipe badges, info icons, etc.) may provide a single non-text component as the tooltip content
         // In those cases, treating the first component as a "title" would skip it (because the content loop starts at index 1),
         // causing the tooltip to appear blank. So we only treat the first component as a title if it's actually a text component
-        boolean treatFirstAsTitle = !components.isEmpty() && (components.get(0) instanceof ClientTextTooltip);
-        int startIndex = treatFirstAsTitle ? 1 : 0;
+        final boolean treatFirstAsTitle = !components.isEmpty() && (components.get(0) instanceof ClientTextTooltip);
+        final int startIndex = treatFirstAsTitle ? 1 : 0;
 
         // Rendering the title first (along with the rating text if present)
-        if (treatFirstAsTitle) {
+        if (treatFirstAsTitle && context.getLayoutStyle() == TooltipLayout.Style.COMPACT) {
+            final ClientTooltipComponent title = components.get(0);
+            final int titleX = x + TooltipLayout.titleInset(context);
+            final int titleY = y + (TooltipLayout.headerHeight(context) - title.getHeight()) / 2;
+            title.renderText(font, titleX + computeTitleAlignment(context, title, titleX), titleY, poseStack.last().pose(), graphics.bufferSource());
+            renderCompactFooter(context, position);
+            y = (int) position.y + TooltipLayout.compactBodyTop(context);
+        }
+        else if (treatFirstAsTitle) {
             final ClientTooltipComponent titleComponent = components.get(0);
             if (titleComponent != null) {
                 // If the icon is present, move the content to the side
@@ -54,7 +64,7 @@ public class DefaultText implements TextLayer {
                 int titleAlignY = 0;
                 int ratingAlignY = 0;
                 if (hasIcon) {
-                    extraX = Constants.getIconSize(context) + Constants.getIconTitleSeparation(context);
+                    extraX = TooltipLayout.titleInset(context);
                     extraY = (Constants.getIconSize(context) / 2);
                     titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.getIconSize(context) / 4);
                 }
@@ -63,7 +73,7 @@ public class DefaultText implements TextLayer {
                     ratingAlignY = titleComponent.getHeight();
                 }
 
-                int titleAlignment = computeTitleAlignment(context, titleComponent, x + extraX);
+                final int titleAlignment = computeTitleAlignment(context, titleComponent, x + extraX);
 
                 // Title text
                 titleComponent.renderText(font, x + extraX + titleAlignment, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
@@ -72,7 +82,7 @@ public class DefaultText implements TextLayer {
                 if (hasRating) {
                     Component rating = TextUtils.getRatingText(context);
 
-                    int ratingAlignment = computeRatingAlignment(context, rating, x + extraX);
+                    final int ratingAlignment = computeRatingAlignment(context, rating, x + extraX);
 
                     context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX + ratingAlignment, y + extraY + ratingAlignY, 0xEDDE76, false);
                     y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
@@ -101,25 +111,26 @@ public class DefaultText implements TextLayer {
 
         }
 
-        int contentStartY = y;
+        final int contentStartY = y;
+        final int contentBottom = (int) (position.y + context.getTooltipSize().y) - paddingY - TooltipLayout.footerHeight(context);
 
         // If there is a scrolling state active, enables the GL scissor
         if (TooltipScrollState.isIsActive()) {
 
             graphics.flush();
 
-            Minecraft minecraft = Minecraft.getInstance();
-            int guiScale = (int) minecraft.getWindow().getGuiScale();
+            final Minecraft minecraft = Minecraft.getInstance();
+            final int guiScale = (int) minecraft.getWindow().getGuiScale();
 
-            int scissorLeft = (int) position.x + paddingX;
-            int scissorRight = (int) position.x + (int) context.getTooltipSize().x - paddingX;
-            int scissorBottom = (int) position.y + (int) context.getTooltipSize().y - paddingY;
+            final int scissorLeft = x;
+            final int scissorRight = (int) position.x + (int) context.getTooltipSize().x - paddingX;
+            final int scissorBottom = contentBottom;
 
-            int windowHeight = minecraft.getWindow().getHeight();
-            int scaledLeft = scissorLeft * guiScale;
-            int scaledTop = windowHeight - (scissorBottom * guiScale);
-            int scaledWidth = (scissorRight - scissorLeft) * guiScale;
-            int scaledHeight = (scissorBottom - contentStartY) * guiScale;
+            final int windowHeight = minecraft.getWindow().getHeight();
+            final int scaledLeft = scissorLeft * guiScale;
+            final int scaledTop = windowHeight - (scissorBottom * guiScale);
+            final int scaledWidth = (scissorRight - scissorLeft) * guiScale;
+            final int scaledHeight = (scissorBottom - contentStartY) * guiScale;
 
             GlStateManager._enableScissorTest();
             GlStateManager._scissorBox(scaledLeft, scaledTop, scaledWidth, scaledHeight);
@@ -129,12 +140,20 @@ public class DefaultText implements TextLayer {
 
         // Renders the content of the tooltip (scrollable or not)
         for (int i = startIndex; i < components.size(); i++) {
-            ClientTooltipComponent component = components.get(i);
+            final ClientTooltipComponent component = components.get(i);
 
             // Renders the lines if they're available in the viewport
             if (!TooltipScrollState.isIsActive() ||
                     (y + component.getHeight() >= contentStartY &&
-                            y <= (int)(position.y + context.getTooltipSize().y - paddingY))) {
+                            y <= contentBottom)) {
+
+                // Some extra components (like celestisynth's weapons) may extract drawings out of the tooltip margins
+                final boolean custom = !(component instanceof ClientTextTooltip);
+                if (custom) {
+                    graphics.flush();
+                    poseStack.pushPose();
+                    poseStack.translate(0, 0, LayerDepth.CUSTOM_COMPONENT.getZ() - getLayerDepth().getZ());
+                }
 
                 component.renderText(font, x, y, poseStack.last().pose(), graphics.bufferSource());
 
@@ -143,6 +162,12 @@ public class DefaultText implements TextLayer {
                 graphics.flush();
 
                 component.renderImage(font, x, y, graphics);
+
+                if (custom) {
+                    graphics.flush();
+                    poseStack.popPose();
+                }
+
             }
 
             y += component.getHeight();
@@ -154,6 +179,43 @@ public class DefaultText implements TextLayer {
             GlStateManager._disableScissorTest();
         }
 
+    }
+
+    private void renderCompactFooter(TooltipContext context, Vec2 position) {
+        if (TooltipLayout.footerHeight(context) == 0) {
+            return;
+        }
+
+        final Font font = context.getFont();
+        final GuiGraphics graphics = context.getGraphics();
+        final int x = (int) (position.x + context.getPaddingX());
+        final int right = (int) (position.x + context.getTooltipSize().x) - context.getPaddingX();
+        int y = (int) (position.y + context.getTooltipSize().y) - context.getPaddingY() - TooltipLayout.footerTextHeight(context) + 2;
+        int availableWidth = right - x;
+        if (RenderUtils.hasRating(context)) {
+            final Component rating = TextUtils.getRatingText(context);
+            final int ratingX = right - font.width(rating);
+            graphics.drawString(font, rating, ratingX, y, 0xEDDE76, false);
+            availableWidth = ratingX - x - TooltipLayout.footerTextGap();
+        }
+
+        String name = context.getCompactModName();
+        if (name.isEmpty() || availableWidth <= 0) {
+            return;
+        }
+
+        if (font.width(name) > availableWidth) {
+            final String ellipsis = "\u2026";
+            final int ellipsisWidth = font.width(ellipsis);
+            if (availableWidth < ellipsisWidth) {
+                return;
+            }
+
+            name = font.plainSubstrByWidth(name, availableWidth - ellipsisWidth) + ellipsis;
+        }
+
+        final int color = ColorUtils.getCompactModNameColor(context);
+        graphics.drawString(font, Component.literal(name), x, y, color, false);
     }
 
     private int computeTitleAlignment(TooltipContext context, ClientTooltipComponent component, int startX) {
@@ -190,10 +252,10 @@ public class DefaultText implements TextLayer {
                 yield (total - startX - context.getPaddingX()) / 2 - context.getFont().width(component) / 2;
             }
             case "right" -> {
-                int tooltipSizeX = (int) context.getTooltipSize().x;
-                int tooltipPositionX = (int) context.getTooltipPosition().x;
+                final int tooltipSizeX = (int) context.getTooltipSize().x;
+                final int tooltipPositionX = (int) context.getTooltipPosition().x;
 
-                int total = tooltipSizeX + tooltipPositionX;
+                final int total = tooltipSizeX + tooltipPositionX;
 
                 yield (total - startX - context.getPaddingX()) - context.getFont().width(component);
             }

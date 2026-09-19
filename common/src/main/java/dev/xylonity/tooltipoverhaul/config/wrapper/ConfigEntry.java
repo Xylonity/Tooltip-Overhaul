@@ -24,6 +24,8 @@ public @interface ConfigEntry {
 
     boolean color() default false;
 
+    String[] options() default {};
+
     // Renders numeric entries as a slider in the config screen
     boolean slider() default false;
 
