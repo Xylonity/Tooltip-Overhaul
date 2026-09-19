@@ -18,11 +18,13 @@ public final class TooltipHoverTracker {
     private static final List<Session> SESSIONS = new ArrayList<>();
 
     /**
-     * Seconds since the given tooltip was first hovered
+     * Animation times after the appear delay. The icon always starts anew for a new hover session.
      */
-    public static float seconds(ItemStack stack, @Nullable Slot slot, float delay, boolean settleOnSwitch) {
-        final long frame = TooltipAnimationState.frame();
-        final long now = System.currentTimeMillis();
+    public static Timing timing(ItemStack stack, @Nullable Slot slot, float delay, boolean settleOnSwitch) {
+        return timing(stack, slot, delay, settleOnSwitch, TooltipAnimationState.frame(), System.currentTimeMillis());
+    }
+
+    static Timing timing(ItemStack stack, @Nullable Slot slot, float delay, boolean settleOnSwitch, long frame, long now) {
 
         Session match = null;
         Session previous = null;
@@ -46,14 +48,15 @@ public final class TooltipHoverTracker {
                 SESSIONS.remove(0);
             }
 
-            match = new Session(stack.copy(), settleOnSwitch && previous != null ? previous.start : now);
+            final boolean inheritStart = settleOnSwitch && previous != null;
+            match = new Session(stack.copy(), inheritStart ? previous.start : now, now, inheritStart ? 0 : delay);
             SESSIONS.add(match);
         }
 
         match.slot = slot;
         match.lastFrame = frame;
 
-        return (now - match.start) / 1000f;
+        return new Timing((now - match.start) / 1000f - delay, (now - match.iconStart) / 1000f - match.iconDelay);
     }
 
     public static void clear() {
@@ -64,13 +67,17 @@ public final class TooltipHoverTracker {
 
         private final ItemStack stack;
         private final long start;
+        private final long iconStart;
+        private final float iconDelay;
         @Nullable
         private Slot slot;
         private long lastFrame;
 
-        private Session(ItemStack stack, long start) {
+        private Session(ItemStack stack, long start, long iconStart, float iconDelay) {
             this.stack = stack;
             this.start = start;
+            this.iconStart = iconStart;
+            this.iconDelay = iconDelay;
         }
 
         private boolean matches(ItemStack other, @Nullable Slot otherSlot) {
@@ -79,5 +86,14 @@ public final class TooltipHoverTracker {
         }
 
     }
+
+
+    public record Timing(
+            float tooltipSeconds,
+            float iconSeconds
+    ) {
+        ;;
+    }
+
 
 }

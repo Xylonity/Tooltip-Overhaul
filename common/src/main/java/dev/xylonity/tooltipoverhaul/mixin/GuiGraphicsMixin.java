@@ -100,7 +100,9 @@ public class GuiGraphicsMixin {
     @Unique
     private void tooltipoverhaul$calculateCounterValue(ItemStack stack) {
         final float delay = Math.max(0, TooltipsConfig.TOOLTIP_APPEAR_DELAY);
-        TooltipRenderer.COUNTER = TooltipHoverTracker.seconds(stack, tooltipoverhaul$hoveredSlot(), delay, !TooltipsConfig.TOOLTIP_ANIMATE_ON_SWITCH) - delay;
+        final TooltipHoverTracker.Timing timing = TooltipHoverTracker.timing(stack, tooltipoverhaul$hoveredSlot(), delay, !TooltipsConfig.TOOLTIP_ANIMATE_ON_SWITCH);
+        TooltipRenderer.COUNTER = timing.tooltipSeconds();
+        TooltipRenderer.ICON_COUNTER = timing.iconSeconds();
     }
 
     @Unique

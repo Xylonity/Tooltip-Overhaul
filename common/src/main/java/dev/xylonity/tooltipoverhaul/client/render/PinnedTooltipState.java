@@ -286,9 +286,7 @@ public final class PinnedTooltipState {
         final int width = client.getWindow().getGuiScaledWidth(), height = client.getWindow().getGuiScaledHeight();
         final TooltipScrollState.Snapshot previous = TooltipScrollState.snapshot();
         final float previousCounter = TooltipRenderer.COUNTER;
-
-        graphics.flush();
-        RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+        final float previousIconCounter = TooltipRenderer.ICON_COUNTER;
 
         graphics.pose().pushPose();
         try {
@@ -297,6 +295,7 @@ public final class PinnedTooltipState {
             TooltipScrollState.restore(pin.scrolling);
 
             TooltipRenderer.COUNTER = Math.max(0, System.nanoTime() - pin.pinnedAtNano) / 1_000_000_000f;
+            TooltipRenderer.ICON_COUNTER = TooltipRenderer.COUNTER;
             final List<ClientTooltipComponent> components = liveComponents(graphics, pin, width, height);
             final TooltipContext context = new TooltipContext(graphics, client.font, components, 0, 0, width,
                     Math.max(30, height - 24), DefaultTooltipPositioner.INSTANCE, pin.stack, false);
@@ -320,6 +319,10 @@ public final class PinnedTooltipState {
 
             context.setTooltipPosition(new Vec2(pin.x, pin.y));
             bounds(context, pin, tooltipWidth, tooltipHeight);
+
+            graphics.enableScissor((int) pin.left - 8, (int) pin.top - BADGE_HEIGHT - 10, (int) pin.right + 8, (int) pin.bottom + 8);
+            RenderSystem.clear(GL11.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
+            graphics.disableScissor();
 
             TooltipAnimator.render(context, false, 1);
 
@@ -345,6 +348,7 @@ public final class PinnedTooltipState {
             graphics.flush();
             graphics.pose().popPose();
             TooltipRenderer.COUNTER = previousCounter;
+            TooltipRenderer.ICON_COUNTER = previousIconCounter;
             TooltipScrollState.restore(previous);
         }
 

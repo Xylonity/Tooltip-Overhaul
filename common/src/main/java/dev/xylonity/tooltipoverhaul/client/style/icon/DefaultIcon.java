@@ -32,7 +32,7 @@ public class DefaultIcon implements IconLayer {
 
             final IconAnimation animationType = IconAnimation.fromString(RenderUtils.getIconAppearAnimation(context));
 
-            final float elapsed = TooltipRenderer.COUNTER;
+            final float elapsed = TooltipRenderer.ICON_COUNTER;
             final float progress = Math.min(elapsed / ANIMATION_DURATION, 1.0f);
 
             // Entry animation before a continuous rotation is applied

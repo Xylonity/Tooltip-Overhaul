@@ -228,9 +228,11 @@ final class FramePreviewPanel {
         final int end = comparison ? Math.min(stacks.size(), first + 4) : first + 1;
         final int virtualWidth = screenWidth + 4096, virtualHeight = screenHeight + 4096;
         final float previousCounter = TooltipRenderer.COUNTER;
+        final float previousIconCounter = TooltipRenderer.ICON_COUNTER;
         final TooltipScrollState.Snapshot previousScroll = TooltipScrollState.snapshot();
 
         TooltipRenderer.COUNTER = (Util.getMillis() - iconAnimationAt) / 1000f;
+        TooltipRenderer.ICON_COUNTER = TooltipRenderer.COUNTER;
 
         graphics.enableScissor(x + 1, stageTop(), right - 1, stageBottom());
         try {
@@ -265,6 +267,7 @@ final class FramePreviewPanel {
             CustomFrameManager.setPreviewOverride(null);
             TooltipAnimationState.setSuppressCapture(false);
             TooltipRenderer.COUNTER = previousCounter;
+            TooltipRenderer.ICON_COUNTER = previousIconCounter;
             TooltipScrollState.restore(previousScroll);
 
             graphics.disableScissor();

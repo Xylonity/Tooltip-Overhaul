@@ -19,6 +19,7 @@ public class TooltipRenderer {
     private final @Nullable TooltipContext context;
 
     public static float COUNTER = 0;
+    public static float ICON_COUNTER = 0;
 
     public TooltipRenderer(@Nullable TooltipContext context) {
         this.context = context;
