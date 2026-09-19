@@ -1,9 +1,51 @@
 # 2.0.0
-- Most effects have been reworked with a whole new polished look: bubbles, cinder, crystals, fireflies, echo, galaxy, magic_orbs, speed_lines, spiral, metal_shining, rim_light, ripples, sonar, stars
-- Added new effects: astral, fluorite, aurora, opal, floating_stars, steel_shining, fireflies_2, snowfall, prism
-- Internal refactor of the effect building pattern into a common canvas for much faster and better effect creation process
-- Fixed a case where the metal_shining effect was ending too early on big tooltips
-- Fixed a case where the cinder effect wasn't adapting to the whole tooltip proportions
+- Added 3 brand-new tooltip styles that change the visual layout of the tooltip: Classic, Badge, Floating and Compact
+- Added ingame editing for every active mod/resourcepack custom frames file
+- Added a new effect and vignette ingame editor screens.
+- Several tooltips can now be pinned to the screen at once (3 by default, configurable) through a configurable keybind (unbinded by default), with independent dragging, scrolling and closing
+- Polished both ingame config and custom frames screens, with new animations, polished colors and better visual harmony
+- Most effects have been reworked with a whole new polished look: Bubbles, Cinder, Crystals, Fireflies, Echo, Galaxy, Magic Orbs, Speed Lines, Spiral, Metal Shining, Rim Light, Ripples, Sonar, Stars
+- Added 21 new effects: Astral, Fluorite, Aurora, Opal, Floating Stars, Steel Shining, Fireflies II, Snowfall, Prism, Comets, Storm, Sunbeams, Fireworks, Eruption, Searchlights, Blasts, Firebreath, Shield, Lasers, Missiles, Wisps
+- Added 4 new divider line types: Dashed, Dotted, Ornament, Gradient Ornament
+- Reworked the custom frames preview with a centered item and automatic fitting, no longer using a random mosaic placement
+- Added reusable templates to custom frames json files which, once applied to certain items, inherit the same (overrideable) values defined in the template itself
+- Added conditional custom frame rules based on remaining durability, custom item names, certain enchantments and specific tags/components
+- Effects are now configurable (per intensity, deformation, saturation, colors, density, speed, etc.)
+- Added a configurable keybind (unbinded by default) for fast accessing TO's ingame config screen
+- Custom frames json file entries can now be dragged and reordered through the ingame config screen
+- Custom frames json file entries can now specify their priority over other entries
+- Custom frame entries are now updated automatically on mod/resourcepack updates only while the whole entry is unmodified
+- Some config options (like icon animations) are now selectable instead of forcing the user to write them down
+- Added frame editor validation, automatic backups, control+S support and draft support
+- Added a browser for items, enchantments and frames, with a search bar, preview and multiple item selection support
+- Added a configurable tooltip appear delay and an option to keep the tooltip settled when moving straight from one item to another, so sweeping across the inventory doesn't flash animations
+- Added config options to cap the tooltip height and width as a percentage of the screen
+- Added a config option to render effects behind the text, icon and frame
+- Added a config option to show the item registry name (for example minecraft:oak_planks) without having to press F3+H
+- Added a config option to show the item durability without having to press F3+H
+- Added custom icons to the ingame custom frames config screen and others
+- Added language localization to config entries and descriptions
+- Icon background color and border color are now configurable
+- The whole tooltip is now drawn above vanilla toasts (advancements, recipe unlocks, etc.), which used to slip between the text and the background (the depth is now configurable)
+- Custom frames tooltip preview is now automatically updated once a config option is changed
+- Long text tooltips now auto-scroll once, for players that might not know this functionality exists
+- Internal refactor of the effect building pattern into a common canvas for much faster and better effect creation process, so expect more effects soon
+- Split the tooltip animation into separate appear and disappear animations
+- Replaced clickable cycling options with popup selection
+- Custom frame editor changes are automatically recovered from a separate draft without applying them until Save, so no changes should be lost by mistake
+- Updated the whole modpage and wiki
+- Fixed tooltips appending the mod name even if it was already stated in the description
+- Fixed the tooltip appear animation and icon animations replaying on every tick for items that update their NBT while hovered
+- Fixed tooltips disappearing when a mod renders a second tooltip in the same frame
+- Fixed custom tooltip components that render past their declared width (like Celestisynth's weapon ability box) being cut by the inner frame and divider line
+- Fixed cinder effect not adapting to the whole tooltip proportions
+- Fixed the tooltip shadow config option not covering the preview panel
+- Fixed the custom frame overlay texture ignoring its own transparency on fade animations
+- Fixed metal_shining effect ending too early on big tooltips
+- Fixed two tooltips drawn in the same frame at the same spot overlapping each other, that happened for example when using the mod JEED, after hovering over status effect icons
+- Fixed brighter corner and edge pixels on the inner frame while the tooltip fades in or out
+- Fixed EMI recipe screens of mods whose id contains "tag" (Create: Vin"tag"e Improvements...) losing the hovered item
+- Fixed tooltips not replaying animations on the second hover of the same item
 
 # 1.5.2
 - Updated localization files
