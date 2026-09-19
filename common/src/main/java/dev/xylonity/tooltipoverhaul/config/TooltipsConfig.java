@@ -408,7 +408,7 @@ public final class TooltipsConfig {
             comment = "Replay the appear animation when moving straight from one item to another. Disable it to keep the " +
                     "tooltip settled while sweeping across slots, only animating when it appears from nothing."
     )
-    public static boolean TOOLTIP_ANIMATE_ON_SWITCH = true;
+    public static boolean TOOLTIP_ANIMATE_ON_SWITCH = false;
 
     @ConfigEntry(
             category = "animations",
@@ -454,7 +454,7 @@ public final class TooltipsConfig {
             category = "preview",
             comment = "Side triangles. Options: none, style_1 (filled vertical strips), style_2 (outline only)."
     )
-    public static String PREVIEW_PANEL_SIDE_TRIANGLES = "none";
+    public static String PREVIEW_PANEL_SIDE_TRIANGLES = "style_1";
 
     @ConfigEntry(
             category = "preview",

@@ -35,6 +35,7 @@
 - Custom frame editor changes are automatically recovered from a separate draft without applying them until Save, so no changes should be lost by mistake
 - Updated the whole modpage and wiki
 - Updated silver and amethyst frame overlay textures
+- Updated some default config entries & added more custom frames entries by default
 - Fixed tooltips appending the mod name even if it was already stated in the description
 - Fixed the tooltip appear animation and icon animations replaying on every tick for items that update their NBT while hovered
 - Fixed tooltips disappearing when a mod renders a second tooltip in the same frame
