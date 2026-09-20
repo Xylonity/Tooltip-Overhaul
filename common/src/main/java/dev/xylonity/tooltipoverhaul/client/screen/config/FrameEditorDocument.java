@@ -60,7 +60,8 @@ final class FrameEditorDocument {
         JsonObject loaded = new JsonObject();
         boolean failed = false;
         try (Reader reader = input.get()) {
-            loaded = JsonParser.parseReader(reader).getAsJsonObject();
+            final JsonElement parsed = JsonParser.parseReader(reader);
+            loaded = parsed.isJsonNull() ? new JsonObject() : parsed.getAsJsonObject();
             validateStructure(loaded);
             if (Files.exists(draftFile)) {
                 try (Reader draftReader = Files.newBufferedReader(draftFile, StandardCharsets.UTF_8)) {
