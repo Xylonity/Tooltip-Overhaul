@@ -1,3 +1,11 @@
+# 2.0.1
+- Added a new type of corner type: Full Thick
+- Added a config option to change the icon border style: Style 1 (default) and Style 2
+- Added a preview button inside the global config screen
+- Rating text is now translatable using any translation key, and it is now previewed within its input box
+- Added some critical cache limits to prevent memory leaks
+- Fixed preview panel "cut" and "notch" corners adding extra pixels
+
 # 2.0.0
 - Added 3 brand-new tooltip styles that change the visual layout of the tooltip: Classic, Badge, Floating and Compact
 - Added ingame editing for every active mod/resourcepack custom frames file
