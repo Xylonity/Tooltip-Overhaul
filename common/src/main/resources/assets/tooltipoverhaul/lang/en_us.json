@@ -336,7 +336,7 @@
   "tooltipoverhaul.config.frames.field.showRating": "Show Rating",
   "tooltipoverhaul.config.frames.field.showRating.desc": "Shows the rating/rarity line under the title.",
   "tooltipoverhaul.config.frames.field.itemRating": "Rating Text",
-  "tooltipoverhaul.config.frames.field.itemRating.desc": "Free text shown as the item's rating, e.g. S+ or 9/10.",
+  "tooltipoverhaul.config.frames.field.itemRating.desc": "Literal text (S+ or 9/10) or a translation key from any mod or resource pack. Recognized keys show their translation when not editing.",
   "tooltipoverhaul.config.frames.field.colorItemRating": "Rating Color",
   "tooltipoverhaul.config.frames.field.colorItemRating.desc": "Color of the rating text, in case it's custom.",
   "tooltipoverhaul.config.frames.field.ratingAlignment": "Rating Alignment",
@@ -551,5 +551,11 @@
   "tooltipoverhaul.config.sources.custom_hint": "Your edits are preserved, while unchanged defaults follow mod or resource pack updates.",
   "tooltipoverhaul.config.sources.restore_confirm": "Use the current original for %s? Your customized file will be kept as a backup.",
   "tooltipoverhaul.config.sources.restored": "Original custom_frames.json file restored. Backup saved as: %s",
-  "tooltipoverhaul.config.sources.restore_failed": "Could not restore the original: %s"
+  "tooltipoverhaul.config.sources.restore_failed": "Could not restore the original: %s",
+  "tooltipoverhaul.config.global_preview": "Preview",
+  "tooltipoverhaul.config.entry.icon_border_style": "Icon Border Style",
+  "tooltipoverhaul.config.entry.icon_border_style.description": "Style 1 leaves out the corner pixels, Style 2 makes the corner squared.",
+  "tooltipoverhaul.config.frames.field.iconBorderStyle": "Icon Border Style",
+  "tooltipoverhaul.config.frames.field.iconBorderStyle.desc": "Style 1 leaves out the corner pixels, Style 2 makes the corner squared.",
+  "tooltipoverhaul.config.frames.option.full_thick": "Full Thick"
 }

@@ -603,7 +603,8 @@ public class FrameEditorScreen extends AbstractConfigScreen {
                         FrameEditorScreen.this.width, FrameEditorScreen.this.height);
             }
             else {
-                final StyledEditBox box = new StyledEditBox(minecraft.font, 0, 0, widgetWidth(), 18, Component.empty(), accent);
+                final StyledEditBox box = spec.key().equals("itemRating") ? new LocalizedEditBox(minecraft.font, widgetWidth(), accent)
+                        : new StyledEditBox(minecraft.font, 0, 0, widgetWidth(), 18, Component.empty(), accent);
                 box.setMaxLength(spec.kind() == Kind.LIST ? 32767 : 1024);
                 box.setValue(readText(entry, spec));
                 box.setResponder(value -> writeText(entry, spec, value));

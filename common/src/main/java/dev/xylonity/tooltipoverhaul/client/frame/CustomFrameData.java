@@ -62,6 +62,7 @@ public record CustomFrameData(
         Optional<String> specialEffect,
         List<String> vignettes,
         Optional<String> iconBackgroundType,
+        Optional<String> iconBorderStyle,
         Optional<String> iconBackgroundColor,
         Optional<String> iconBorderColor,
         Optional<Boolean> usePlayerSkinInPreview,
@@ -181,6 +182,10 @@ public record CustomFrameData(
 
     public String getIconBackground() {
         return iconBackgroundType.orElse(TooltipsConfig.ICON_BACKGROUND_TYPE);
+    }
+
+    public String getIconBorderStyle() {
+        return iconBorderStyle.orElse(TooltipsConfig.ICON_BORDER_STYLE);
     }
 
     public String getIconBackgroundColor() {

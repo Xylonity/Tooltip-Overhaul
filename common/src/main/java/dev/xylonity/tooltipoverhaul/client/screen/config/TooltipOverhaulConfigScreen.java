@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.screen.config;
 
 import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
+import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 import dev.xylonity.tooltipoverhaul.config.wrapper.AutoConfig;
@@ -87,6 +88,7 @@ public class TooltipOverhaulConfigScreen extends AbstractConfigScreen {
 
         }
 
+        Palette.reload();
     }
 
     @Override
@@ -111,12 +113,13 @@ public class TooltipOverhaulConfigScreen extends AbstractConfigScreen {
         final int sidebarWidth = hasSidebar ? Mth.clamp(this.width / 5, 84, 120) : 0;
         final int panelLeft = hasSidebar ? 10 + sidebarWidth + 6 : 16;
 
-        this.panel = new ConfigPanel(panelLeft, panelTop, this.width - panelLeft - 10, Math.max(0, panelBottom - panelTop), accent, modals, width, height);
+        final int formTop = panelTop + (hasSidebar ? 0 : 24);
+        this.panel = new ConfigPanel(panelLeft, formTop, this.width - panelLeft - 10, Math.max(0, panelBottom - formTop), accent, modals, width, height);
         this.panel.setSwatchClickListener(this::openColorPicker);
 
         if (hasSidebar) {
             this.sidebar = new ConfigCategorySidebar(10, panelTop, sidebarWidth,
-                    Math.max(0, panelBottom - panelTop), accent, categoryCounts, entryFields.size(),
+                    Math.max(0, panelBottom - panelTop - 24), accent, categoryCounts, entryFields.size(),
                     key -> {
                         selectedCategory = key;
                         panel.setCategory(key);
@@ -131,6 +134,13 @@ public class TooltipOverhaulConfigScreen extends AbstractConfigScreen {
         }
 
         this.addRenderableWidget(this.panel);
+
+        addRenderableWidget(new FlatButton(hasSidebar ? 10 : 16, hasSidebar ? panelBottom - 18 : panelTop,
+                hasSidebar ? sidebarWidth : 100, 18, Component.translatable("tooltipoverhaul.config.global_preview"), button -> {
+            panel.applyToFields();
+            Palette.reload();
+            modals.open(new GlobalPreviewModal(width, height, accent));
+        }, accent));
 
         final int searchWidth = Math.min(200, this.width / 3);
         final int searchX = this.width - searchWidth - 14;

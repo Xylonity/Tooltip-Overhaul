@@ -215,10 +215,10 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "style",
-            options = { "default", "rounded", "bevel", "inner", "cut", "thick", "bracket", "block", "notch", "weld", "gem" },
+            options = { "default", "rounded", "bevel", "inner", "cut", "thick", "full_thick", "bracket", "block", "notch", "weld", "gem" },
             comment = "Corner style for the inner frame of the tooltip. Options: default (square), rounded (corner " +
                     "pixel removed), bevel (45 degree diagonal cut), inner (extra pixel in the inner corner), cut (2px " +
-                    "chamfer), thick (solid triangular corner, top-right only), bracket (inner corner bracket), " +
+                    "chamfer), thick (solid triangular corner, top-right only), full_thick (thick on all four corners), bracket (inner corner bracket), " +
                     "block (2x2 solid block corner), notch (rectangular inner offset), weld (reinforced inner " +
                     "corner), gem (hollow triangle). The notch style pairs with the matching notch background corner style."
     )
@@ -302,6 +302,13 @@ public final class TooltipsConfig {
             comment = "Icon background type. Options: focus, void, slot, slot_border and glow"
     )
     public static String ICON_BACKGROUND_TYPE = "slot_border";
+
+    @ConfigEntry(
+            category = "icon",
+            options = { "style_1", "style_2" },
+            comment = "Icon background border shape. Style 1 leaves out the corner pixels, style 2 fills them for square corners."
+    )
+    public static String ICON_BORDER_STYLE = "style_1";
 
     @ConfigEntry(
             category = "icon",
@@ -459,7 +466,7 @@ public final class TooltipsConfig {
     @ConfigEntry(
             category = "preview",
             comment = "Preview corner type, independent of the main tooltip. Options: default, rounded, bevel, inner, cut, " +
-                    "thick, bracket, block, notch, weld, gem."
+                    "thick, full_thick, bracket, block, notch, weld, gem."
     )
     public static String PREVIEW_PANEL_CORNER_TYPE = "default";
 

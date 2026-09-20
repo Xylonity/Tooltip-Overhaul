@@ -21,6 +21,11 @@ public class CustomFrameManager {
 
     // Set by the frame editor screen so the live preview tooltip uses the frame being edited instead of the loaded ones
     private static volatile CustomFrameData previewOverride = null;
+    private static boolean globalPreview;
+
+    public static void setGlobalPreview(boolean enabled) {
+        globalPreview = enabled;
+    }
 
     public static void setPreviewOverride(CustomFrameData data) {
         previewOverride = data;
@@ -73,6 +78,10 @@ public class CustomFrameManager {
     }
 
     public static Optional<CustomFrameData> of(ItemStack stack) {
+        if (globalPreview) {
+            return Optional.empty();
+        }
+
         if (previewOverride != null) {
             return Optional.of(previewOverride);
         }

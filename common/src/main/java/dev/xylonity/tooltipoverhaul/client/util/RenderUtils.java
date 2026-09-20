@@ -227,6 +227,9 @@ public class RenderUtils {
                 add = new int[][]{{1, 1}, {2, 1}, {3, 1}, {1, 2}, {2, 2}, {1, 3}};
                 cornersToApply = new int[]{1};
             }
+            case "full_thick" -> {
+                add = new int[][]{{1, 1}, {2, 1}, {3, 1}, {1, 2}, {2, 2}, {1, 3}};
+            }
             case "bracket" -> {
                 add = new int[][]{{2, 2}, {3, 2}, {2, 3}};
             }
