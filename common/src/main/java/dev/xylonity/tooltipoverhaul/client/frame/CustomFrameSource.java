@@ -32,7 +32,7 @@ public record CustomFrameSource(
 
     public Reader openReader() throws IOException {
         if (customized()) {
-            return Files.newBufferedReader(file, StandardCharsets.UTF_8);
+            return Files.size(file) == 0 ? new StringReader("{\"frames\":[]}") : Files.newBufferedReader(file, StandardCharsets.UTF_8);
         }
 
         if (resource != null) {

@@ -114,7 +114,8 @@ final class CustomFrameStorage {
 
     static JsonObject read(Reader reader) throws IOException {
         try {
-            final JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+            final JsonElement parsed = JsonParser.parseReader(reader);
+            final JsonObject root = parsed.isJsonNull() ? new JsonObject() : parsed.getAsJsonObject();
             if (root.has("frames")) {
                 if (!root.get("frames").isJsonArray()) {
                     throw new IOException("frames must be an array");
