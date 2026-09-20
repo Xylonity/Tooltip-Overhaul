@@ -180,7 +180,7 @@ public class TextUtils {
 
                 // Computes the rating, either as a translatable key or a literal component
                 final String raw = data.getItemRating(context.getStack());
-                final MutableComponent base = raw.startsWith("key.tooltipoverhaul") ? Component.translatable(raw) : Component.literal(raw);
+                final MutableComponent base = ratingComponent(raw);
 
                 if (data.hasCustomColorItemRating()) {
                     return base.withStyle(Style.EMPTY.withColor(data.getItemRatingColor(context)));
@@ -195,6 +195,10 @@ public class TextUtils {
         }
 
         return getDefaultRarity(context.getStack()).copy().withStyle(color);
+    }
+
+    static MutableComponent ratingComponent(String value) {
+        return Component.translatableWithFallback(value, value);
     }
 
     private static Component getDefaultRarity(ItemStack stack) {

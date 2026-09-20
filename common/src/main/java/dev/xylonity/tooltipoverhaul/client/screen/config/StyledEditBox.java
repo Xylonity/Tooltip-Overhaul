@@ -76,6 +76,14 @@ public class StyledEditBox extends EditBox {
         return width - 12;
     }
 
+    protected int fieldBackgroundColor() {
+        return 0xFF161618;
+    }
+
+    protected void renderFieldText(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.renderWidget(graphics, mouseX, mouseY, partialTick);
+    }
+
     @Override
     public void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         final int x0 = getX();
@@ -88,7 +96,7 @@ public class StyledEditBox extends EditBox {
         final boolean valid = validator.test(getValue());
         final int borderTarget = isFocused() ? accent & 0x00FFFFFF : dimAccent(accent);
         final int border = valid ? 0xFF000000 | mixRgb(0x3A3A3E, borderTarget, focusAnimation) : 0xFFCC4444;
-        drawCard(graphics, x0, y0, x1, y1, valid ? 0xFF161618 : 0xFF221214, border);
+        drawCard(graphics, x0, y0, x1, y1, valid ? fieldBackgroundColor() : 0xFF221214, border);
 
         final int offsetY = (height - Minecraft.getInstance().font.lineHeight) / 2 + 1;
         final int paddingX = 5;
@@ -98,7 +106,7 @@ public class StyledEditBox extends EditBox {
 
         graphics.pose().translate(paddingX, offsetY, 0);
 
-        super.renderWidget(graphics, mouseX - paddingX, mouseY - offsetY, partialTick);
+        renderFieldText(graphics, mouseX - paddingX, mouseY - offsetY, partialTick);
 
         graphics.pose().popPose();
         graphics.disableScissor();

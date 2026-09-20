@@ -36,6 +36,7 @@ public final class PreviewPanelDecorations {
         INNER,
         CUT,
         THICK,
+        FULL_THICK,
         BRACKET,
         BLOCK,
         NOTCH,
@@ -82,9 +83,10 @@ public final class PreviewPanelDecorations {
         return Math.max(0, size - distance);
     }
 
-    public static void renderSides(GuiGraphics graphics, int left, int top, int right, int bottom, SideTriangles style, IntUnaryOperator colorAtRow) {
+    public static void renderSides(GuiGraphics graphics, int left, int top, int right, int bottom, SideTriangles style, int trim, IntUnaryOperator colorAtRow) {
         final int height = bottom - top;
-        for (int row = 1; row < height - 1; row++) {
+        final int sideTrim = Math.max(1, trim);
+        for (int row = sideTrim; row < height - sideTrim; row++) {
             final int outset = style == SideTriangles.STYLE_2 ? triangleOutset(height, row) : 0;
             int color = colorAtRow.applyAsInt(row);
             graphics.fill(left - outset, top + row, left - outset + 1, top + row + 1, color);
@@ -100,7 +102,7 @@ public final class PreviewPanelDecorations {
         for (int column = 1; column <= size; column++) {
             final int first = (height - 1) / 2 - size + column;
             final int last = height / 2 + size - column;
-            for (int row = first; row <= last; row++) {
+            for (int row = Math.max(first, sideTrim); row <= Math.min(last, height - sideTrim - 1); row++) {
                 final int color = colorAtRow.applyAsInt(row);
                 graphics.fill(left - column, top + row, left - column + 1, top + row + 1, color);
                 graphics.fill(right + column - 1, top + row, right + column, top + row + 1, color);

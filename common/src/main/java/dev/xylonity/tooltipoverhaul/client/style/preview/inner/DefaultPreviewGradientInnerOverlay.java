@@ -50,7 +50,7 @@ public class DefaultPreviewGradientInnerOverlay implements PreviewInnerOverlayLa
         final int sideTrim = Math.max(1, trim);
 
         if (triangles != PreviewPanelDecorations.SideTriangles.NONE) {
-            PreviewPanelDecorations.renderSides(context.getGraphics(), x1, y0, x0, y1, triangles, colorAtRow);
+            PreviewPanelDecorations.renderSides(context.getGraphics(), x1, y0, x0, y1, triangles, sideTrim, colorAtRow);
         }
         else if (floating) {
             for (int y = y0 + sideTrim; y < y1 - sideTrim; y++) {

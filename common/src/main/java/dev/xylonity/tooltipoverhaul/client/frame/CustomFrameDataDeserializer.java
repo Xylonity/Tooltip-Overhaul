@@ -136,6 +136,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 specialEffect,
                 vignettes,
                 iconBackgroundType,
+                parseString(entry, "iconBorderStyle"),
                 parseString(entry, "iconBackgroundColor"),
                 parseString(entry, "iconBorderColor"),
                 usePlayerSkinInPreview,

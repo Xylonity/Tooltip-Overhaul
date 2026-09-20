@@ -28,14 +28,7 @@ public class SlotBorderIconBackground implements IconBackgroundLayer {
         // Background
         context.getGraphics().fill(x0, y0, x1, y1, ColorUtils.getIconBackgroundColor(context, 0x903E3E3E));
 
-        // Top border
-        context.getGraphics().fill(x0, y0 - 1, x1, y0, border);
-        // Bottom border
-        context.getGraphics().fill(x0, y1 + 1, x1, y1, border);
-        // Left border
-        context.getGraphics().fill(x0 - 1, y0, x0, y1, border);
-        // Right border
-        context.getGraphics().fill(x1 + 1, y0, x1, y1, border);
+        IconBorder.render(context, x0, y0, x1, y1, border);
     }
 
 }

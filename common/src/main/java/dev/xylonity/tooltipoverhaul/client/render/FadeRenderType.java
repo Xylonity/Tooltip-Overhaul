@@ -10,6 +10,10 @@ public final class FadeRenderType extends RenderType {
 
     private static final Map<RenderType, RenderType> CACHE = new IdentityHashMap<>();
 
+    public static void reset() {
+        CACHE.clear();
+    }
+
     private FadeRenderType(RenderType original) {
         super("tooltipoverhaul_fade_" + original, original.format(), original.mode(), original.bufferSize(), original.affectsCrumbling(), true,
                 () -> {
@@ -35,7 +39,18 @@ public final class FadeRenderType extends RenderType {
             return original;
         }
 
-        return CACHE.computeIfAbsent(original, FadeRenderType::new);
+        final RenderType cached = CACHE.get(original);
+        if (cached != null) {
+            return cached;
+        }
+
+        if (CACHE.size() >= 256) {
+            CACHE.clear();
+        }
+
+        final RenderType faded = new FadeRenderType(original);
+        CACHE.put(original, faded);
+        return faded;
     }
 
 }

@@ -9,8 +9,6 @@ import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
 import dev.xylonity.tooltipoverhaul.client.util.TextAxis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
@@ -52,16 +50,21 @@ public class DefaultPreviewArmorStand implements PreviewRendererLayer {
 
         context.scale(-scale, -scale, scale);
 
-        ArmorStand armorStand = new ArmorStand(EntityType.ARMOR_STAND, minecraft.level);
-        armorStand.setNoBasePlate(true);
+        final ArmorStand armorStand = PreviewEntityCache.armorStand(minecraft.level);
 
         armorStand.setItemSlot(armorItem.getEquipmentSlot(), context.getStack());
 
         Lighting.setupForEntityInInventory();
         EntityRenderDispatcher renderer = Minecraft.getInstance().getEntityRenderDispatcher();
         renderer.setRenderShadow(false);
-        renderer.render(armorStand, 0, 0, 0, 0, 1, context.getPose(), context.getBuffer(), 0xF000F0);
-        renderer.setRenderShadow(true);
+        try {
+            renderer.render(armorStand, 0, 0, 0, 0, 1, context.getPose(), context.getBuffer(), 0xF000F0);
+        }
+        finally {
+            armorStand.setItemSlot(armorItem.getEquipmentSlot(), ItemStack.EMPTY);
+            renderer.setRenderShadow(true);
+        }
+
     }
 
 }

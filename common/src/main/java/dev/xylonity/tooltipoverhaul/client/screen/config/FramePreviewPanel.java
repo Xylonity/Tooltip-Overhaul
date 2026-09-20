@@ -1,5 +1,6 @@
 package dev.xylonity.tooltipoverhaul.client.screen.config;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -10,6 +11,8 @@ import dev.xylonity.tooltipoverhaul.client.frame.CustomFrameManager;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipAnimationState;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
+import dev.xylonity.tooltipoverhaul.client.render.FadeRenderType;
+import dev.xylonity.tooltipoverhaul.client.style.preview.renderer.PreviewEntityCache;
 import dev.xylonity.tooltipoverhaul.client.style.animation.TooltipAnimator;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
 import dev.xylonity.tooltipoverhaul.client.util.RenderUtils;
@@ -56,6 +59,7 @@ final class FramePreviewPanel {
 
     private @Nullable CustomFrameData data;
     private boolean hasEntry;
+    private boolean globalDefaults;
     private boolean broken;
     private int totalItems;
     private float contentWidth;
@@ -81,6 +85,7 @@ final class FramePreviewPanel {
     }
 
     String refresh(JsonObject root, @Nullable JsonObject entry) {
+        globalDefaults = false;
         final int previousIndex = selectedItem;
         final Item previousItem = stacks.isEmpty() ? null : stacks.get(Math.min(selectedItem, stacks.size() - 1)).getItem();
         hasEntry = entry != null;
@@ -118,6 +123,19 @@ final class FramePreviewPanel {
         }
 
         return error;
+    }
+
+    void refreshGlobal() {
+        final JsonObject sample = new JsonObject();
+        final JsonArray items = new JsonArray();
+        for (String item : List.of("diamond_sword", "diamond_chestplate", "apple", "enchanted_golden_apple", "diamond", "glass", "netherite_helmet", "golden_apple", "totem_of_undying")) {
+            items.add("minecraft:" + item);
+        }
+
+        sample.add("items", items);
+        refresh(new JsonObject(), sample);
+        globalDefaults = true;
+        data = null;
     }
 
     void resetViewAndAnimations() {
@@ -236,6 +254,7 @@ final class FramePreviewPanel {
 
         graphics.enableScissor(x + 1, stageTop(), right - 1, stageBottom());
         try {
+            CustomFrameManager.setGlobalPreview(globalDefaults);
             CustomFrameManager.setPreviewOverride(data);
             TooltipAnimationState.setSuppressCapture(true);
             final List<FramePreviewLayout.Size> dimensions = new ArrayList<>();
@@ -264,6 +283,7 @@ final class FramePreviewPanel {
 
         }
         finally {
+            CustomFrameManager.setGlobalPreview(false);
             CustomFrameManager.setPreviewOverride(null);
             TooltipAnimationState.setSuppressCapture(false);
             TooltipRenderer.COUNTER = previousCounter;
@@ -477,6 +497,10 @@ final class FramePreviewPanel {
     }
 
     private void flagBroken(ItemStack stack, Throwable throwable) {
+        if (throwable instanceof VirtualMachineError fatal) {
+            throw fatal;
+        }
+
         if (brokenItems.add(stack.getItem())) {
             TooltipOverhaul.LOGGER.warn("Frame editor cannot preview {} on this screen: {}", BuiltInRegistries.ITEM.getKey(stack.getItem()), throwable.toString());
         }
@@ -719,6 +743,9 @@ final class FramePreviewPanel {
     }
 
     void close() {
+        PreviewEntityCache.clear();
+        FadeRenderType.reset();
+        CustomFrameManager.setGlobalPreview(false);
         CustomFrameManager.setPreviewOverride(null);
         TooltipAnimationState.clear();
     }

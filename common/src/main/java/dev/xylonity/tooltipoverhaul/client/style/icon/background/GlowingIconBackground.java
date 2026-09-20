@@ -36,17 +36,7 @@ public class GlowingIconBackground implements IconBackgroundLayer {
 
         context.getGraphics().fill(x0, y0, x1, y1, ColorUtils.getIconBackgroundColor(context, 0x603E3E3E));
 
-        // Top border
-        context.getGraphics().fill(x0, y0 - 1, x1, y0, innerGlow);
-
-        // Bottom border
-        context.getGraphics().fill(x0, y1, x1, y1 + 1, innerGlow);
-
-        // Left border
-        context.getGraphics().fill(x0 - 1, y0, x0, y1, innerGlow);
-
-        // Right border
-        context.getGraphics().fill(x1, y0, x1 + 1, y1, innerGlow);
+        IconBorder.render(context, x0, y0, x1, y1, innerGlow);
     }
 
 }
