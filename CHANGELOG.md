@@ -1,5 +1,6 @@
 # 2.0.2
 - Added category buttons inside custom frames screens for better user experience (control+re/avg cycles sections)
+- Shadow corner type now matches the background's corner type
 
 # 2.0.1
 - Added a new type of corner type: Full Thick

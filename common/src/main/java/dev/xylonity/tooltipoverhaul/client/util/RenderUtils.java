@@ -197,6 +197,40 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getBackgroundCornerType).orElse(TooltipsConfig.BACKGROUND_CORNER_TYPE);
     }
 
+    public static void fillBackgroundShape(GuiGraphics graphics, int x0, int y0, int x1, int y1, int color, PreviewPanelDecorations.BackgroundCornerType corner) {
+        if (corner == PreviewPanelDecorations.BackgroundCornerType.NOTCH) {
+            graphics.fill(x0, y0 + 1, x1, y1 - 1, color);
+            graphics.fill(x0 + 1, y0, x1 - 1, y1, color);
+            graphics.fill(x0 + 1, y0 - 1, x1 - 1, y0, color);
+            graphics.fill(x0 + 1, y1, x1 - 1, y1 + 1, color);
+            graphics.fill(x0 - 1, y0 + 1, x0, y1 - 1, color);
+            graphics.fill(x1, y0 + 1, x1 + 1, y1 - 1, color);
+            return;
+        }
+
+        final int trim = corner == PreviewPanelDecorations.BackgroundCornerType.ROUNDED ? 1 : 0;
+
+        // Background
+        graphics.fill(x0, y0, x1, y1, color);
+
+        // Top border
+        graphics.fill(x0 + trim, y0 - 1, x1 - trim, y0, color);
+        // Bottom border
+        graphics.fill(x0 + trim, y1, x1 - trim, y1 + 1, color);
+        // Left border
+        graphics.fill(x0 - 1, y0 + trim, x0, y1 - trim, color);
+        // Right border
+        graphics.fill(x1, y0 + trim, x1 + 1, y1 - trim, color);
+
+        if (corner == PreviewPanelDecorations.BackgroundCornerType.SQUARE) {
+            graphics.fill(x0 - 1, y0 - 1, x0, y0, color);
+            graphics.fill(x1, y0 - 1, x1 + 1, y0, color);
+            graphics.fill(x0 - 1, y1, x0, y1 + 1, color);
+            graphics.fill(x1, y1, x1 + 1, y1 + 1, color);
+        }
+
+    }
+
     public static int cornerTrim(String type) {
         return switch (type) {
             case "rounded", "bevel" -> 1;
