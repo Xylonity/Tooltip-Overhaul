@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.screen.config;
 import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Palette;
 import dev.xylonity.tooltipoverhaul.config.ConfigManager;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 import dev.xylonity.tooltipoverhaul.config.wrapper.AutoConfig;
 import dev.xylonity.tooltipoverhaul.config.wrapper.ConfigEntry;
@@ -19,6 +20,7 @@ import org.lwjgl.glfw.GLFW;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,10 +49,17 @@ public class TooltipOverhaulConfigScreen extends AbstractConfigScreen {
     private String selectedCategory = null;
     private String searchQuery = "";
 
+    // Category each config screen was last left on
+    private static final Map<Class<?>, String> REMEMBERED_CATEGORIES = new HashMap<>();
+
     public TooltipOverhaulConfigScreen(Screen parent, Class<?> configClass) {
         super(Component.literal(resolveTitle(configClass)), parent, accentFor(configClass));
         this.configClass = configClass;
         this.meta = configClass.getAnnotation(AutoConfig.class);
+        if (TooltipsConfig.REMEMBER_LAST_PAGE) {
+            selectedCategory = REMEMBERED_CATEGORIES.get(configClass);
+        }
+
         takeSnapshot();
     }
 
@@ -264,6 +273,12 @@ public class TooltipOverhaulConfigScreen extends AbstractConfigScreen {
         panel.applyToFields();
         ConfigManager.save(configClass);
         returnToParent();
+    }
+
+    @Override
+    public void removed() {
+        REMEMBERED_CATEGORIES.put(configClass, selectedCategory);
+        super.removed();
     }
 
     @Override
