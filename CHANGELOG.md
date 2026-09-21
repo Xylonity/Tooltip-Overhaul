@@ -1,3 +1,6 @@
+# 2.0.2
+- Shadow corner type now matches the background's corner type
+
 # 2.0.1
 - Added a new type of corner type: Full Thick
 - Added a config option to change the icon border style: Style 1 (default) and Style 2

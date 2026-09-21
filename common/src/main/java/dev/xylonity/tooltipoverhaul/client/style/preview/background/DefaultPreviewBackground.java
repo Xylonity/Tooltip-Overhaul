@@ -25,33 +25,7 @@ public class DefaultPreviewBackground implements PreviewBackgroundLayer {
         }
 
         final int backgroundColor = ColorUtils.getBackgroundColor(context);
-        final PreviewPanelDecorations.BackgroundCornerType corner = RenderUtils.getPreviewPanelBackgroundCornerType(context);
-        final boolean notch = corner == PreviewPanelDecorations.BackgroundCornerType.NOTCH;
-        final int trim = notch || corner == PreviewPanelDecorations.BackgroundCornerType.ROUNDED ? 1 : 0;
-
-        if (notch) {
-            context.getGraphics().fill(x1, y0 + 1, x0, y1 - 1, backgroundColor);
-            context.getGraphics().fill(x1 + 1, y0, x0 - 1, y0 + 1, backgroundColor);
-            context.getGraphics().fill(x1 + 1, y1 - 1, x0 - 1, y1, backgroundColor);
-        }
-        else {
-            context.getGraphics().fill(x1, y0, x0, y1, backgroundColor);
-        }
-
-        // Top border
-        context.getGraphics().fill(x1 + trim, y0 - 1, x0 - trim, y0, backgroundColor);
-        // Bottom border
-        context.getGraphics().fill(x1 + trim, y1, x0 - trim, y1 + 1, backgroundColor);
-        // Left border
-        context.getGraphics().fill(x1 - 1, y0 + trim, x1, y1 - trim, backgroundColor);
-        // Right border
-        context.getGraphics().fill(x0, y0 + trim, x0 + 1, y1 - trim, backgroundColor);
-        if (corner == PreviewPanelDecorations.BackgroundCornerType.SQUARE) {
-            context.getGraphics().fill(x1 - 1, y0 - 1, x1, y0, backgroundColor);
-            context.getGraphics().fill(x0, y0 - 1, x0 + 1, y0, backgroundColor);
-            context.getGraphics().fill(x1 - 1, y1, x1, y1 + 1, backgroundColor);
-            context.getGraphics().fill(x0, y1, x0 + 1, y1 + 1, backgroundColor);
-        }
+        RenderUtils.fillBackgroundShape(context.getGraphics(), x1, y0, x0, y1, backgroundColor, RenderUtils.getPreviewPanelBackgroundCornerType(context));
 
         if (RenderUtils.hasPreviewPanelSideTriangles(context)) {
             for (int row = 1; row < y1 - y0 - 1; row++) {
