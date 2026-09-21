@@ -98,6 +98,13 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "general",
+            comment = "Reopen the config screen and the frame editor where you left them (category, entry and section) " +
+                    "instead of starting from the top every time. Remembered until the game closes."
+    )
+    public static boolean REMEMBER_LAST_PAGE = true;
+
+    @ConfigEntry(
+            category = "general",
             comment = "Always show the equipment comparison tooltip when hovering a comparable item, " +
                     "without needing to hold the compare key (Left Shift by default)."
     )

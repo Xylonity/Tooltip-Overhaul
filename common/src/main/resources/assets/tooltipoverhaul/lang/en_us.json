@@ -136,6 +136,8 @@
   "tooltipoverhaul.config.entry.disable_tooltip_scrolling.description": "Disables tooltip scrolling.",
   "tooltipoverhaul.config.entry.auto_scroll_tooltips": "Automatically Scroll Tooltips",
   "tooltipoverhaul.config.entry.auto_scroll_tooltips.description": "After 3 seconds, automatically slowly scrolls tooltips that do not fit on screen. Manual scrolling disables this until the tooltip changes.",
+  "tooltipoverhaul.config.entry.remember_last_page": "Remember Last Page",
+  "tooltipoverhaul.config.entry.remember_last_page.description": "Reopens the config screen and the frame editor on the category, entry and section you were last editing. Remembered until the game closes.",
   "tooltipoverhaul.config.entry.always_show_comparison": "Always Show Comparison",
   "tooltipoverhaul.config.entry.always_show_comparison.description": "Always show equipment comparison for comparable items without holding the comparison key.",
   "tooltipoverhaul.config.entry.max_pinned_tooltips": "Max Pinned Tooltips",

@@ -11,6 +11,7 @@ import dev.xylonity.tooltipoverhaul.client.frame.FrameTemplates;
 import dev.xylonity.tooltipoverhaul.client.style.preview.PreviewPanelDecorations;
 import dev.xylonity.tooltipoverhaul.client.util.AnimationUtils;
 import dev.xylonity.tooltipoverhaul.client.util.Constants;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.config.parser.ConfigColorParser;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -106,6 +107,16 @@ public class FrameEditorScreen extends AbstractConfigScreen {
     private long savedFlashAt = 0;
 
     private static final String[] BOOL_OPTIONS = { "inherit", "true", "false" };
+    private static final Set<String> TEMPLATE_HIDDEN_FIELDS = Set.of("items", "tags", "namespace", "rarity", "priority", "createTemplate");
+
+    private final ConfigSectionTabs sectionTabs = new ConfigSectionTabs(accent);
+
+    // Where the editor was left the last time it closed
+    private static @Nullable ResourceLocation rememberedSource = null;
+    private static boolean rememberedTemplates = false;
+    private static int rememberedSelected = -1;
+    private static @Nullable String rememberedSection = null;
+    private static double rememberedScroll = 0;
 
     public FrameEditorScreen(Screen parent, int accent) {
         this(parent, accent, CustomFrameLoader.discoverSources(Minecraft.getInstance().getResourceManager(), TooltipOverhaul.PLATFORM.getConfigPath()).get(0));
@@ -121,10 +132,26 @@ public class FrameEditorScreen extends AbstractConfigScreen {
         this.entries = frameEntries;
         this.loadFailed = document.loadFailed();
         this.dirty = document.hasDraft();
-        if (!entries.isEmpty()) {
+        if (TooltipsConfig.REMEMBER_LAST_PAGE && source.location().equals(rememberedSource)) {
+            editingTemplates = rememberedTemplates;
+            entries = editingTemplates ? templateEntries : frameEntries;
+            select(rememberedSelected);
+            sectionTabs.select(rememberedSection);
+            rebuildVisibleRows();
+            formScroll = rememberedScroll;
+        }
+        else if (!entries.isEmpty()) {
             select(0);
         }
 
+    }
+
+    private void rememberPage() {
+        rememberedSource = source.location();
+        rememberedTemplates = editingTemplates;
+        rememberedSelected = selected;
+        rememberedSection = sectionTabs.selected();
+        rememberedScroll = formScroll;
     }
 
     private void save() {
@@ -341,6 +368,19 @@ public class FrameEditorScreen extends AbstractConfigScreen {
         return panelLayout.top();
     }
 
+    private int formViewportTop() {
+        return formTop() + 2;
+    }
+
+    private int sectionNavigationOffset() {
+        sectionTabs.layout(formLeft() + 6, formTop() + 6 - (int) formScroll, formRight() - formLeft() - 14);
+        return selectedEntry() == null || !sectionTabs.visible() ? 0 : sectionTabs.height() + 4;
+    }
+
+    private int formRowsAnchor() {
+        return formTop() + 6 + sectionNavigationOffset() - (int) formScroll;
+    }
+
     private int formBottom() {
         return panelLayout.contentBottom();
     }
@@ -352,6 +392,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
         clampPanelWidths();
         rebuildRows();
         entryList = createEntryList();
+        entryList.revealSelected();
 
         addCenteredFooterButtons(92, 8,
                 new FooterAction(Component.translatable("tooltipoverhaul.config.frames.save"), () -> {applyFocused();save();}, true),
@@ -423,6 +464,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
         searchBox = new SearchBox(font, searchX, searchY, searchWidth, 16, accent);
         searchBox.setResponder(query -> {
             searchQuery = query;
+            sectionTabs.setHidden(!query.isBlank());
             rebuildVisibleRows();
             formScroll = 0;
             formRevealAt = -1L;
@@ -435,6 +477,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
             searchBox.setValue(searchQuery);
         }
 
+        sectionTabs.setHidden(!searchQuery.isBlank());
         layoutEntryButtons();
 
     }
@@ -519,6 +562,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
 
         final @Nullable FieldSpec spec;
         final @Nullable String section;
+        final String containingSection;
         final String searchIndex;
 
         final @Nullable JsonObject entry;
@@ -529,6 +573,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
         FieldRow(String section) {
             this.spec = null;
             this.section = section;
+            this.containingSection = section;
             this.entry = null;
             this.searchIndex = normalizeSearch(section + " " + I18n.get("tooltipoverhaul.config.frames.section." + section));
             initialize(Component.empty(), "", null, section, FrameEditorScreen.this.accent, 20);
@@ -538,6 +583,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
             super(Component.literal(fieldLabel(spec.key())), fieldDescription(spec.key()), null, spec.key(), FrameEditorScreen.this.accent, 32);
             this.spec = spec;
             this.section = null;
+            this.containingSection = containingSection;
             this.entry = entry;
             this.searchIndex = normalizeSearch(spec.key() + " " + fieldLabel(spec.key()) + " "
                     + fieldDescription(spec.key()) + " " + containingSection + " " + I18n.get("tooltipoverhaul.config.frames.section." + containingSection));
@@ -846,19 +892,25 @@ public class FrameEditorScreen extends AbstractConfigScreen {
             return;
         }
 
+        final List<ConfigSectionTabs.Tab> tabs = new ArrayList<>();
+        tabs.add(new ConfigSectionTabs.Tab(null, I18n.get("tooltipoverhaul.config.category.all")));
+
         String currentSection = "";
+        FieldRow pendingSection = null;
         for (Object item : SECTIONS_AND_FIELDS) {
             if (item instanceof String section) {
-                if (editingTemplates && section.equals("matching")) {
+                currentSection = section;
+                pendingSection = new FieldRow(section);
+            }
+            else if (item instanceof FieldSpec spec) {
+                if (editingTemplates && TEMPLATE_HIDDEN_FIELDS.contains(spec.key())) {
                     continue;
                 }
 
-                currentSection = section;
-                rows.add(new FieldRow(section));
-            }
-            else if (item instanceof FieldSpec spec) {
-                if (editingTemplates && Set.of("items", "tags", "namespace", "rarity", "priority", "createTemplate").contains(spec.key())) {
-                    continue;
+                if (pendingSection != null) {
+                    rows.add(pendingSection);
+                    tabs.add(new ConfigSectionTabs.Tab(currentSection, I18n.get("tooltipoverhaul.config.frames.section." + currentSection)));
+                    pendingSection = null;
                 }
 
                 rows.add(new FieldRow(spec, entry, currentSection));
@@ -866,6 +918,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
 
         }
 
+        sectionTabs.setTabs(tabs);
         rebuildVisibleRows();
 
     }
@@ -873,7 +926,17 @@ public class FrameEditorScreen extends AbstractConfigScreen {
     private void rebuildVisibleRows() {
         visibleRows.clear();
         if (searchQuery.isBlank()) {
-            visibleRows.addAll(rows);
+            final String section = sectionTabs.selected();
+            for (FieldRow row : rows) {
+                if (section == null || section.equals(row.containingSection)) {
+                    visibleRows.add(row);
+                }
+                else {
+                    hideRow(row);
+                }
+
+            }
+
             return;
         }
 
@@ -1017,22 +1080,30 @@ public class FrameEditorScreen extends AbstractConfigScreen {
             return;
         }
 
-        if (visibleRows.isEmpty()) {
-            final String empty = I18n.get("tooltipoverhaul.config.empty_search", searchQuery);
-            graphics.drawString(font, empty, x0 + (x1 - x0 - font.width(empty)) / 2, (y0 + y1) / 2 - 4, 0xFF555555, false);
-            return;
-        }
-
-        graphics.enableScissor(x0, y0 + 2, x1, y1 - 2);
-
-        final boolean mouseInForm = mouseX >= x0 && mouseX < x1 - 10 && mouseY >= y0 && mouseY < y1;
-        FieldRow hoverCandidate = null;
         final long now = Util.getMillis();
         if (formRevealAt < 0L) {
             formRevealAt = now;
         }
 
-        int y = y0 + 6 - (int) formScroll;
+        if (visibleRows.isEmpty()) {
+            final String empty = I18n.get("tooltipoverhaul.config.empty_search", searchQuery);
+            graphics.drawString(font, empty, x0 + (x1 - x0 - font.width(empty)) / 2, (formViewportTop() + y1) / 2 - 4, 0xFF555555, false);
+            return;
+        }
+
+        formScroll = Mth.clamp(formScroll, 0, maxFormScroll());
+        final int viewportTop = formViewportTop();
+        final int rowsAnchor = formRowsAnchor();
+        final int tabsAlpha = Math.round(0xFF * AnimationUtils.easeOutCubic(Mth.clamp((now - openedAt) / 170f, 0f, 1f)));
+
+        graphics.enableScissor(x0, viewportTop, x1, y1 - 2);
+
+        sectionTabs.render(graphics, mouseX, mouseY, tabsAlpha);
+
+        final boolean mouseInForm = mouseX >= x0 && mouseX < x1 - 10 && mouseY >= viewportTop && mouseY < y1;
+        FieldRow hoverCandidate = null;
+
+        int y = rowsAnchor + 4;
         for (int rowIndex = 0; rowIndex < visibleRows.size(); rowIndex++) {
             y += rowGapBefore(rowIndex);
 
@@ -1046,7 +1117,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
                 row.recalcHeight(baseRowRight - baseRowLeft);
             }
 
-            if (y + row.height >= y0 && y <= y1) {
+            if (y + row.height >= viewportTop && y <= y1) {
                 final float entrance = AnimationUtils.easeOutCubic(Mth.clamp((now - formRevealAt - Math.min(rowIndex, 12) * 35L) / 170f, 0f, 1f));
                 final int slide = Math.round((1f - entrance) * 16f);
                 final int entranceAlpha = Math.round(0xFF * entrance);
@@ -1078,6 +1149,10 @@ public class FrameEditorScreen extends AbstractConfigScreen {
             }
 
             y += row.height;
+        }
+
+        if (sectionTabs.visible()) {
+            graphics.fill(x0 + 6, rowsAnchor, x1 - 8, rowsAnchor + 1, (Math.round(0x20 * tabsAlpha / 255f) << 24) | 0xFFFFFF);
         }
 
         graphics.disableScissor();
@@ -1203,7 +1278,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
     }
 
     private int totalFormHeight() {
-        int total = 12;
+        int total = 10 + sectionNavigationOffset();
         for (int rowIndex = 0; rowIndex < visibleRows.size(); rowIndex++) {
             final FieldRow row = visibleRows.get(rowIndex);
             if (row.widget != null) {
@@ -1221,7 +1296,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
     }
 
     private @Nullable ConfigScroll.Geometry formBarGeometry() {
-        return selectedEntry() == null ? null : ConfigScroll.fromContent(formTop(), formBottom(), totalFormHeight(), formScroll);
+        return selectedEntry() == null ? null : ConfigScroll.fromContent(formViewportTop(), formBottom(), totalFormHeight(), formScroll);
     }
 
     private void renderScrollbar(GuiGraphics graphics, @Nullable ConfigScroll.Geometry bar, int rightEdge, int mouseX, int mouseY) {
@@ -1229,7 +1304,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
     }
 
     private double maxFormScroll() {
-        return Math.max(0, totalFormHeight() - (formBottom() - formTop()));
+        return Math.max(0, totalFormHeight() - (formBottom() - formViewportTop()));
     }
 
     private void renderPreview(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -1316,6 +1391,13 @@ public class FrameEditorScreen extends AbstractConfigScreen {
 
         // Form
         if (mouseX >= formLeft() && mouseX < formRight() && mouseY >= formTop() && mouseY < formBottom()) {
+            if (button == 0 && selectedEntry() != null && sectionTabs.mouseClicked(mouseX, mouseY)) {
+                applyFocused();
+                applySection(sectionTabs.selected());
+                playClickSound();
+                return true;
+            }
+
             for (FieldRow row : visibleRows) {
                 for (int[] hit : row.swatchHits) {
                     if (mouseX >= hit[0] && mouseX < hit[0] + hit[3]
@@ -1482,6 +1564,16 @@ public class FrameEditorScreen extends AbstractConfigScreen {
             return true;
         }
 
+        if (hasControlDown() && (key == GLFW.GLFW_KEY_PAGE_UP || key == GLFW.GLFW_KEY_PAGE_DOWN)) {
+            applyFocused();
+            if (sectionTabs.cycle(key == GLFW.GLFW_KEY_PAGE_UP ? -1 : 1)) {
+                applySection(sectionTabs.selected());
+                playClickSound();
+            }
+
+            return true;
+        }
+
         if (focusedBox != null && focusedBox.keyPressed(key, scancode, modifiers)) {
             return true;
         }
@@ -1491,6 +1583,14 @@ public class FrameEditorScreen extends AbstractConfigScreen {
         }
 
         return super.handleKeyPressed(key, scancode, modifiers);
+    }
+
+    private void applySection(@Nullable String section) {
+        sectionTabs.select(section);
+        rebuildVisibleRows();
+        formScroll = 0;
+        formRevealAt = -1L;
+        hoveredRow = null;
     }
 
     @Override
@@ -1587,6 +1687,7 @@ public class FrameEditorScreen extends AbstractConfigScreen {
     @Override
     public void removed() {
         applyFocused();
+        rememberPage();
         preserveDraft();
         previewPanel.close();
         super.removed();
