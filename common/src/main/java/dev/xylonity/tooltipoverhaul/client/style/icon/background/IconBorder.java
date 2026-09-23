@@ -7,8 +7,16 @@ import net.minecraft.client.gui.GuiGraphics;
 final class IconBorder {
 
     static void render(TooltipContext context, int left, int top, int right, int bottom, int color) {
-        final String style = context.getFrameData() == null ? TooltipsConfig.ICON_BORDER_STYLE : context.getFrameData().getIconBorderStyle();
+        final String style = style(context);
         render(context.getGraphics(), left, top, right, bottom, color, style);
+    }
+
+    static boolean hasSquareCorners(TooltipContext context) {
+        return "style_2".equals(style(context));
+    }
+
+    private static String style(TooltipContext context) {
+        return context.getFrameData() == null ? TooltipsConfig.ICON_BORDER_STYLE : context.getFrameData().getIconBorderStyle();
     }
 
     static void render(GuiGraphics graphics, int left, int top, int right, int bottom, int color, String style) {

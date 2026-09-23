@@ -22,6 +22,7 @@ public class DetachedIconPlate implements IconBackgroundLayer {
         final int size = Constants.getIconSize(context);
         final int[] colors = ColorUtils.getRenderedInnerOverlayColors(context);
         final boolean badge = context.getLayoutStyle() == TooltipLayout.Style.BADGE;
+        final boolean squareCorners = IconBorder.hasSquareCorners(context);
 
         context.getGraphics().fill(x - 1, y - 1, x + size + 1, y + size + 1, ColorUtils.getBackgroundColor(context));
         if (background != null) {
@@ -34,21 +35,29 @@ public class DetachedIconPlate implements IconBackgroundLayer {
             context.getGraphics().fill(x + size, y + row, x + size + 1, y + row + 1, color);
         }
 
-        context.getGraphics().fill(x, y - 1, x + size, y, ColorUtils.getInnerOverlayColorAtY(context, colors, y - 0.5f));
-        context.getGraphics().fill(x, y + size, x + size, y + size + 1, ColorUtils.getInnerOverlayColorAtY(context, colors, y + size + 0.5f));
+        final int innerCorner = squareCorners ? 1 : 0;
+        context.getGraphics().fill(x - innerCorner, y - 1, x + size + innerCorner, y, ColorUtils.getInnerOverlayColorAtY(context, colors, y - 0.5f));
+        context.getGraphics().fill(x - innerCorner, y + size, x + size + innerCorner, y + size + 1, ColorUtils.getInnerOverlayColorAtY(context, colors, y + size + 0.5f));
 
         // Outer black edge
         final int blackEnd = badge ? (int) position.x - 3 : x + size;
-        context.getGraphics().fill(x, y - 2, blackEnd, y - 1, 0xFF000000);
-        context.getGraphics().fill(x - 1, y - 1, x, y, 0xFF000000);
-        context.getGraphics().fill(x - 2, y, x - 1, y + size, 0xFF000000);
-        context.getGraphics().fill(x - 1, y + size, x, y + size + 1, 0xFF000000);
-        context.getGraphics().fill(x, y + size + 1, blackEnd, y + size + 2, 0xFF000000);
+        final int outerCorner = squareCorners ? 2 : 0;
+        context.getGraphics().fill(x - outerCorner, y - 2, blackEnd + (badge ? 0 : outerCorner), y - 1, 0xFF000000);
+        if (!squareCorners) {
+            context.getGraphics().fill(x - 1, y - 1, x, y, 0xFF000000);
+            context.getGraphics().fill(x - 1, y + size, x, y + size + 1, 0xFF000000);
+        }
+
+        context.getGraphics().fill(x - 2, y - outerCorner, x - 1, y + size + outerCorner, 0xFF000000);
+        context.getGraphics().fill(x - outerCorner, y + size + 1, blackEnd + (badge ? 0 : outerCorner), y + size + 2, 0xFF000000);
 
         if (!badge) {
-            context.getGraphics().fill(x + size, y - 1, x + size + 1, y, 0xFF000000);
-            context.getGraphics().fill(x + size + 1, y, x + size + 2, y + size, 0xFF000000);
-            context.getGraphics().fill(x + size, y + size, x + size + 1, y + size + 1, 0xFF000000);
+            if (!squareCorners) {
+                context.getGraphics().fill(x + size, y - 1, x + size + 1, y, 0xFF000000);
+                context.getGraphics().fill(x + size, y + size, x + size + 1, y + size + 1, 0xFF000000);
+            }
+
+            context.getGraphics().fill(x + size + 1, y - outerCorner, x + size + 2, y + size + outerCorner, 0xFF000000);
         }
 
     }
