@@ -1,3 +1,6 @@
+# 2.0.3
+- Fixed icon corner type not working properly on Floating and Badge tooltip layouts
+
 # 2.0.2
 - Added category buttons inside custom frames screens for better user experience (control+re/avg cycles sections)
 - Shadow corner type now matches the background's corner type
