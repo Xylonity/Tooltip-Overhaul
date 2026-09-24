@@ -3,12 +3,17 @@ package dev.xylonity.tooltipoverhaul.client.frame;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.mojang.serialization.DataResult;
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -33,6 +38,9 @@ public record FrameConditions(
         List<ResourceLocation> enchantments,
         List<NbtRule> nbt
 ) {
+
+    private static final long COMPONENT_WARNING_INTERVAL = 60_000_000_000L;
+    private static long lastComponentWarning = System.nanoTime() - COMPONENT_WARNING_INTERVAL;
 
     public static FrameConditions parse(JsonObject entry) {
         final Float min = percentage(entry, "durabilityMin");
@@ -167,7 +175,37 @@ public record FrameConditions(
             return null;
         }
 
-        return stack.save(level.registryAccess()) instanceof CompoundTag compound ? compound.getCompound("components") : null;
+        try {
+            // ItemStack.CODEC also encodes the count which rejects some modded stacks above 99
+            final DataResult<Tag> result = DataComponentPatch.CODEC.encodeStart(
+                    level.registryAccess().createSerializationContext(NbtOps.INSTANCE), stack.getComponentsPatch()
+            );
+
+            result.error().ifPresent(error -> warnComponentFailure(stack, error.message(), null));
+
+            final Tag encoded = result.result().orElse(null);
+            return encoded instanceof CompoundTag compound ? compound : null;
+        }
+        catch (RuntimeException e) {
+            warnComponentFailure(stack, e.getMessage(), e);
+            return null;
+        }
+
+    }
+
+    private static void warnComponentFailure(ItemStack stack, String message, RuntimeException exception) {
+        final long now = System.nanoTime();
+        if (now - lastComponentWarning < COMPONENT_WARNING_INTERVAL) {
+            return;
+        }
+
+        lastComponentWarning = now;
+
+        TooltipOverhaul.LOGGER.warn(
+                "Could not read components for {} while checking custom frame NBT conditions: {}.",
+                BuiltInRegistries.ITEM.getKey(stack.getItem()), message, exception
+        );
+
     }
 
     public record NbtRule(

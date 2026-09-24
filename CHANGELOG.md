@@ -1,3 +1,6 @@
+# 2.0.4
+- Fixed game crashing while hovering over a modded itemstack with an item count above 99 (like Sophisticated Backpacks)
+
 # 2.0.3
 - Fixed icon corner type not working properly on Floating and Badge tooltip layouts
 
