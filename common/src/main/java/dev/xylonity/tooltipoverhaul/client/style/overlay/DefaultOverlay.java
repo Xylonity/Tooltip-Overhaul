@@ -59,6 +59,12 @@ public class DefaultOverlay implements OverlayLayer {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
+        // LEFT
+        context.getGraphics().blit(textureLocation, leftX, centerY, 0, BLOCK_DIMENSION + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
+
+        // RIGHT
+        context.getGraphics().blit(textureLocation, rightX, centerY, BLOCK_DIMENSION * 2, BLOCK_DIMENSION + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
+
         // TOP LEFT
         context.getGraphics().blit(textureLocation, leftX, topY, 0, frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
 
@@ -70,12 +76,6 @@ public class DefaultOverlay implements OverlayLayer {
 
         // BOTTOM RIGHT
         context.getGraphics().blit(textureLocation, rightX, bottomY, BLOCK_DIMENSION * 2, BLOCK_DIMENSION * 2 + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
-
-        // LEFT
-        context.getGraphics().blit(textureLocation, leftX, centerY, 0, BLOCK_DIMENSION + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
-
-        // RIGHT
-        context.getGraphics().blit(textureLocation, rightX, centerY, BLOCK_DIMENSION * 2, BLOCK_DIMENSION + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
 
         // TOP
         context.getGraphics().blit(textureLocation, centerX, topY, BLOCK_DIMENSION, frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);
