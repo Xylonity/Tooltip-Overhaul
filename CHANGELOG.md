@@ -1,4 +1,4 @@
-# 2.1.0
+# 2.0.4
 - Lateral texture overlay sections are now rendered below corners
 
 # 2.0.3
