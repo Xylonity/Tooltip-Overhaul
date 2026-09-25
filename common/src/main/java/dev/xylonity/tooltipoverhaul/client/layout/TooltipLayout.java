@@ -121,7 +121,7 @@ public final class TooltipLayout {
     public static int iconY(TooltipContext context) {
         return switch (context.getLayoutStyle()) {
             case FLOATING -> context.getFloatingLayout().iconY();
-            default -> context.getPaddingY();
+            default -> context.getPaddingY() + (headerHeight(context) - Constants.getIconSize(context)) / 2;
         };
 
     }
@@ -135,7 +135,8 @@ public final class TooltipLayout {
             return context.getComponents().get(0).getHeight() + ratingHeight(context);
         }
 
-        return Constants.getIconSize(context);
+        // Small icons can end up shorter than the title and rating so the header grows and the icon gets centered in it
+        return Math.max(Constants.getIconSize(context), context.getComponents().get(0).getHeight() + ratingHeight(context));
     }
 
 }

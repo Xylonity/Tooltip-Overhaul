@@ -294,6 +294,12 @@ public final class TooltipsConfig {
     public static String RATING_X_ALIGNMENT = "left";
 
     @ConfigEntry(
+            category = "text",
+            comment = "Center the title and rating over the whole tooltip width instead of the space left next to the icon."
+    )
+    public static boolean ALIGNMENT_IGNORES_ICON = false;
+
+    @ConfigEntry(
             category = "effects",
             comment = "Effects. Options: bubbles, cinder, crystals, echo, fireflies, galaxy, magic_orbs, speed_lines, nebula, " +
                     "spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars, fireflies_2, steel_shining, floating_stars, " +

@@ -59,9 +59,9 @@ public class TooltipSizeCalculator {
 
         }
 
-        // If the tooltip has an icon active, subtracts the title component height (which is approximately 10)
+        // If the tooltip has an icon active, the header already holds the title and rating so the title height comes out
         if (hasIcon) {
-            height += TooltipLayout.headerHeight(context) - 10;
+            height += TooltipLayout.headerHeight(context) - components.get(0).getHeight();
             width = Math.max(width, Constants.getIconSize(context) + paddingX * 2);
         }
 

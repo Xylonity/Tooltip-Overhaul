@@ -40,7 +40,7 @@ public class DefaultText implements TextLayer {
 
         // Some tooltips (Origins recipe badges, info icons, etc.) may provide a single non-text component as the tooltip content
         // In those cases, treating the first component as a "title" would skip it (because the content loop starts at index 1),
-        // causing the tooltip to appear blank. So we only treat the first component as a title if it's actually a text component
+        // causing the tooltip to appear blank. So I only treat the first component as a title if it's actually a text component
         final boolean treatFirstAsTitle = !components.isEmpty() && (components.get(0) instanceof ClientTextTooltip);
         final int startIndex = treatFirstAsTitle ? 1 : 0;
 
@@ -57,41 +57,22 @@ public class DefaultText implements TextLayer {
             final ClientTooltipComponent titleComponent = components.get(0);
             if (titleComponent != null) {
                 // If the icon is present, move the content to the side
-                int extraX = 0;
-                // Alignment to the center of the icon background (if present)
-                int extraY = 0;
-                // Extra alignment if there is a rating text present
-                int titleAlignY = 0;
-                int ratingAlignY = 0;
-                if (hasIcon) {
-                    extraX = TooltipLayout.titleInset(context);
-                    extraY = (Constants.getIconSize(context) / 2);
-                    titleAlignY = hasRating ? titleComponent.getHeight() : (Constants.getIconSize(context) / 4);
-                }
-                else {
-                    // Don't apply extra rating alignment when the icon is enabled
-                    ratingAlignY = titleComponent.getHeight();
-                }
+                final int extraX = hasIcon ? TooltipLayout.titleInset(context) : 0;
+                final int textBlockHeight = titleComponent.getHeight() + TooltipLayout.ratingHeight(context);
 
-                final int titleAlignment = computeTitleAlignment(context, titleComponent, x + extraX);
+                // Title and rating are centered together next to the icon, whatever size it has
+                final int titleY = hasIcon ? y + (TooltipLayout.headerHeight(context) - textBlockHeight) / 2 : y;
 
                 // Title text
-                titleComponent.renderText(font, x + extraX + titleAlignment, y + extraY - titleAlignY, poseStack.last().pose(), graphics.bufferSource());
+                titleComponent.renderText(font, x + extraX + computeTitleAlignment(context, titleComponent, x + extraX), titleY, poseStack.last().pose(), graphics.bufferSource());
 
-                // Rating text. If there is no rating but there is an icon present, the padding between the content and the title is the same
                 if (hasRating) {
-                    Component rating = TextUtils.getRatingText(context);
-
-                    final int ratingAlignment = computeRatingAlignment(context, rating, x + extraX);
-
-                    context.getGraphics().drawString(font, TextUtils.getRatingText(context), x + extraX + ratingAlignment, y + extraY + ratingAlignY, 0xEDDE76, false);
-                    y += ClientTooltipComponent.create(rating.getVisualOrderText()).getHeight();
-                }
-                else if (hasIcon) {
-                    y += titleComponent.getHeight();
+                    final Component rating = TextUtils.getRatingText(context);
+                    context.getGraphics().drawString(font, rating, x + extraX + computeRatingAlignment(context, rating, x + extraX), titleY + titleComponent.getHeight(), 0xEDDE76, false);
                 }
 
-                y += titleComponent.getHeight();
+                // The header already starts one pixel down, so the body lands right where it did
+                y += hasIcon ? TooltipLayout.headerHeight(context) - 2 : textBlockHeight;
             }
 
             // Extra space after the icon
@@ -219,46 +200,25 @@ public class DefaultText implements TextLayer {
     }
 
     private int computeTitleAlignment(TooltipContext context, ClientTooltipComponent component, int startX) {
-        return switch (PositionUtils.getTitleTextAlignment(context)) {
-            case "middle" -> {
-                int tooltipSizeX = (int) context.getTooltipSize().x;
-                int tooltipPositionX = (int) context.getTooltipPosition().x;
-
-                int total = tooltipSizeX + tooltipPositionX;
-
-                yield (total - startX - context.getPaddingX()) / 2 - component.getWidth(context.getFont()) / 2;
-            }
-            case "right" -> {
-                int tooltipSizeX = (int) context.getTooltipSize().x;
-                int tooltipPositionX = (int) context.getTooltipPosition().x;
-
-                int total = tooltipSizeX + tooltipPositionX;
-
-                yield (total - startX - context.getPaddingX()) - component.getWidth(context.getFont());
-            }
-            default -> 0;
-        };
-
+        return computeAlignment(context, PositionUtils.getTitleTextAlignment(context), component.getWidth(context.getFont()), startX);
     }
 
     private int computeRatingAlignment(TooltipContext context, Component component, int startX) {
-        return switch (PositionUtils.getRatingTextAlignment(context)) {
+        return computeAlignment(context, PositionUtils.getRatingTextAlignment(context), context.getFont().width(component), startX);
+    }
+
+    private int computeAlignment(TooltipContext context, String alignment, int textWidth, int startX) {
+        final int left = (int) context.getTooltipPosition().x + context.getPaddingX();
+        final int right = (int) (context.getTooltipPosition().x + context.getTooltipSize().x) - context.getPaddingX();
+        return switch (alignment) {
             case "middle" -> {
-                int tooltipSizeX = (int) context.getTooltipSize().x;
-                int tooltipPositionX = (int) context.getTooltipPosition().x;
+                if (PositionUtils.alignmentIgnoresIcon(context)) {
+                    yield Math.max(0, (left + right) / 2 - textWidth / 2 - startX);
+                }
 
-                int total = tooltipSizeX + tooltipPositionX;
-
-                yield (total - startX - context.getPaddingX()) / 2 - context.getFont().width(component) / 2;
+                yield (right - startX) / 2 - textWidth / 2;
             }
-            case "right" -> {
-                final int tooltipSizeX = (int) context.getTooltipSize().x;
-                final int tooltipPositionX = (int) context.getTooltipPosition().x;
-
-                final int total = tooltipSizeX + tooltipPositionX;
-
-                yield (total - startX - context.getPaddingX()) - context.getFont().width(component);
-            }
+            case "right" -> right - startX - textWidth;
             default -> 0;
         };
 

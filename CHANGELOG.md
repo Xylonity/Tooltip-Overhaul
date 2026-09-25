@@ -1,3 +1,8 @@
+# 2.0.5
+- Lateral texture overlay sections are now rendered below corners
+- Fixed icon size config option not working properly on certain tooltip layouts
+- Fixed title/rating text alignment not adapting properly to the tooltip proportions by adding another config entry that lets u align them independently of the icon size
+
 # 2.0.4
 - Fixed game crashing while hovering over a modded itemstack with an item count above 99 (like Sophisticated Backpacks)
 

@@ -48,6 +48,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
 
         final Optional<String> ratingAlignment = parseString(entry, "ratingAlignment");
         final Optional<String> titleAlignment = parseString(entry, "titleAlignment");
+        final Optional<Boolean> alignmentIgnoresIcon = parseBool(entry, "alignmentIgnoresIcon");
         final Optional<String> tooltipLayout = parseString(entry, "tooltipLayout");
         final Optional<Boolean> compactShowModName = parseBool(entry, "compactShowModName");
         final Optional<String> compactModNameColor = parseString(entry, "compactModNameColor");
@@ -110,6 +111,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 colorItemRating,
                 ratingAlignment,
                 titleAlignment,
+                alignmentIgnoresIcon,
                 tooltipLayout,
                 compactShowModName,
                 compactModNameColor,

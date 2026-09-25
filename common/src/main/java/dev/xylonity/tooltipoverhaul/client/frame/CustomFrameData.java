@@ -40,6 +40,7 @@ public record CustomFrameData(
         Optional<String> colorItemRating,
         Optional<String> ratingAlignment,
         Optional<String> titleAlignment,
+        Optional<Boolean> alignmentIgnoresIcon,
         Optional<String> tooltipLayout,
         Optional<Boolean> compactShowModName,
         Optional<String> compactModNameColor,
@@ -278,6 +279,10 @@ public record CustomFrameData(
 
     public String getTitleAlignment() {
         return titleAlignment.orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
+    }
+
+    public boolean shouldAlignmentIgnoreIcon() {
+        return alignmentIgnoresIcon.orElse(TooltipsConfig.ALIGNMENT_IGNORES_ICON);
     }
 
     public String getTooltipLayout() {

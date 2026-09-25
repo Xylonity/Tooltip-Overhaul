@@ -49,6 +49,7 @@ final class FrameFieldSchema {
             new FieldSpec("itemRating", Kind.STRING),
             new FieldSpec("colorItemRating", Kind.COLOR),
             new FieldSpec("ratingAlignment", Kind.CHOICE, "left", "middle", "right"),
+            new FieldSpec("alignmentIgnoresIcon", Kind.BOOL),
             "layout",
             new FieldSpec("tooltipLayout", Kind.CHOICE, "classic", "badge", "floating", "compact"),
             new FieldSpec("compactShowModName", Kind.BOOL),
