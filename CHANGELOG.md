@@ -1,5 +1,7 @@
 # 2.0.4
 - Lateral texture overlay sections are now rendered below corners
+- Fixed icon size config option not working properly on certain tooltip layouts
+- Fixed title/rating text alignment not adapting properly to the tooltip proportions by adding another config entry that lets u align them independently of the icon size
 
 # 2.0.3
 - Fixed icon corner type not working properly on Floating and Badge tooltip layouts

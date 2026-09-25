@@ -41,6 +41,10 @@ public class PositionUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::getTitleAlignment).orElse(TooltipsConfig.TITLE_X_ALIGNMENT);
     }
 
+    public static boolean alignmentIgnoresIcon(TooltipContext context) {
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldAlignmentIgnoreIcon).orElse(TooltipsConfig.ALIGNMENT_IGNORES_ICON);
+    }
+
     public static int getVignettePosition(TooltipContext context, VignetteEntry vignetteEntry, TextAxis axis) {
         int tooltipWidth = (int) context.getTooltipSize().x;
         int tooltipHeight = (int) context.getTooltipSize().y;
