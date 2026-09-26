@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.lwjgl.glfw.GLFW;
 
@@ -66,11 +67,11 @@ public abstract class MouseHandlerMixin {
         }
 
         if (TooltipScrollState.shouldCaptureScroll()) {
-            // issue #33
-            //  if (tooltipoverhaul$hoveredStackHasImage(minecraft.screen)) {
-            //      tooltipoverhaul$deferredDy = dy;
-            //      return;
-            //  }
+            // Container items use the wheel themselves
+            if (tooltipoverhaul$hoveredStackHasImage(minecraft.screen)) {
+                tooltipoverhaul$deferredDy = dy;
+                return;
+            }
 
             TooltipScrollState.onRawScroll(dy);
             ci.cancel();
@@ -78,18 +79,17 @@ public abstract class MouseHandlerMixin {
 
     }
 
-     // issue #33
-     // @Redirect(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseScrolled(DDD)Z"), require = 0)
-     // private boolean tooltipoverhaul$screenScrolled(Screen screen, double mouseX, double mouseY, double delta) {
-     //     final boolean consumed = screen.mouseScrolled(mouseX, mouseY, delta);
-     //     final double dy = tooltipoverhaul$deferredDy;
-     //     tooltipoverhaul$deferredDy = Double.NaN;
-     //     if (!consumed && !Double.isNaN(dy) && TooltipScrollState.shouldCaptureScroll()) {
-     //         TooltipScrollState.onRawScroll(dy);
-     //     }
-     //
-     //     return consumed;
-     // }
+    @Redirect(method = "onScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/Screen;mouseScrolled(DDD)Z"), require = 0)
+    private boolean tooltipoverhaul$screenScrolled(Screen screen, double mouseX, double mouseY, double delta) {
+        final boolean consumed = screen.mouseScrolled(mouseX, mouseY, delta);
+        final double dy = tooltipoverhaul$deferredDy;
+        tooltipoverhaul$deferredDy = Double.NaN;
+        if (!consumed && !Double.isNaN(dy) && TooltipScrollState.shouldCaptureScroll()) {
+            TooltipScrollState.onRawScroll(dy);
+        }
+
+        return consumed;
+    }
 
     @Unique
     private static boolean tooltipoverhaul$hoveredStackHasImage(Screen screen) {

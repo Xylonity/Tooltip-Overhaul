@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.mixin;
 
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
+import dev.xylonity.tooltipoverhaul.client.util.TooltipLinesContext;
 import dev.xylonity.tooltipoverhaul.util.ITooltipOverhaulItemAware;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -23,7 +24,9 @@ public class GuiGraphicsItemMixin implements ITooltipOverhaulItemAware {
 
     @Inject(method = "renderTooltipInternal", at = @At("HEAD"))
     private void tooltipsOverhaul$captureHovered(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner positioner, CallbackInfo ci) {
-        tooltipsOverhaul$currentItemStack = TooltipOverhaul.PLATFORM.getHoveredItem((GuiGraphics) (Object) this, components, mouseX, mouseY);
+        // The lines' own stack goes first as nested tooltips would otherwise resolve to the outer stack
+        final ItemStack linesStack = TooltipLinesContext.consume();
+        tooltipsOverhaul$currentItemStack = !linesStack.isEmpty() ? linesStack : TooltipOverhaul.PLATFORM.getHoveredItem((GuiGraphics) (Object) this, components, mouseX, mouseY);
     }
 
     @Inject(method = "renderTooltipInternal", at = @At("RETURN"))

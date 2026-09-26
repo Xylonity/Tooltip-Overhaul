@@ -6,6 +6,7 @@ import dev.xylonity.tooltipoverhaul.client.render.TooltipHoverTracker;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipRenderer;
 import dev.xylonity.tooltipoverhaul.client.util.EquippedContextCalculator;
 import dev.xylonity.tooltipoverhaul.client.util.TextUtils;
+import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
 import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import dev.xylonity.tooltipoverhaul.util.ITooltipOverhaulItemAware;
 import net.minecraft.client.Minecraft;
@@ -28,6 +29,9 @@ import java.util.List;
 @Mixin(value = GuiGraphics.class, priority = 1)
 public class GuiGraphicsMixin {
 
+    @Unique
+    private static int tooltipoverhaul$depth = 0;
+
     /**
      * Main tooltip renderer call. A context is populated with the relevant info needed to render the tooltip. Nothing else
      * is rendered except if explicit specified within the renderer internal logic, thus preventing possible incompats (that
@@ -35,6 +39,29 @@ public class GuiGraphicsMixin {
      */
     @Inject(method = "renderTooltipInternal", at = @At(value = "HEAD"), cancellable = true)
     private void tooltipoverhaul$coreRenderCall(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
+        // Nested tooltips (like the ones in ESB) are drawn in the middle of the outer one, so keeping their animations is fundamental
+        final boolean nested = tooltipoverhaul$depth > 0;
+        final float previousCounter = TooltipRenderer.COUNTER;
+        final float previousIconCounter = TooltipRenderer.ICON_COUNTER;
+        final TooltipScrollState.Snapshot previousScroll = TooltipScrollState.snapshot();
+        tooltipoverhaul$depth++;
+        try {
+            tooltipoverhaul$render(font, components, mouseX, mouseY, tooltipPositioner, ci);
+        }
+        finally {
+            tooltipoverhaul$depth--;
+            if (nested) {
+                TooltipRenderer.COUNTER = previousCounter;
+                TooltipRenderer.ICON_COUNTER = previousIconCounter;
+                TooltipScrollState.restore(previousScroll);
+            }
+
+        }
+
+    }
+
+    @Unique
+    private void tooltipoverhaul$render(Font font, List<ClientTooltipComponent> components, int mouseX, int mouseY, ClientTooltipPositioner tooltipPositioner, CallbackInfo ci) {
 
         final int screenWidth = Minecraft.getInstance().getWindow().getGuiScaledWidth();
         final int screenHeight = Minecraft.getInstance().getWindow().getGuiScaledHeight();

@@ -141,6 +141,9 @@ modImplementation("curse.maven:lionfish-api-1001614:5922047")
 
 modImplementation("curse.maven:tameable-beasts-646425:7408040")
 
+modImplementation("curse.maven:easy-shulker-boxes-594006:5157055")
+modImplementation("curse.maven:puzzles-lib-495476:6918565")
+
 modImplementation("curse.maven:tough-as-nails-246391:5815863")
 modImplementation("curse.maven:glitchcore-955399:5787839")
 modCompileOnly "dev.emi:emi-forge:1.1.22+1.20.1:api"
