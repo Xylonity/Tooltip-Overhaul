@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.VignetteLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectClip;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
@@ -30,8 +31,6 @@ public class CircularHoleVignette implements VignetteLayer {
         int positionY = (int) position.y;
         int tooltipWidth = (int) context.getTooltipSize().x;
         int tooltipHeight = (int) context.getTooltipSize().y;
-        int paddingX = context.getPaddingX();
-        int paddingY = context.getPaddingY();
 
         float anchorPositionX = positionX + PositionUtils.getVignettePosition(context, vignetteEntry, TextAxis.X) + (tooltipHeight * (vignetteEntry.extraPositionX() / 100f));
         float anchorPositionY = positionY + PositionUtils.getVignettePosition(context, vignetteEntry, TextAxis.Y) + (tooltipWidth * (vignetteEntry.extraPositionY() / 100f));
@@ -40,15 +39,6 @@ public class CircularHoleVignette implements VignetteLayer {
         float outerRadius = Math.max(tooltipWidth, tooltipHeight) * 1.2f;
 
         int color = vignetteEntry.color();
-
-        context.enableScissor(
-                positionX - paddingX - 1,
-                positionY - paddingY,
-                positionX + tooltipWidth + paddingX,
-                positionY + tooltipHeight + paddingY
-        );
-
-        context.translate(anchorPositionX, anchorPositionY, 0);
 
         RenderSystem.enableBlend();
 
@@ -64,7 +54,7 @@ public class CircularHoleVignette implements VignetteLayer {
         RenderSystem.disableCull();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        Matrix4f pose = context.getPose().last().pose();
+        final Matrix4f pose = new Matrix4f(context.getPose().last().pose()).translate(anchorPositionX, anchorPositionY, 0);
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder buffer = tesselator.getBuilder();
 
@@ -98,7 +88,7 @@ public class CircularHoleVignette implements VignetteLayer {
                     .endVertex();
         }
 
-        BufferUploader.drawWithShader(buffer.end());
+        new EffectClip(context, position).draw(buffer.end());
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
@@ -110,8 +100,6 @@ public class CircularHoleVignette implements VignetteLayer {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-
-        context.getGraphics().disableScissor();
     }
 
 }

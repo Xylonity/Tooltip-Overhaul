@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.VignetteLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectClip;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
@@ -31,10 +32,6 @@ public final class ShapedVignette implements VignetteLayer {
         final float x = position.x + PositionUtils.getVignettePosition(context, entry, TextAxis.X) + height * entry.extraPositionX() / 100f;
         final float y = position.y + PositionUtils.getVignettePosition(context, entry, TextAxis.Y) + width * entry.extraPositionY() / 100f;
 
-        context.enableScissor((int) position.x - context.getPaddingX() - 1, (int) position.y - context.getPaddingY(), (int) (position.x + width) + context.getPaddingX(), (int) (position.y + height) + context.getPaddingY());
-
-        context.translate(x, y, 0);
-
         context.flush();
 
         RenderSystem.enableBlend();
@@ -45,7 +42,7 @@ public final class ShapedVignette implements VignetteLayer {
         RenderSystem.depthMask(false);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         try {
-            final Matrix4f pose = context.getPose().last().pose();
+            final Matrix4f pose = new Matrix4f(context.getPose().last().pose()).translate(x, y, 0);
             final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
 
             buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
@@ -58,7 +55,7 @@ public final class ShapedVignette implements VignetteLayer {
                 band(buffer, pose, radius, 0, 1, ColorUtils.alpha(entry.color()), 0);
             }
 
-            BufferUploader.drawWithShader(buffer.end());
+            new EffectClip(context, position).draw(buffer.end());
         }
         finally {
             RenderSystem.depthMask(true);
@@ -67,8 +64,6 @@ public final class ShapedVignette implements VignetteLayer {
             RenderSystem.defaultBlendFunc();
 
             RenderSystem.disableBlend();
-
-            context.getGraphics().disableScissor();
         }
 
     }
