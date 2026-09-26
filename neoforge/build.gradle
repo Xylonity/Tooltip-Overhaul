@@ -54,8 +54,11 @@ dependencies {
     implementation "curse.maven:curios-309927:6529130"
     implementation "curse.maven:lionfish-api-1001614:6168249"
 
+    implementation "curse.maven:easy-shulker-boxes-594006:6697879"
+    implementation "curse.maven:forge-config-api-port-547434:7213611"
+    implementation "curse.maven:puzzles-lib-495476:8829114"
+
     implementation "curse.maven:metal-bundles-891325:6697871"
-    implementation "curse.maven:puzzles-lib-495476:7140307"
 
     implementation "curse.maven:oracle-index-1206582:7773037"
     implementation "curse.maven:architectury-api-419699:5786327"

@@ -18,7 +18,8 @@
     "KeyboardHandlerMixin",
     "MinecraftMixin",
     "MouseHandlerMixin",
-    "ScreenRecorderMixin"
+    "ScreenRecorderMixin",
+    "ScreenTooltipLinesMixin"
   ],
   "server": [],
   "injectors": {
