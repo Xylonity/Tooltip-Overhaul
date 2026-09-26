@@ -1,11 +1,7 @@
-# 2.0.6
-- Fixed armor not rendering in the preview panel when the tooltip was using one of the following vignettes: Ellipse, Diamond, Ring, Linear
-- Fixed vignettes not adapting properly to the whole Badge tooltip layout
-- Fixed scrollable tooltips blocking the mouse wheel for mods that use it on container items, like the item selection from Easy Shulker Boxes
-
 # 2.0.5
 - Fixed armor not rendering in the preview panel when the tooltip was using one of the following vignettes: Ellipse, Diamond, Ring, Linear
 - Fixed vignettes not adapting properly to the whole Badge tooltip layout
+- Fixed scrollable tooltips blocking the mouse wheel for mods that use it on container items, like the item selection from Easy Shulker Boxes
 
 # 2.0.4
 - Lateral texture overlay sections are now rendered below corners
