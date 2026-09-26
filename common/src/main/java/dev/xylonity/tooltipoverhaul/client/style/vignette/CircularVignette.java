@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.VignetteLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
+import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectClip;
 import dev.xylonity.tooltipoverhaul.client.style.vignette.parser.VignetteEntry;
 import dev.xylonity.tooltipoverhaul.client.util.ColorUtils;
 import dev.xylonity.tooltipoverhaul.client.util.PositionUtils;
@@ -30,23 +31,12 @@ public class CircularVignette implements VignetteLayer {
         int positionY = (int) position.y;
         int tooltipWidth = (int) context.getTooltipSize().x;
         int tooltipHeight = (int) context.getTooltipSize().y;
-        int paddingX = context.getPaddingX();
-        int paddingY = context.getPaddingY();
 
         float anchorPositionX = positionX + PositionUtils.getVignettePosition(context, vignetteEntry, TextAxis.X) + (tooltipHeight * (vignetteEntry.extraPositionX() / 100f));
         float anchorPositionY = positionY + PositionUtils.getVignettePosition(context, vignetteEntry, TextAxis.Y) + (tooltipWidth * (vignetteEntry.extraPositionY() / 100f));
         float radius = tooltipWidth * vignetteEntry.radius();
 
         int color = vignetteEntry.color();
-
-        context.enableScissor(
-                positionX - paddingX - 1,
-                positionY - paddingY,
-                positionX + tooltipWidth + paddingX,
-                positionY + tooltipHeight + paddingY
-        );
-
-        context.translate(anchorPositionX, anchorPositionY, 0);
 
         RenderSystem.enableBlend();
 
@@ -62,7 +52,7 @@ public class CircularVignette implements VignetteLayer {
         RenderSystem.disableCull();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-        Matrix4f pose = context.getPose().last().pose();
+        final Matrix4f pose = new Matrix4f(context.getPose().last().pose()).translate(anchorPositionX, anchorPositionY, 0);
         Tesselator tesselator = Tesselator.getInstance();
 
         // Circle
@@ -82,9 +72,7 @@ public class CircularVignette implements VignetteLayer {
                     .setColor(ColorUtils.red(color), ColorUtils.green(color), ColorUtils.blue(color), 0);
         }
 
-        try (MeshData data = buffer.buildOrThrow()) {
-            BufferUploader.drawWithShader(data);
-        }
+        new EffectClip(context, position).draw(buffer.buildOrThrow());
 
         RenderSystem.depthMask(true);
         RenderSystem.enableDepthTest();
@@ -96,8 +84,6 @@ public class CircularVignette implements VignetteLayer {
 
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
-
-        context.getGraphics().disableScissor();
     }
 
 }

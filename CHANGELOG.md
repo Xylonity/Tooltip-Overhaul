@@ -1,3 +1,7 @@
+# 2.0.6
+- Fixed armor not rendering in the preview panel when the tooltip was using one of the following vignettes: Ellipse, Diamond, Ring, Linear
+- Fixed vignettes not adapting properly to the whole Badge tooltip layout
+
 # 2.0.5
 - Lateral texture overlay sections are now rendered below corners
 - Fixed icon size config option not working properly on certain tooltip layouts
