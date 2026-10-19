@@ -8,6 +8,7 @@ import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -30,6 +31,14 @@ public class TooltipOverhaulClientEvents {
         public static void onScreenRenderPost(ScreenEvent.Render.Post event) {
             TooltipAnimationState.tick(event.getGuiGraphics());
             PinnedTooltipState.render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
+        }
+
+        /**
+         * Keeps the frame counter going while no screen is open as hud tooltips also rely on it
+         */
+        @SubscribeEvent
+        public static void onRenderGuiPre(RenderGuiEvent.Pre event) {
+            TooltipAnimationState.hudTick();
         }
 
     }

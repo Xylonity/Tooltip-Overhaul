@@ -9,6 +9,7 @@ import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.network.chat.Component;
 
@@ -37,6 +38,9 @@ public class TooltipOverhaulClientEvents {
                 )
 
         );
+
+        // Keeps the frame counter going while no screen is open as hud tooltips also rely on it
+        HudRenderCallback.EVENT.register((graphics, tickDelta) -> TooltipAnimationState.hudTick());
 
     }
 
