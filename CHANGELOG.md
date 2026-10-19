@@ -1,5 +1,7 @@
 # 2.0.7
+- Malformed config files are now repaired on load
 - Fixed tooltips rendered outside screens, like the ones from Axiom's hotbar menu, disappearing right after showing up for a single frame
+- Fixed the config file getting corrupted if the game closed or crashed while saving it
 
 # 2.0.6
 - Fixed armor not rendering in the preview panel when the tooltip was using one of the following vignettes: Ellipse, Diamond, Ring, Linear

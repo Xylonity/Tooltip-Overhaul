@@ -2,15 +2,25 @@ package dev.xylonity.tooltipoverhaul.config;
 
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.toml.TomlFormat;
+import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.config.wrapper.AutoConfig;
 import dev.xylonity.tooltipoverhaul.config.wrapper.ConfigEntry;
 
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
@@ -50,7 +60,10 @@ public final class ConfigManager {
     });
 
     private static final Map<Path, ScheduledFuture<?>> PENDING = new ConcurrentHashMap<>();
-    private static final Map<Path, Long> IGNORE_UNTIL = new ConcurrentHashMap<>();
+
+    // In-memory config values to match the real edits
+    private static final Map<Path, String> SYNCED_TEXT = new ConcurrentHashMap<>();
+    private static final Object LOCK = new Object();
 
     private static final Map<Class<?>, CopyOnWriteArrayList<Runnable>> RELOAD_LISTENERS = new ConcurrentHashMap<>();
 
@@ -111,22 +124,138 @@ public final class ConfigManager {
             return;
         }
 
+        // No autosave cuzz it used to break config files
         CommentedFileConfig cfg = CommentedFileConfig
                 .builder(tomlPath, TomlFormat.instance())
-                .autosave()
                 .preserveInsertionOrder()
                 .sync()
                 .build();
 
-        cfg.load();
+        synchronized (LOCK) {
+            final boolean writable = read(tomlPath, cfg);
 
-        OPEN.put(clazz, cfg);
-        FILE2CLASS.put(tomlPath, clazz);
+            OPEN.put(clazz, cfg);
+            FILE2CLASS.put(tomlPath, clazz);
 
-        apply(clazz, cfg, true);
+            apply(clazz, cfg, true);
+
+            // A broken file that couldn't be backed up is left as is instead of being replaced by the salvaged copy
+            if (writable) {
+                write(tomlPath, cfg);
+            }
+
+        }
+
         fireReload(clazz);
+    }
 
-        cfg.save();
+    private static boolean read(Path tomlPath, CommentedFileConfig config) {
+        final String text = readText(tomlPath);
+        if (text == null) {
+            return true;
+        }
+
+        String usable = text;
+        boolean writable = true;
+        if (!parses(text)) {
+            usable = salvage(text);
+
+            String outcome = "The original was copied next to it as .broken";
+            try {
+                Files.copy(tomlPath, tomlPath.resolveSibling(tomlPath.getFileName() + ".broken"), StandardCopyOption.REPLACE_EXISTING);
+            }
+            catch (IOException ignored) {
+                writable = false;
+                outcome = "The original couldn't be backed up so it was left untouched";
+            }
+
+            TooltipOverhaul.LOGGER.warn("{} is malformed, kept every valid line and reset the rest to defaults. {}", tomlPath, outcome);
+        }
+
+        TomlFormat.instance().createParser().parse(new StringReader(usable), config, ParsingMode.REPLACE);
+        return writable;
+    }
+
+    private static String salvage(String text) {
+        final StringBuilder kept = new StringBuilder();
+        for (final String line : text.split("\n")) {
+            if (parses(kept + line + "\n")) {
+                kept.append(line).append("\n");
+            }
+
+        }
+
+        return kept.toString();
+    }
+
+    private static boolean parses(String text) {
+        try {
+            TomlFormat.instance().createParser().parse(new StringReader(text));
+            return true;
+        }
+        catch (RuntimeException ignored) {
+            return false;
+        }
+
+    }
+
+    private static String readText(Path tomlPath) {
+        final String text;
+        try {
+            text = new String(Files.readAllBytes(tomlPath), StandardCharsets.UTF_8);
+        }
+        catch (NoSuchFileException ignored) {
+            return null;
+        }
+        catch (IOException exception) {
+            throw new UncheckedIOException(exception);
+        }
+
+        // No bom
+        return text.startsWith("\uFEFF") ? text.substring(1) : text;
+    }
+
+    private static void write(Path tomlPath, CommentedFileConfig config) {
+        final String text = TomlFormat.instance().createWriter().writeToString(config);
+        final Path temp = tomlPath.resolveSibling(tomlPath.getFileName() + ".tmp");
+
+        try {
+            // Written aside and swapped in, so a save cut halfway never leaves a broken file behind
+            writeSynced(temp, text);
+            Files.move(temp, tomlPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        }
+        catch (IOException swapFailure) {
+            // Windows can refuse the swap while something holds the file open
+            try {
+                writeSynced(tomlPath, text);
+            }
+            catch (IOException writeFailure) {
+                TooltipOverhaul.LOGGER.error("Could not save {}", tomlPath, writeFailure);
+                return;
+            }
+
+            try {
+                Files.deleteIfExists(temp);
+            }
+            catch (IOException ignored) {
+                ;;
+            }
+
+        }
+
+        SYNCED_TEXT.put(tomlPath, text);
+    }
+
+    private static void writeSynced(Path path, String text) throws IOException {
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            final ByteBuffer buffer = ByteBuffer.wrap(text.getBytes(StandardCharsets.UTF_8));
+            while (buffer.hasRemaining()) {
+                channel.write(buffer);
+            }
+
+            channel.force(true);
+        }
+
     }
 
     private static void apply(Class<?> clazz, CommentedFileConfig config, boolean init) {
@@ -283,27 +412,14 @@ public final class ConfigManager {
                             continue;
                         }
 
-                        final long now = System.currentTimeMillis();
-                        final long until = IGNORE_UNTIL.getOrDefault(file, 0L);
-                        if (now < until) {
-                            continue;
-                        }
-
                         final ScheduledFuture<?> old = PENDING.remove(file);
                         if (old != null) {
                             old.cancel(false);
                         }
 
                         PENDING.put(file, SCHEDULED.schedule(() -> {
-                            final CommentedFileConfig cfg = OPEN.get(clazz);
-                            if (cfg == null) {
-                                return;
-                            }
-
                             try {
-                                cfg.load();
-                                apply(clazz, cfg, false);
-                                fireReload(clazz);
+                                reload(clazz, file);
                             }
                             catch (Throwable ignored) {
                                 ;;
@@ -332,6 +448,28 @@ public final class ConfigManager {
 
         });
 
+    }
+
+    private static void reload(Class<?> clazz, Path tomlPath) {
+        final CommentedFileConfig cfg = OPEN.get(clazz);
+        if (cfg == null) {
+            return;
+        }
+
+        synchronized (LOCK) {
+            final String text = readText(tomlPath);
+
+            // Skips saves and files an editor is still writing, as the next change event picks those up
+            if (text == null || text.equals(SYNCED_TEXT.get(tomlPath)) || !parses(text)) {
+                return;
+            }
+
+            TomlFormat.instance().createParser().parse(new StringReader(text), cfg, ParsingMode.REPLACE);
+            SYNCED_TEXT.put(tomlPath, text);
+            apply(clazz, cfg, false);
+        }
+
+        fireReload(clazz);
     }
 
     private static Object parseDefFromComment(String comment, Class<?> clazz) {
@@ -496,35 +634,30 @@ public final class ConfigManager {
         final String fileName = meta.file();
         final Path tomlPath = CONFIG_DIR.resolve(fileName).resolve(fileName + ".toml");
 
-        IGNORE_UNTIL.put(tomlPath, System.currentTimeMillis() + 800L);
+        synchronized (LOCK) {
+            for (Field field : clazz.getDeclaredFields()) {
+                final ConfigEntry rawEntry = field.getAnnotation(ConfigEntry.class);
+                if (rawEntry == null) {
+                    continue;
+                }
 
-        for (Field field : clazz.getDeclaredFields()) {
-            final ConfigEntry rawEntry = field.getAnnotation(ConfigEntry.class);
-            if (rawEntry == null) {
-                continue;
+                field.setAccessible(true);
+
+                final String category = rawEntry.category();
+                final String entry = field.getName();
+                final String path = category.isEmpty() ? entry : category + "." + entry;
+
+                try {
+                    final Object value = field.get(null);
+                    config.set(path, value);
+                }
+                catch (Exception ignored) {
+                    ;;
+                }
+
             }
 
-            field.setAccessible(true);
-
-            final String category = rawEntry.category();
-            final String entry = field.getName();
-            final String path = category.isEmpty() ? entry : category + "." + entry;
-
-            try {
-                final Object value = field.get(null);
-                config.set(path, value);
-            }
-            catch (Exception ignored) {
-                ;;
-            }
-
-        }
-
-        try {
-            config.save();
-        }
-        catch (Throwable ignored) {
-            ;;
+            write(tomlPath, config);
         }
 
         fireReload(clazz);
