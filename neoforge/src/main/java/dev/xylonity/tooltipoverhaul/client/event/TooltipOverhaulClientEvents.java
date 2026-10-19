@@ -10,6 +10,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RenderGuiEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
 public class TooltipOverhaulClientEvents {
@@ -30,6 +31,14 @@ public class TooltipOverhaulClientEvents {
         public static void onScreenRenderPost(ScreenEvent.Render.Post event) {
             TooltipAnimationState.tick(event.getGuiGraphics());
             PinnedTooltipState.render(event.getGuiGraphics(), event.getMouseX(), event.getMouseY());
+        }
+
+        /**
+         * Keeps the frame counter going while no screen is open as hud tooltips also rely on it
+         */
+        @SubscribeEvent
+        public static void onRenderGuiPre(RenderGuiEvent.Pre event) {
+            TooltipAnimationState.hudTick();
         }
 
     }

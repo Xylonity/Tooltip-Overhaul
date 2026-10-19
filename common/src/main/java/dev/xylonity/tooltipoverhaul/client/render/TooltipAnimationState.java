@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.render;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
 import dev.xylonity.tooltipoverhaul.client.style.animation.TooltipAnimator;
 import dev.xylonity.tooltipoverhaul.client.util.TooltipScrollState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -69,6 +70,17 @@ public final class TooltipAnimationState {
 
     public static long frame() {
         return frameCounter;
+    }
+
+    /**
+     * Screens advance the frame on their render post, so the hud has to do it on its own while none is open (otherwise tooltips cast from it
+     * are superseded by their own entry from the last frame)
+     */
+    public static void hudTick() {
+        if (Minecraft.getInstance().screen == null) {
+            frameCounter++;
+        }
+
     }
 
     public static void clear() {

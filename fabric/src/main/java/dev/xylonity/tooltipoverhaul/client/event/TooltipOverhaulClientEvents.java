@@ -4,6 +4,7 @@ import dev.xylonity.tooltipoverhaul.client.render.PinnedTooltipState;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipAnimationState;
 import dev.xylonity.tooltipoverhaul.registry.TooltipOverhaulKeyMappings;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 
 public class TooltipOverhaulClientEvents {
@@ -25,6 +26,9 @@ public class TooltipOverhaulClientEvents {
                 )
 
         );
+
+        // Keeps the frame counter going while no screen is open as hud tooltips also rely on it
+        HudRenderCallback.EVENT.register((graphics, deltaTracker) -> TooltipAnimationState.hudTick());
 
     }
 
