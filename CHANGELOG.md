@@ -1,3 +1,6 @@
+# 2.0.6
+- Fixed tooltips rendered outside screens, like the ones from Axiom's hotbar menu, disappearing right after showing up for a single frame
+
 # 2.0.5
 - Fixed armor not rendering in the preview panel when the tooltip was using one of the following vignettes: Ellipse, Diamond, Ring, Linear
 - Fixed vignettes not adapting properly to the whole Badge tooltip layout
