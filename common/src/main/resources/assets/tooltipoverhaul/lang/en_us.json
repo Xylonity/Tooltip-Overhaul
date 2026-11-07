@@ -142,6 +142,8 @@
   "tooltipoverhaul.config.entry.remember_last_page.description": "Reopens the config screen and the frame editor on the category, entry and section you were last editing. Remembered until the game closes.",
   "tooltipoverhaul.config.entry.always_show_comparison": "Always Show Comparison",
   "tooltipoverhaul.config.entry.always_show_comparison.description": "Always show equipment comparison for comparable items without holding the comparison key.",
+  "tooltipoverhaul.config.entry.ftb_quests_item_tooltips": "Item Tooltips in FTB Quests",
+  "tooltipoverhaul.config.entry.ftb_quests_item_tooltips.description": "Style the items shown in FTB Quests tasks and rewards like regular items, with their custom frames and icon. Off by default, as modpacks usually write their own descriptions for them.",
   "tooltipoverhaul.config.entry.max_pinned_tooltips": "Max Pinned Tooltips",
   "tooltipoverhaul.config.entry.max_pinned_tooltips.description": "Maximum number of tooltips that can be pinned at the same time. Pinning past the limit replaces the oldest one.",
   "tooltipoverhaul.config.entry.disable_divider_line": "Disable Divider Line",

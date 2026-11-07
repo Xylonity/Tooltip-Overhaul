@@ -1,3 +1,9 @@
+# 2.1.0
+- Added 2 new effects: matrix, hearts
+- Added a config option to style the items shown in FTB Quests tasks and rewards like regular items, with their custom frames and icon
+- Fixed the Show Mod Name option not working on items named after their own mod, like the Eccentric Tome
+- Fixed the durability and registry name lines appearing above the item name on items named after their own mod
+
 # 2.0.6
 - Malformed config files are now repaired on load
 - Fixed tooltips rendered outside screens, like the ones from Axiom's hotbar menu, disappearing right after showing up for a single frame

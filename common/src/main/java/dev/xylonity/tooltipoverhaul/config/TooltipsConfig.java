@@ -112,6 +112,13 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "general",
+            comment = "Treat the items shown in FTB Quests tasks and rewards as regular items, so they get their custom frames, " +
+                    "icon and the rest of the item styling. Off by default, as modpacks usually replace their descriptions."
+    )
+    public static boolean FTB_QUESTS_ITEM_TOOLTIPS = false;
+
+    @ConfigEntry(
+            category = "general",
             min = 1,
             max = 6,
             slider = true,
