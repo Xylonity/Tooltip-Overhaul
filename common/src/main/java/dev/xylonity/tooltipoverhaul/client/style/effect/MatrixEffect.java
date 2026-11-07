@@ -3,7 +3,6 @@ package dev.xylonity.tooltipoverhaul.client.style.effect;
 import dev.xylonity.tooltipoverhaul.client.style.effect.internal.AmbientEffect;
 import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas;
 import dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectRuntime;
-import net.minecraft.client.Minecraft;
 
 import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectCanvas.*;
 import static dev.xylonity.tooltipoverhaul.client.style.effect.internal.EffectParameter.*;
@@ -36,8 +35,7 @@ public class MatrixEffect extends AmbientEffect {
         final int head = color(2, 0xFFD8FFE0);
 
         // Glyph pixels snap to whole screen pixels
-        final float guiScale = (float) Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
-        final float scale = Math.max(1, Math.round(parameter(SIZE) * guiScale)) / guiScale;
+        final float scale = pixelScale();
         final float cellWidth = 4 * scale, cellHeight = 6 * scale;
 
         final int fromX = (int) Math.floor(canvas.left) + 1, top = (int) Math.floor(canvas.top) + 1;
