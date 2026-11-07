@@ -42,9 +42,10 @@ public final class ModNameUtils {
             return components;
         }
 
+        // The title is skipped, as items named after their own mod would otherwise count as already attributed
         final String name = getModName(stack);
-        for (ClientTooltipComponent component : components) {
-            if (name.equalsIgnoreCase(plainTextOf(component).trim())) {
+        for (int i = 1; i < components.size(); i++) {
+            if (name.equalsIgnoreCase(plainTextOf(components.get(i)).trim())) {
                 return components;
             }
 
@@ -57,7 +58,7 @@ public final class ModNameUtils {
     }
 
     static boolean hasTrailingModName(List<ClientTooltipComponent> components, ItemStack stack) {
-        return !components.isEmpty() && getModName(stack).equalsIgnoreCase(plainTextOf(components.get(components.size() - 1)));
+        return components.size() > 1 && getModName(stack).equalsIgnoreCase(plainTextOf(components.get(components.size() - 1)));
     }
 
     /**

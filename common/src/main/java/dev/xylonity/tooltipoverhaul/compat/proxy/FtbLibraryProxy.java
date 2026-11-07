@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.compat.proxy;
 
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
+import dev.xylonity.tooltipoverhaul.config.TooltipsConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.world.item.ItemStack;
@@ -95,7 +96,7 @@ public final class FtbLibraryProxy {
         // Capped to 5, believe
         for (int i = 0; i < 5 && current != null; i++) {
             if (current instanceof ItemStack stack) {
-                return (showTooltip && !stack.isEmpty()) ? stack : ItemStack.EMPTY;
+                return ((showTooltip || TooltipsConfig.FTB_QUESTS_ITEM_TOOLTIPS) && !stack.isEmpty()) ? stack : ItemStack.EMPTY;
             }
 
             if (current instanceof Optional<?> optional) {
