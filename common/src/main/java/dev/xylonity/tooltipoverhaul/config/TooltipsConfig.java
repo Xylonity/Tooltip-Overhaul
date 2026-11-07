@@ -304,7 +304,7 @@ public final class TooltipsConfig {
             comment = "Effects. Options: bubbles, cinder, crystals, echo, fireflies, galaxy, magic_orbs, speed_lines, nebula, " +
                     "spiral, white_dust, metal_shining, rim_light, ripples, sonar, stars, fireflies_2, steel_shining, floating_stars, " +
                     "prism, snowfall, opal, aurora, fluorite, astral, comets, storm, sunbeams, fireworks, eruption, " +
-                    "searchlights, blasts, firebreath, shield, lasers, missiles, wisps. You can chain effects together, for example: " +
+                    "searchlights, blasts, firebreath, shield, lasers, missiles, wisps, matrix. You can chain effects together, for example: " +
                     "'white_dust, nebula'"
     )
     public static String EFFECTS = "";

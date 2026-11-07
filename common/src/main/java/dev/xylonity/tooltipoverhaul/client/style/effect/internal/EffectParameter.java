@@ -7,7 +7,7 @@ public enum EffectParameter {
     SIZE("size", 0.25f, 3f, 1f, false, Set.of(
             "bubbles", "cinder", "crystals", "fireflies", "fireflies_2", "galaxy", "magic_orbs",
             "spiral", "metal_shining", "ripples", "sonar", "snowfall", "floating_stars", "stars",
-            "speed_lines", "aurora", "comets", "storm", "sunbeams", "fireworks", "eruption", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps")),
+            "speed_lines", "aurora", "comets", "storm", "sunbeams", "fireworks", "eruption", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps", "matrix")),
     THICKNESS("thickness", 0.25f, 3f, 1f, false, Set.of(
             "bubbles", "cinder", "crystals", "fireflies_2", "echo", "galaxy", "magic_orbs",
             "spiral", "metal_shining", "steel_shining", "rim_light", "ripples", "sonar", "stars", "speed_lines", "comets", "storm", "fireworks", "eruption", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps")),
@@ -18,7 +18,7 @@ public enum EffectParameter {
     VARIATION("variation", 0f, 100f, 0f, true, Set.of(
             "bubbles", "cinder", "crystals", "fireflies_2", "echo", "magic_orbs", "spiral", "ripples",
             "sonar", "snowfall", "floating_stars", "stars", "speed_lines", "prism", "opal", "aurora",
-            "fluorite", "astral", "comets", "storm", "sunbeams", "fireworks", "eruption", "searchlights", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps")),
+            "fluorite", "astral", "comets", "storm", "sunbeams", "fireworks", "eruption", "searchlights", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps", "matrix")),
     SATURATION("saturation", 0f, 2f, 1f, false, Set.of()),
     TRAIL_LENGTH("trailLength", 0f, 3f, 1f, false, Set.of("cinder", "magic_orbs", "speed_lines", "comets", "fireworks", "eruption", "blasts", "missiles", "wisps")),
     TURBULENCE("turbulence", 0f, 3f, 1f, false, Set.of("bubbles", "cinder", "snowfall", "fireflies_2", "speed_lines", "comets", "storm", "eruption", "firebreath", "missiles")),
