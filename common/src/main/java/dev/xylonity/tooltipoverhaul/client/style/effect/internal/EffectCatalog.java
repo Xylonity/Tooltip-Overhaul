@@ -13,7 +13,7 @@ public final class EffectCatalog {
             "galaxy", "magic_orbs", "speed_lines", "nebula", "spiral", "white_dust", "metal_shining", "steel_shining",
             "rim_light", "ripples", "sonar", "stars", "floating_stars", "prism", "snowfall", "opal", "aurora",
             "fluorite", "astral", "comets", "storm", "sunbeams", "fireworks", "eruption", "searchlights", "blasts",
-            "firebreath", "shield", "lasers", "missiles", "wisps", "matrix"
+            "firebreath", "shield", "lasers", "missiles", "wisps", "matrix", "hearts"
     );
 
     public static int[] palette(String id) {
@@ -28,6 +28,7 @@ public final class EffectCatalog {
             case "lasers" -> new int[]{0xFFFF3B3B, 0xFFFF9A3B, 0xFFFFFFFF};
             case "wisps" -> new int[]{0xFF2FD9C8, 0xFF5B8CFF, 0xFFEAFFFB};
             case "matrix" -> new int[]{0xFF3CFF6E, 0xFF0F8F3A, 0xFFD8FFE0};
+            case "hearts" -> new int[]{0xFFFF4D6D, 0xFFFF9EC4, 0xFFFFFFFF};
             case "missiles" -> new int[]{0xFFFFC994, 0xFFDA8967, 0xFFB9BBC4};
             case "blasts" -> new int[]{0xFFF3B27C, 0xFFD67C58, 0xFFFFEAD0};
             case "searchlights" -> new int[]{0xFFDCE9FF, 0xFFA8C4FF, 0xFFFFFFFF};
@@ -83,6 +84,7 @@ public final class EffectCatalog {
             case "lasers" -> new LasersEffect();
             case "wisps" -> new WispsEffect();
             case "matrix" -> new MatrixEffect();
+            case "hearts" -> new HeartsEffect();
             case "missiles" -> new MissilesEffect();
             case "blasts" -> new BlastsEffect();
             case "searchlights" -> new SearchlightsEffect();

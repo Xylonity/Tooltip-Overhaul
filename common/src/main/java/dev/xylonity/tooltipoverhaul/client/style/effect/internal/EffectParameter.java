@@ -18,7 +18,7 @@ public enum EffectParameter {
     VARIATION("variation", 0f, 100f, 0f, true, Set.of(
             "bubbles", "cinder", "crystals", "fireflies_2", "echo", "magic_orbs", "spiral", "ripples",
             "sonar", "snowfall", "floating_stars", "stars", "speed_lines", "prism", "opal", "aurora",
-            "fluorite", "astral", "comets", "storm", "sunbeams", "fireworks", "eruption", "searchlights", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps", "matrix")),
+            "fluorite", "astral", "comets", "storm", "sunbeams", "fireworks", "eruption", "searchlights", "blasts", "firebreath", "shield", "lasers", "missiles", "wisps", "matrix", "hearts")),
     SATURATION("saturation", 0f, 2f, 1f, false, Set.of()),
     TRAIL_LENGTH("trailLength", 0f, 3f, 1f, false, Set.of("cinder", "magic_orbs", "speed_lines", "comets", "fireworks", "eruption", "blasts", "missiles", "wisps")),
     TURBULENCE("turbulence", 0f, 3f, 1f, false, Set.of("bubbles", "cinder", "snowfall", "fireflies_2", "speed_lines", "comets", "storm", "eruption", "firebreath", "missiles")),

@@ -1,6 +1,7 @@
 package dev.xylonity.tooltipoverhaul.client.style.effect.internal;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.Minecraft;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -25,6 +26,26 @@ public final class EffectCanvas {
 
     public static float patternPhase(int channel) {
         return parameter(EffectParameter.VARIATION) == 0 ? 0 : seed(7919, channel) * TAU;
+    }
+
+    /**
+     * Size of one art pixel for "pixelart" effects
+     */
+    public static float pixelScale() {
+        final float guiScale = guiScale();
+        return Math.max(1, Math.round(parameter(EffectParameter.SIZE) * guiScale)) / guiScale;
+    }
+
+    /**
+     * Rounds a position down onto the screen pixel grid
+     */
+    public static float snap(float value) {
+        final float guiScale = guiScale();
+        return (float) Math.floor(value * guiScale) / guiScale;
+    }
+
+    private static float guiScale() {
+        return (float) Math.max(1, Minecraft.getInstance().getWindow().getGuiScale());
     }
 
     private final VertexConsumer buffer;
