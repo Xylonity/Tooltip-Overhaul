@@ -354,6 +354,18 @@ public final class EffectCanvas {
     }
 
     /**
+     * Flat axis aligned quad, meant for pixel art snapped to the gui grid
+     */
+    public void rectangle(float x0, float y0, float x1, float y1, int color, float alpha) {
+        if (alpha < 0.002f || x1 <= x0 || y1 <= y0 || outside(x0, y0, x1, y1)) {
+            return;
+        }
+
+        triangle(x0, y0, x1, y0, x1, y1, color, alpha, alpha, alpha);
+        triangle(x0, y0, x1, y1, x0, y1, color, alpha, alpha, alpha);
+    }
+
+    /**
      * Generic line with transparent sides
      */
     public void line(float x0, float y0, float x1, float y1, float width0, float width1, int color, float alpha0, float alpha1) {
