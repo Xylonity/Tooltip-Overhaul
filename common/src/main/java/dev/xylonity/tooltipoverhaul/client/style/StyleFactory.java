@@ -93,11 +93,7 @@ public class StyleFactory {
 
         }
 
-        layers.add(new DefaultOverlay());
-
-        if (!RenderUtils.effectsBehindText(context)) {
-            assignEffects(context, layers, LayerDepth.EFFECT);
-        }
+        assignFrontLayers(context, layers);
 
         return layers;
     }
@@ -115,11 +111,7 @@ public class StyleFactory {
             parseVignetteEntries(TooltipsConfig.VIGNETTES, layers);
         }
 
-        layers.add(new DefaultOverlay());
-
-        if (!RenderUtils.effectsBehindText(context)) {
-            assignEffects(context, layers, LayerDepth.EFFECT);
-        }
+        assignFrontLayers(context, layers);
 
         return layers;
     }
@@ -135,7 +127,13 @@ public class StyleFactory {
             layers.add(new CompactFooter());
         }
 
-        layers.add(new DefaultText());
+        // Vignettes tint whatever is drawn before them so the text only waits for the frame if there aren't any
+        if (!RenderUtils.frameBehindText(context)) {
+            layers.add(new DefaultText());
+        }
+        else if (RenderUtils.hasVignette(context)) {
+            layers.add(new DefaultText(LayerDepth.FRONT_TEXT));
+        }
 
         if (RenderUtils.hasShadow(context)) {
             layers.add(new DefaultShadow());
@@ -211,6 +209,24 @@ public class StyleFactory {
 
         if (!context.isMainTooltip() && !context.isPinned()) {
             layers.add(new DefaultEquippedBadge(colors[0], colors[1], colors[2]));
+        }
+
+    }
+
+    private void assignFrontLayers(TooltipContext context, List<ITooltipLayer> layers) {
+        if (!RenderUtils.frameBehindText(context)) {
+            layers.add(new DefaultOverlay());
+        }
+        else if (RenderUtils.hasVignette(context)) {
+            layers.add(new DefaultOverlay(LayerDepth.BACK_OVERLAY, true));
+        }
+        else {
+            layers.add(new DefaultOverlay(LayerDepth.BACK_OVERLAY, false));
+            layers.add(new DefaultText(LayerDepth.FRONT_TEXT));
+        }
+
+        if (!RenderUtils.effectsBehindText(context)) {
+            assignEffects(context, layers, LayerDepth.EFFECT);
         }
 
     }

@@ -1,3 +1,6 @@
+# 2.1.1
+- Added a config option to render the frame texture behind the tooltip text
+
 # 2.1.0
 - Added 2 new effects: matrix, hearts
 - Added a config option to style the items shown in FTB Quests tasks and rewards like regular items, with their custom frames and icon

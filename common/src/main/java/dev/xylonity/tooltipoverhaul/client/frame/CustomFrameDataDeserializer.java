@@ -83,6 +83,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
 
         final Optional<Boolean> showShadow = parseBool(entry, "showShadow");
         final Optional<Boolean> effectsBehindText = parseBool(entry, "effectsBehindText");
+        final Optional<Boolean> frameBehindText = parseBool(entry, "frameBehindText");
 
         final Optional<Boolean> usePlayerSkinInPreview = parseBool(entry, "usePlayerSkinInPreview");
         final Optional<String> previewPanelModel = parseString(entry, "previewPanelModel");
@@ -150,6 +151,7 @@ public class CustomFrameDataDeserializer implements JsonDeserializer<CustomFrame
                 showRating,
                 showShadow,
                 effectsBehindText,
+                frameBehindText,
                 disableIcon,
                 disableScrolling,
                 disableTooltip,

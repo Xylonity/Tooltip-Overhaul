@@ -75,6 +75,7 @@ public record CustomFrameData(
         Optional<Boolean> showRating,
         Optional<Boolean> showShadow,
         Optional<Boolean> effectsBehindText,
+        Optional<Boolean> frameBehindText,
         Optional<Boolean> disableIcon,
         Optional<Boolean> disableScrolling,
         Optional<Boolean> disableTooltip,
@@ -251,6 +252,10 @@ public record CustomFrameData(
 
     public boolean shouldRenderEffectsBehindText() {
         return effectsBehindText.orElse(TooltipsConfig.EFFECTS_BEHIND_TEXT);
+    }
+
+    public boolean shouldRenderFrameBehindText() {
+        return frameBehindText.orElse(TooltipsConfig.FRAME_BEHIND_TEXT);
     }
 
     public int getSecondPanelX() {
