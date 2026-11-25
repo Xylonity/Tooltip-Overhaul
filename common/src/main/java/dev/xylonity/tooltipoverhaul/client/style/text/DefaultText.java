@@ -19,6 +19,21 @@ import java.util.List;
 
 public class DefaultText implements TextLayer {
 
+    private final LayerDepth depth;
+
+    public DefaultText() {
+        this(LayerDepth.TEXT);
+    }
+
+    public DefaultText(LayerDepth depth) {
+        this.depth = depth;
+    }
+
+    @Override
+    public LayerDepth getLayerDepth() {
+        return depth;
+    }
+
     @Override
     public void render(TooltipContext context, Vec2 position) {
 

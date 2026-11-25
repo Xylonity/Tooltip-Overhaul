@@ -3,6 +3,7 @@ package dev.xylonity.tooltipoverhaul.client.style.overlay;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.xylonity.tooltipoverhaul.TooltipOverhaul;
+import dev.xylonity.tooltipoverhaul.client.layer.LayerDepth;
 import dev.xylonity.tooltipoverhaul.client.layer.impl.OverlayLayer;
 import dev.xylonity.tooltipoverhaul.client.render.TooltipContext;
 import dev.xylonity.tooltipoverhaul.client.util.Constants;
@@ -22,6 +23,26 @@ public class DefaultOverlay implements OverlayLayer {
     private static final int BLOCK_DIMENSION = 44;
 
     private static final Map<ResourceLocation, TextureMetadata> TEXTURES = new ConcurrentHashMap<>();
+
+    private final LayerDepth depth;
+    private final boolean maskedByText;
+
+    public DefaultOverlay() {
+        this(LayerDepth.OVERLAY, false);
+    }
+
+    /**
+     * whether the text has already been drawn at a higher depth so the frame has to leave its pixels untouched
+     */
+    public DefaultOverlay(LayerDepth depth, boolean maskedByText) {
+        this.depth = depth;
+        this.maskedByText = maskedByText;
+    }
+
+    @Override
+    public LayerDepth getLayerDepth() {
+        return depth;
+    }
 
     @Override
     public void render(TooltipContext context, Vec2 position) {
@@ -58,6 +79,11 @@ public class DefaultOverlay implements OverlayLayer {
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
+
+        if (maskedByText) {
+            context.flush();
+            RenderSystem.enableDepthTest();
+        }
 
         // LEFT
         context.getGraphics().blit(textureLocation, leftX, centerY, 0, BLOCK_DIMENSION + frameOffset, BLOCK_DIMENSION, BLOCK_DIMENSION, textureWidth, textureHeight);

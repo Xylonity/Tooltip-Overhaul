@@ -63,6 +63,18 @@ public class RenderUtils {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldRenderEffectsBehindText).orElse(TooltipsConfig.EFFECTS_BEHIND_TEXT);
     }
 
+    /**
+     * Only applies when there is a frame texture to move behind the text
+     */
+    public static boolean frameBehindText(TooltipContext context) {
+        final String overlay = getOverlayLocation(context);
+        if (overlay == null || overlay.isBlank()) {
+            return false;
+        }
+
+        return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::shouldRenderFrameBehindText).orElse(TooltipsConfig.FRAME_BEHIND_TEXT);
+    }
+
     public static boolean hasVignette(TooltipContext context) {
         return Optional.ofNullable(context.getFrameData()).map(CustomFrameData::hasVignette).orElse(!TooltipsConfig.VIGNETTES.isBlank());
     }

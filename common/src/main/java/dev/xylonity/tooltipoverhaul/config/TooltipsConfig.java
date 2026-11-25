@@ -86,6 +86,13 @@ public final class TooltipsConfig {
 
     @ConfigEntry(
             category = "general",
+            comment = "Render the frame overlay texture behind the tooltip text instead of on top of it. Custom frames can " +
+                    "override it with frameBehindText."
+    )
+    public static boolean FRAME_BEHIND_TEXT = false;
+
+    @ConfigEntry(
+            category = "general",
             comment = "Disable tooltip scrolling"
     )
     public static boolean DISABLE_TOOLTIP_SCROLLING = false;

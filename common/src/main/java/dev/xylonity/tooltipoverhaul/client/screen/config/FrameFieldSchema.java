@@ -28,6 +28,7 @@ final class FrameFieldSchema {
             new FieldSpec("nbt", Kind.LIST),
             "appearance",
             new FieldSpec("texture", Kind.STRING),
+            new FieldSpec("frameBehindText", Kind.BOOL),
             new FieldSpec("backgroundColor", Kind.COLOR_INT),
             new FieldSpec("borderType", Kind.CHOICE, "gradient", "glint", "static", "auto_gradient", "auto_glint", "auto_static"),
             new FieldSpec("innerFrameCornerType", Kind.CHOICE, "default", "rounded", "bevel", "inner", "cut", "thick", "full_thick", "bracket", "block", "notch", "weld", "gem"),
